@@ -14,7 +14,7 @@
     "difficulty": "Intermidait",
     "platform": "PG Play",
     "os": "Linux",
-    "tags": ["Linux", "PrivEsc"],
+    "tags": ["Linux"],
     "path": "/writeups/pgplay/sorcerer/"
   },
   {
@@ -23,7 +23,7 @@
     "difficulty": "Easy",
     "platform": "PG Play",
     "os": "Linux",
-    "tags": ["Linux", "PrivEsc"],
+    "tags": ["Linux"],
     "path": "/writeups/pgplay/geisha/"
   },
   {
@@ -41,7 +41,7 @@
     "difficulty": "Easy",
     "platform": "PG Play",
     "os": "Linux",
-    "tags": ["OSCP"],
+    "tags": ["Linux","OSCP"],
     "path": "/writeups/pgplay/wpwn/"
   },
   {
