@@ -16,5 +16,5 @@ Copied to clipboard!
 # Webshellへの蔵置
 最初にtest.phpという名前のwebshellを蔵置している
 ## test.php
-![](../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260429085758.png)
-![](../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260429085751.png)
+![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260429085758.png)
+![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260429085751.png)
