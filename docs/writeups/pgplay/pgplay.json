@@ -86,7 +86,7 @@
     "difficulty": "Easy",
     "platform": "PG Play",
     "os": "Linux",
-    "tags": ["Linux","Web"],
+    "tags": ["Linux","Web","LFI","rootshell.c"],
     "path": "/writeups/pgplay/inclusiveness/"
   },
   {
