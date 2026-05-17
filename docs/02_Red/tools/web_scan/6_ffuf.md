@@ -1,3 +1,10 @@
+---
+title: ffuf
+parent: Tools
+grand_parent: Red Team
+nav_order: 6
+---
+
 ## ffuf
 ### ディレクトリ列挙
 ```bash

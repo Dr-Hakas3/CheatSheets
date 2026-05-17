@@ -1,3 +1,10 @@
+---
+title: Feroxbuster
+parent: Tools
+grand_parent: Red Team
+nav_order: 1
+---
+
 # 特徴
 
 # ディレクトリ列挙

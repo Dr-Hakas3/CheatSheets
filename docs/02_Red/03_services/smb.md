@@ -170,7 +170,7 @@ smbclient //192.168.243.248/transfer -U guest -c "prompt OFF;recurse ON;mget *"
 
 ---
 
-## [4. smbmap](../tools/smbmap)
+## [4. smbmap](../tools/9_smbmap.md)
 
 ```zsh
 smbmap -u 'apadmin' -p 'asdf1234!' -d ACME -H 10.1.3.30 -x 'net group "Domain Admins" /domain'

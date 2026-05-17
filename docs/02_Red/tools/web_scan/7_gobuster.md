@@ -1,3 +1,9 @@
+---
+title: gobuster
+parent: Tools
+grand_parent: Red Team
+nav_order: 7
+---
 # ディレクトリ列挙
 ```bash
 gobuster dir --url http://mailing.htb -w /usr/share/wordlists/dirb/common.txt

