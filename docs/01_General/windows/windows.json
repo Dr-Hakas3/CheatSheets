@@ -1,0 +1,14 @@
+[
+  {
+    "id": "command",
+    "title": "Command",
+    "description": "",
+    "path": "./command/"
+  },
+  {
+    "id": "important_files",
+    "title": "Important Files",
+    "description": "",
+    "path": "./important_files/"
+  }
+]
