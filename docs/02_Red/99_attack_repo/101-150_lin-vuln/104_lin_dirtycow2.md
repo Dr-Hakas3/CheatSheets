@@ -1,3 +1,10 @@
+---
+title: dirtycow2
+parent: Attack Repository
+grand_parent: Red Team
+nav_order: 104
+---
+
 # vuln check
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Lampiao]

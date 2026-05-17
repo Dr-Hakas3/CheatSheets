@@ -2,7 +2,7 @@
 title: Copy Fail
 parent: Attack Repository
 grand_parent: Red Team
-nav_order: 10
+nav_order: 102
 ---
 # Direct Shell
 https://github.com/theori-io/copy-fail-CVE-2026-31431/tree/main

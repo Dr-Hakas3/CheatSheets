@@ -423,7 +423,7 @@ Metasploitフレームワーク内の`multi/recon/local_exploit_suggester`モジ
 
 ## Example Vulnerabilities
 
-### [Copy Fail](../99_attack_repo/101-150_lin-vuln/lin_copy-fail.md)
+### [Copy Fail](../99_attack_repo/101-150_lin-vuln/102_lin_copy-fail.md)
 
 ```zsh
 python3 github/Tools/PrivEsc/Linux/copy-fail-CVE-2026-31431/copy_fail_exp.py
@@ -432,5 +432,5 @@ python3 github/Tools/PrivEsc/Linux/copy-fail-CVE-2026-31431/copy_fail_exp.py
 ### [Dirty Flag](https://github.com/V4bel/dirtyfrag)
 
 
-### [CVE-2024-1086](../99_attack_repo/101-150_lin-vuln/lin_cve-2024-1086.md)
+### [CVE-2024-1086](../99_attack_repo/101-150_lin-vuln/101_lin_cve-2024-1086.md)
 
