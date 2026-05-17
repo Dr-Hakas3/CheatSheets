@@ -9,6 +9,7 @@ shellter
 ```
 
 インジェクション用のファイル（SpotifyのWindows 32ビット版試用版実行インストーラー）をインストール
+
 ```bash
 #以下からDL
 https://sites.google.com/view/serialtips/home/spotify
