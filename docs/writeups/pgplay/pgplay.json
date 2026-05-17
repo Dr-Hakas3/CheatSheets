@@ -88,5 +88,14 @@
     "os": "Linux",
     "tags": ["Linux","Web"],
     "path": "/writeups/pgplay/inclusiveness/"
+  },
+  {
+    "title": "Vegeta1",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web"],
+    "path": "/writeups/pgplay/vegeta1/"
   }
 ]
