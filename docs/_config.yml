@@ -1,0 +1,13 @@
+remote_theme: just-the-docs/just-the-docs
+
+color_scheme: dark
+search_enabled: true
+aux_links: {}
+
+url: "https://dr-hakas3.github.io"
+baseurl: "/CheatSheets"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+
