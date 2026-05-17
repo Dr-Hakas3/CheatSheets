@@ -23,15 +23,15 @@ sed 's/User\\//g' inputfile.txt > outputfile.txt
 ```zsh
 sed 's/$/!!!/' rockyou.txt > mask_word.txt
 ```
-![](../../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502140113.png)
+![](../../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260502140113.png)
 # ABC123 + wordlist
 ```zsh
 sed 's/^/ABC123/' rockyou.txt > word_mask.txt
 ```
-![](../../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502140333.png)
+![](../../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260502140333.png)
 
 # ABC123 + wordlist + !!!
 ```zsh
 sed 's/^/ABC123/' rockyou.txt | sed 's/$/!!!/' > rockyou_hybrid.txt
 ```
-![](../../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502140450.png)
+![](../../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260502140450.png)

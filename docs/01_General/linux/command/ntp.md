@@ -17,8 +17,8 @@ sudo ntpdate ntp.nict.jp
 ```zsh
 sudo ntpdate -u dc1.ping.htb
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260504011057.png)
-*If things don't go as shown in the figure, please refer to the [link](../../../assets/old_cheatsheet/07_Writeup/HTB/Kerberos_time_not_Sync.md)*
+![](../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260504011057.png)
+*If things don't go as shown in the figure, please refer to the [link](../../../assets/old-cheatsheet/07_Writeup/HTB/Kerberos_time_not_Sync.md)*
 ## Current Time
 ```zsh
 timedatectl

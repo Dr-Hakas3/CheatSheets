@@ -21,13 +21,13 @@ git clone https://github.com/brightio/penelope.git
 ~/Tools/PENTEST_and_Red/ReverseShell/penelope/penelope.py -p 18000
 ```
 
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260429223323.png)
+![](../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260429223323.png)
 
 # リバースシェルを切断せずにターミナルに戻る
 ```zsh
 Ctrl+d
 ```
-![207](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260429223333.png)
+![207](../../../assets/old-cheatsheet/Assets/Images/Pasted%20image%2020260429223333.png)
 # FileTransefer
 
 
