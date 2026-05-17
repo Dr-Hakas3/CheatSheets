@@ -1,0 +1,267 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #000000 !important;
+}
+
+table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* =========================
+   BASE (BLACK THEME)
+========================= */
+
+body {
+  background-color: #000000 !important;
+  color: #e6e6e6 !important;
+}
+
+.side-bar {
+  background-color: #000000 !important;
+  border-right: 1px solid #1a1a1a;
+}
+
+.main-content {
+  background-color: #000000 !important;
+}
+
+/* =========================
+   LINKS (PURPLE)
+========================= */
+
+a {
+  color: #b026ff !important;
+}
+
+a:visited {
+  color: #8a2be2 !important;
+}
+
+a:hover {
+  color: #d06bff !important;
+  text-shadow: 0 0 6px #b026ff;
+}
+
+/* =========================
+   HEADINGS
+========================= */
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: #c77dff !important;
+}
+
+/* =========================
+   CODE BLOCKS
+========================= */
+
+code,
+pre {
+  background-color: #0a0a0a !important;
+  color: #d8b4ff !important;
+  border: 1px solid #2a2a2a;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+}
+
+/* =========================
+   SIDEBAR CUSTOM COLORS
+========================= */
+
+/* ---------- Red Team ---------- */
+
+.side-bar a[href*="02_Red"] {
+  color: #ff3b3b !important;
+}
+
+.side-bar a[href*="02_Red"]:hover {
+  color: #ff7a7a !important;
+  text-shadow: 0 0 6px #ff3b3b;
+}
+
+.side-bar a[href*="02_Red"]::before {
+  content: "🔴 ";
+}
+
+/* ---------- Blue Team ---------- */
+
+.side-bar a[href*="03_Blue"] {
+  color: #3b8bff !important;
+}
+
+.side-bar a[href*="03_Blue"]:hover {
+  color: #7ab6ff !important;
+  text-shadow: 0 0 6px #3b8bff;
+}
+
+.side-bar a[href*="03_Blue"]::before {
+  content: "🔵 ";
+}
+
+/* ---------- Green Team ---------- */
+
+.side-bar a[href*="04_Green"] {
+  color: #00ff66 !important;
+}
+
+.side-bar a[href*="04_Green"]:hover {
+  color: #66ff99 !important;
+  text-shadow: 0 0 6px #00ff66;
+}
+
+.side-bar a[href*="04_Green"]::before {
+  content: "🟢 ";
+}
+
+/* ---------- Programing ---------- */
+
+.side-bar a[href*="05_Programing"] {
+  color: #ffdd33 !important;
+}
+
+.side-bar a[href*="05_Programing"]:hover {
+  color: #ffe680 !important;
+  text-shadow: 0 0 6px #ffdd33;
+}
+
+.side-bar a[href*="05_Programing"]::before {
+  content: "🟡 ";
+}
+
+/* ---------- AI ---------- */
+
+.side-bar a[href*="06_AI"] {
+  color: #ff66ff !important;
+}
+
+.side-bar a[href*="06_AI"]:hover {
+  color: #ff99ff !important;
+  text-shadow: 0 0 6px #ff66ff;
+}
+
+.side-bar a[href*="06_AI"]::before {
+  content: "🟣 ";
+}
+
+/* ---------- Writeups ---------- */
+
+.side-bar a[href*="Writeups"],
+.side-bar a[href*="writeups"] {
+  color: #ff9933 !important;
+}
+
+.side-bar a[href*="Writeups"]:hover,
+.side-bar a[href*="writeups"]:hover {
+  color: #ffbb66 !important;
+  text-shadow: 0 0 6px #ff9933;
+}
+
+.side-bar a[href*="Writeups"]::before,
+.side-bar a[href*="writeups"]::before {
+  content: "🟠 ";
+}
+
+/* =========================
+   RESPONSIVE FULL WIDTH
+========================= */
+
+.page-wrap {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.main-content-wrap {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.main-content {
+  max-width: 100% !important;
+  width: 100% !important;
+
+  margin: 0 auto !important;
+
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
+  padding-top: 2rem !important;
+
+  box-sizing: border-box;
+}
+
+/* =========================
+   CONTENT IMAGES
+========================= */
+
+.main-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* =========================
+   TABLE RESPONSIVE
+========================= */
+
+table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* =========================
+   CODE BLOCK RESPONSIVE
+========================= */
+
+pre {
+  overflow-x: auto;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 1000px) {
+
+  .main-content {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+}
+
+@media (max-width: 800px) {
+
+  .main-content {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .main-content {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+}

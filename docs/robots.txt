@@ -1,0 +1,20 @@
+User-agent: *
+Disallow: /
+
+# =========================
+# Dr-Hakas3 Knowledge Base
+# =========================
+#
+# Nothing interesting here.
+# Move along.
+#
+# flag{robots_are_always_watched}
+#
+# TODO:
+# - remove sensitive notes
+# - fix kerberos section
+# - stop leaking metadata
+#
+# "Security through obscurity is not security."
+#
+# =========================

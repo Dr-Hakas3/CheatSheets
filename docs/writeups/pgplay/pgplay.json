@@ -1,0 +1,92 @@
+[
+  {
+    "title": "Internal",
+    "description": "CVE-2009-3103",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Windows",
+    "tags": ["Windows", "SMB"],
+    "path": "/writeups/pgplay/internal/"
+  },
+  {
+    "title": "Sorcerer",
+    "description": "Linux privilege escalation",
+    "difficulty": "Intermidait",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux", "PrivEsc"],
+    "path": "/writeups/pgplay/sorcerer/"
+  },
+  {
+    "title": "Geisha",
+    "description": "Linux privilege escalation",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux", "PrivEsc"],
+    "path": "/writeups/pgplay/geisha/"
+  },
+  {
+    "title": "Sams",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Windows",
+    "tags": ["Linux"],
+    "path": "/writeups/pgplay/sams/"
+  },
+  {
+    "title": "Wpwn",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["OSCP"],
+    "path": "/writeups/pgplay/wpwn/"
+  },
+  {
+    "title": "Billyboss",
+    "description": "",
+    "difficulty": "Intermediate",
+    "platform": "PG Play",
+    "os": "Windows",
+    "tags": ["Windows","SMB Ghost"],
+    "path": "/writeups/pgplay/billyboss/"
+  },
+  {
+    "title": "ColdBoxEasy",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web"],
+    "path": "/writeups/pgplay/coldboxeasy/"
+  },
+  {
+    "title": "Lampiao",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web"],
+    "path": "/writeups/pgplay/lampiao/"
+  },
+  {
+    "title": "Sar",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web"],
+    "path": "/writeups/pgplay/sar/"
+  },
+  {
+    "title": "Inclusiveness",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web"],
+    "path": "/writeups/pgplay/inclusiveness/"
+  }
+]
