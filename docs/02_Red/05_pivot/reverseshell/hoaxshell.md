@@ -1,3 +1,9 @@
+---
+title: hoaxshell
+parent: Pivot
+grand_parent: Red Team
+---
+
 # 待ち受けの開始
 ここで生成されたpowershellの一文を事前に蔵置したwebshellに投げると、ReverseShellを取得できる
 ```zsh
