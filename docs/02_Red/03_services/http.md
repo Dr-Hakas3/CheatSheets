@@ -262,6 +262,9 @@ cewl http://192.168.155.145 -e -n -w email.txt
 
 </details>
 
+
+<details markdown="1">
+<summary>feroxbuster</summary>
 ## feroxbuster
 
 ```zsh
@@ -295,6 +298,8 @@ Option	Description
 feroxbuster -u http://target.local --dont-scan admin uploads backup
 ```
 - --dont-scan
+
+</details>
 
 
 <details markdown="1">
@@ -331,6 +336,8 @@ Option	Description
 - -H	Custom HTTP header
 - -o	Output file
 - -of json	Output format
+
+</details>
 
 
 <details markdown="1">
