@@ -245,6 +245,8 @@ cewl http://192.168.155.145 -e -n -w email.txt
 
 </details>
 
+## Enumeration Tools
+
 <details markdown="1">
 <summary>Generic Sensitive FIlenames</summary>
 
@@ -415,6 +417,10 @@ https://github.com/danielmiessler/SecLists?utm_source=chatgpt.com
 ---
 
 # Subdomain & VHOST Discovery
+
+<details markdown="1">
+<summary>feroxbuster</summary>
+
 ## feroxbuster
 
 feroxbuster is primarily designed for content discovery and does not provide native DNS subdomain enumeration or VHOST fuzzing features.
@@ -430,6 +436,11 @@ for:
 
 DNS subdomain enumeration
 Virtual host discovery
+
+</details>
+
+<details markdown="1">
+<summary>ffuf</summary>
 ## ffuf
 ### Subdomain Discovery
 
@@ -480,6 +491,10 @@ Option	Description
 - -rate 50	Rate limit requests
 - -t 25	Concurrent threads
 
+</details>
+
+<details markdown="1">
+<summary>gobuster</summary>
 ## gobuster
 
 ### Subdomain Discovery
@@ -526,9 +541,14 @@ Option	Description
 - --append-domain	Append base domain automatically
 - -o	Output file
 
+</details>
+
 ---
 
 # Parameter Discovery
+
+<details markdown="1">
+<summary>ffuf</summary>
 
 ```zsh
 ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclists/Discovery/Web-Content/burp-parameter-names.txt -fs 80
@@ -538,6 +558,8 @@ ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclis
 - -fs 
 
 👉 Find hidden parameters
+
+</details>
 
 ---
 
