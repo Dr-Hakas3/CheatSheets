@@ -267,7 +267,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 ```zsh
 feroxbuster \
 -u http://target \
--w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt \
+-w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt \
 -x html,git,php,txt,bak,zip,old \
 -d 2 \
 -t 25 \
@@ -289,6 +289,16 @@ Option	Description
 - -C 403,404	Filter HTTP 403,404 responses
 - -o	Output file
 
+### skip directory
+
+```zsh
+feroxbuster -u http://target.local --dont-scan admin uploads backup
+```
+- --dont-scan
+
+
+<details markdown="1">
+<summary>ffuf</summary>
 ## ffuf
 
 ```zsh
@@ -322,6 +332,9 @@ Option	Description
 - -o	Output file
 - -of json	Output format
 
+
+<details markdown="1">
+<summary>gobuster</summary>
 ## gobuster
 
 ```zsh
@@ -350,6 +363,9 @@ Option	Description
 - -o	Output file
 
 
+
+<details markdown="1">
+<summary>dirb</summary>
 ## dirb
 
 ```zsh
@@ -365,6 +381,11 @@ Option	Description
 
 DIRB performs recursive scanning by default.
 
+</details>
+
+
+<details markdown="1">
+<summary>dirbuster</summary>
 ## DirBuster
 
 Recommended Configuration (GUI)
@@ -381,6 +402,8 @@ Setting	Value
 
 Source:
 https://github.com/danielmiessler/SecLists?utm_source=chatgpt.com
+
+</details>
 
 ---
 
