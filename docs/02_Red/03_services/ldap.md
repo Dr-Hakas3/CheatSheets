@@ -27,7 +27,7 @@ nav_order: 389
 
 ---
 
-## 1. Initial Scan
+# Initial Scan
 
 ```bash
 
@@ -35,12 +35,11 @@ nav_order: 389
 
 👉 Check:
 
-* WinRM service exposed
-* HTTP (5985) / HTTPS (5986)
+* 
 
 ---
 
-## 2. Enumeration
+## Enumeration
 
 👉 Usually limited without credentials
 

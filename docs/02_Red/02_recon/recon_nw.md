@@ -8,8 +8,8 @@ nav_order: 2
 
 ---
 
-## Full / Specify Port Scan
-### nmap
+# Full / Specify Port Scan
+## nmap
 
 ```bash
 nmap -p- --min-rate 1000 -T4 <IP>
@@ -18,25 +18,25 @@ nmap -p- --min-rate 1000 -T4 <IP>
 ```zsh
 sudo nmap -Pn -p- -sSCV -A -oN full_tcp-scan.txt --open 192.168.201.100
 ```
-#### UDP_Scan
+### UDP_Scan
 
 ```bash
 sudo nmap -Pn -p- -sU 192.168.0.1
 ```
 - -sU UDP
-#### autorecon
+## autorecon
 
 ```zsh
 sudo autorecon 192.168.243.248
 ```
 ![](../../assets/images/Pasted%20image%2020260508200423.png)
 
-#### bash script
+## bash script
 
 ```zsh
 for port in $(seq 21 1024); do nc -c 1 192.168.56.100 $port; done
 ```
-#### nc
+## nc
 
 ```zsh
 nc -nvv -w 1 -z 192.168.50.152 3388-3390
@@ -48,13 +48,13 @@ nc -nvv -w 1 -z 192.168.50.152 3388-3390
 nc -nv -u -z -w 1 192.168.50.149 120-123
 ```
 
-#### powershell Script
+## powershell Script
 
 ```powershell
 1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.50.151", $_)) "TCP port $_ is open"} 2>$null
 ```
 
-#### powershell Test-NetConnection
+## powershell Test-NetConnection
 
 ```powershell
 Test-NetConnection -Port 445 192.168.50.151
@@ -63,7 +63,7 @@ Test-NetConnection -Port 445 192.168.50.151
 
 ---
 
-##  Service Enumeration
+#  Service Enumeration
 
 ```bash
 nmap -Pn -p <PORTS> -sC -sV -A <IP>
@@ -118,6 +118,13 @@ nmap -Pn -p <PORTS> -sC -sV -A <IP>
 - `seq_timeout` is the maximum time allowed for the knock sequence.
 
 ### Client side
+
 ```bash
 knock 192.168.1.100 7000 8000 9000
+```
+
+or
+
+```zsh
+sudo nmap -Pn -sS -r -p 1,2,3 -n 192.168.1.100
 ```

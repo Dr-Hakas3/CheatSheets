@@ -40,8 +40,18 @@ SSH is typically exposed after initial compromise or misconfiguration and is a p
 - Exposed backup or configuration files containing SSH keys
 
 ---
-## 1. Initial Scan
+# Initial Scan
 
+## Banner Check
+
+```zsh
+ssh 192.168.45.101
+```
+
+👉 Check:
+
+- Banner Message (Example Knock Port)
+## Script Scan
 ```bash
 nmap -p 22 --script ssh-hostkey,ssh-auth-methods <IP>
 ```
@@ -54,7 +64,7 @@ nmap -p 22 --script ssh-hostkey,ssh-auth-methods <IP>
 
 ---
 
-## 2. Enumeration
+# Enumeration
 
 ```bash
 ssh -v user@<IP>
