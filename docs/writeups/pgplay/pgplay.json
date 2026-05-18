@@ -95,7 +95,16 @@
     "difficulty": "Easy",
     "platform": "PG Play",
     "os": "Linux",
-    "tags": ["Linux","Web"],
+    "tags": ["Linux","Web","Write Able /etc/passwd"],
     "path": "/writeups/pgplay/vegeta1/"
+  },
+  {
+    "title": "Solstice",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web","Write Able /etc/passwd"],
+    "path": "/writeups/pgplay/solstice/"
   }
 ]
