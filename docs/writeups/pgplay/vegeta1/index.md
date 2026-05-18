@@ -125,6 +125,15 @@ topshellv
 ```
 - --dont-scan manual
 
+```zsh
+gobuster dir \
+-u http://192.168.128.73/ \
+-w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt \
+-s '200,204,301,302,307,403,500' \
+-b '' \
+-e
+```
+
 ![](../../../assets/images/Pasted%20image%2020260519040312.png)
 
 http://192.168.128.73/bulma/hahahaha.wav
