@@ -99,6 +99,15 @@
     "path": "/writeups/pgplay/vegeta1/"
   },
   {
+    "title": "Amaterasu",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web"],
+    "path": "/writeups/pgplay/solstice/"
+  },
+  {
     "title": "Solstice",
     "description": "",
     "difficulty": "Easy",
