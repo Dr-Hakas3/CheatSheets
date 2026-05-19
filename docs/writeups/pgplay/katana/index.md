@@ -156,13 +156,34 @@ Progress: 373686 / 373686 (100.00%)
 Finished
 ===============================================================
 ```
-![](../../../assets/images/Pasted%20image%2020260519204740.png)
-
-# 8715
 
 ```zsh
 
 ```
+
+http://192.168.231.83:8088/docs/admin.html
+
+![](../../../assets/images/Pasted%20image%2020260520042614.png)
+http://192.168.231.83:8088/upload.php
+
+
+![](../../../assets/images/Pasted%20image%2020260519204740.png)
+
+http://192.168.231.83:8088/upload.html
+
+![](../../../assets/images/Pasted%20image%2020260520041637.png)
+
+![](../../../assets/images/Pasted%20image%2020260520042212.png)
+
+
+# 8715
+
+![](../../../assets/images/Pasted%20image%2020260520041832.png)
+
+```zsh
+
+```
+
 
 ```zsh
 
