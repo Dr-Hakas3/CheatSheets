@@ -13,9 +13,12 @@ echo -n "secret" | sha256sum
 echo -n "secret1" | sha256sum
 ```
 - -n 改行なし
+
 ---
+
 # 02_ベンチマークテスト
 文字種と文字数からパスワードのパターン数を計算
+
 ```bash
 echo -n "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" | wc -c
 python3 -c "print(62**5)"
@@ -23,6 +26,7 @@ python3 -c "print(62**5)"
 ```
 
 現在のCPUでの解析時間
+
 ```bash
 hashcat -b
 # 出力例
@@ -35,6 +39,7 @@ hashcat -b
 ```
 
 計算
+
 ```bash
 # 62種、8文字のパスワード
 python3 -c "print(62**8)"
@@ -49,6 +54,7 @@ python3 -c "print(62**10)"
 python3 -c "print(839299365868340224 / 9276300000)"
 # 90477816.14095493
 ```
+
 ---
 
 # 03_Wordlistの編集

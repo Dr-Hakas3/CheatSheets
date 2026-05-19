@@ -371,7 +371,7 @@ Option	Description
 - -b 403,404	Exclude HTTP 403,404 responses
 - -o	Output file
 
-
+</details>
 
 <details markdown="1">
 <summary>dirb</summary>
