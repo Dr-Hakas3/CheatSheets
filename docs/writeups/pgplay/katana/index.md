@@ -314,6 +314,52 @@ DeepL.com（無料版）で翻訳しました。
 ```
 
 ```zsh
+www-data@katana:~/html/ebook/functions$ cat database_functions.php
+cat database_functions.php
+<?php
+        function db_connect(){
+                $conn = mysqli_connect("localhost", "ebook", "password@123", "ebook");
+                if(!$conn){
+                        echo "Can't connect database " . mysqli_connect_error($conn);
+                        exit;
+                }
+                return $conn;
+        }
+```
+
+```zsh
+www-data@katana:~/html/ebook/functions$ mysql -h localhost -u ebook -p
+mysql -h localhost -u ebook -p
+Enter password: password@123
+
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 49
+Server version: 10.3.22-MariaDB-0+deb10u1 Debian 10
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> 
+```
+
+```zsh
+MariaDB [ebook]> sshow tables;
+show tables;
++-----------------+
+| Tables_in_ebook |
++-----------------+
+| admin           |
+| books           |
+| customers       |
+| order_items     |
+| orders          |
+| publisher       |
++-----------------+
+6 rows in set (0.000 sec)
+```
+
+```zsh
 www-data@katana:~/html/ebook/database$ cat www_project.sql
 
 
