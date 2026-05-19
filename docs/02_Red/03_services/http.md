@@ -312,7 +312,7 @@ feroxbuster -u http://target.local --dont-scan admin uploads backup
 ffuf \
 -u http://target/FUZZ \
 -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt \
--e .php,.txt,.bak,.zip,.old \
+-e .html,.php,.txt,.bak,.zip,.old \
 -recursion \
 -recursion-depth 2 \
 -t 25 \
