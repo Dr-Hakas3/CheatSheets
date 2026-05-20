@@ -108,6 +108,15 @@
     "path": "/writeups/pgplay/katana/"
   },
   {
+    "title": "Amaterasu",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux","Web","File upload to SSH authorized_keys","crontab"],
+    "path": "/writeups/pgplay/amaterasu/"
+  },
+  {
     "title": "Solstice",
     "description": "",
     "difficulty": "Easy",
