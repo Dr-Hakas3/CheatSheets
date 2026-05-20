@@ -173,19 +173,6 @@ http://192.168.231.83:8088/upload.php
 
 ![](../../../assets/images/Pasted%20image%2020260520041832.png)
 
-```zsh
-
-```
-
-
-```zsh
-
-```
-
-```zsh
-
-```
-
 ---
 
 # Initial Access

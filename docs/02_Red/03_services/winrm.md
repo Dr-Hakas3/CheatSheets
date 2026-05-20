@@ -48,7 +48,7 @@ Additionally, in CAPEC (Common Attack Pattern Enumeration and Classification), i
 
 ---
 
-## 1. Initial Scan
+## Initial Scan
 
 ```bash
 nmap -p 5985,5986 --script http-title,ssl-cert <IP>

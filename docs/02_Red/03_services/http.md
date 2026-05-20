@@ -245,8 +245,6 @@ cewl http://192.168.155.145 -e -n -w email.txt
 
 </details>
 
-## Enumeration Tools
-
 <details markdown="1">
 <summary>Generic Sensitive FIlenames</summary>
 
@@ -264,6 +262,8 @@ cewl http://192.168.155.145 -e -n -w email.txt
 
 </details>
 
+---
+## Enumeration Tools
 
 <details markdown="1">
 <summary>feroxbuster</summary>
