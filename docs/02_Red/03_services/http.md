@@ -350,7 +350,7 @@ Option	Description
 gobuster dir \
 -u http://target \
 -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt \
--x php,txt,bak,zip,old \
+-x html,php,txt,bak,zip,old \
 -t 25 \
 -k \
 -r \

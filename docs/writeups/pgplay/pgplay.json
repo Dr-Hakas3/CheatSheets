@@ -117,6 +117,15 @@
     "path": "/writeups/pgplay/amaterasu/"
   },
   {
+    "title": "Empire-breakout",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux"],
+    "path": "/writeups/pgplay/empire-breakout/"
+  },
+  {
     "title": "Solstice",
     "description": "",
     "difficulty": "Easy",
