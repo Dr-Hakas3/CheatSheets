@@ -155,7 +155,7 @@ Import-Module .\PowerView.ps1
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
 ```
 
-
+👉Check:
 
 
 ---
