@@ -46,10 +46,15 @@ nmap -Pn -p80 -sCV -A -oN 80_sCVA <IP> --min-rate=5000
 - -A 
 - --min-rate=5000 
 
-## auto scan
-### [Nessus]()
+## Vulnerability Scan Tools
+### [Nessus](../tools/web_scan/vulnerability/nessus.md)
 
-### [nuclei]()
+### Nikto
+
+```zsh
+nikto -h http://192.168.11.19:12380/
+```
+### [nuclei](..//tools/web_scan/vulnerability/nuclei)
 
 ```bash
 nuclei -target http://192.168.121.16
@@ -61,6 +66,11 @@ nuclei -target http://192.168.121.16
 kr scan http://localhost:8080 -A raft-small-words
 ```
 
+### [Arjun](../tools/web_scan/vulnerability/arjun.md)
+
+```zsh
+arjun -u https://example.com/search
+```
 
 ---
 
@@ -75,6 +85,7 @@ kr scan http://localhost:8080 -A raft-small-words
 - Wappalyzer
 - comment out
 - robots.txt
+- Source code
 
 ```bash
 whatweb -a 3 http://<IP>

