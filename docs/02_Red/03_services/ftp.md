@@ -60,7 +60,7 @@ nmap -p 21 --script ftp-anon,ftp-syst,ftp-banner <IP>
 - ftp-syst
 - ftp-banner
 
-👉Check:
+
 - service version
 - exposed features
 
