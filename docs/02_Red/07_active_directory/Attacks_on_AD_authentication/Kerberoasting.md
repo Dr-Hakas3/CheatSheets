@@ -1,3 +1,9 @@
+---
+title: Kerberoasting
+parent: Active Directory
+grand_parent: Red Team
+---
+
 ## 攻撃の概要
 サービスチケットはSPNのパスワードハッシュを使用して暗号化されているチケットをリクエストし、ブルートフォース攻撃や推測攻撃で復号化できれば、この情報を使ってサービスアカウントの平文パスワードを解読できる
 # Kali（リモートホスト）から実施
