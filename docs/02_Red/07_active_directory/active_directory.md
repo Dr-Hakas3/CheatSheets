@@ -175,8 +175,6 @@ Get-ChildItem env:
 
 </details>
 
-</details>
-
 ---
 # *Enumeration for  Domain*
 ---
@@ -200,8 +198,6 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 [PsLoggedOn.exe](../tools/PsLoggedOn.exe.md)
 
----
-# *Attack*
 ---
 
 #  Attack on AD Authentication
