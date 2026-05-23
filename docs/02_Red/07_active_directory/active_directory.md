@@ -188,8 +188,11 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 👉Check:
 
+👉If:
 ## オブジェクト権限の列挙
 
+👉Check:
+👉If:
 
 ## ユーザーがその端末にログインしているかの列挙
 
