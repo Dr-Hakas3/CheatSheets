@@ -175,6 +175,10 @@ Get-ChildItem env:
 ```
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+```powershell
 Import-Module .\PowerView.ps1
 ```
 
