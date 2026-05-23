@@ -91,6 +91,10 @@ kerbrute userenum -d <DOMAIN> users.txt --dc <IP>
 ```
 
 ```zsh
+kerbrute userenum --dc 10.67.191.107 -d THM-AD users.txt
+```
+
+```zsh
 kerbrute userenum -d hokkaido-aerospace.com --dc 192.168.186.40 /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -t 100
 ```
 

@@ -178,7 +178,18 @@ Get-ChildItem env:
 ---
 # *Enumeration for  Domain*
 ---
+
 [PowerView](../tools/active_directory/Powerview.ps1.md)
+*調査を進めやすくするため最初にインポートしておく*
+
+## Domain Userの列挙
+kerbrute
+👉Check:
+特徴的なユーザ名
+
+👉If:
+AS-REP Roasting
+
 
 ## SPNの列挙
 
@@ -205,12 +216,12 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 ---
 
-#  Attack on AD Authentication
+##  Attack on AD Authentication
 
 <details markdown="1">
 <summary>AD Authentication Works Summary</summary>
 
-# NTLM認証
+### NTLM認証
 - クライアントがホスト名ではなくIPアドレスでサーバーに認証する場合、またはユーザーがActive Directory統合DNSサーバーに登録されていないホスト名で認証しようとする場合
 - サードパーティ製アプリケーションはKerberos認証ではなくNTLM認証を使用することを選択できる
 - NTLM認証プロトコルは7つのステップで構成される
@@ -226,7 +237,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 ---
 
-# Kerberos認証
+### Kerberos認証
 
 - Active Directoryおよび関連サービスのデフォルトの認証プロトコル
 - MITが開発
@@ -272,11 +283,11 @@ AP -REQのユーザー名がサービスチケットから復号されたユー�
 
 ---
 
-# キャッシュされたAD資格情報
+### キャッシュされたAD資格情報
 
 - LSASSプロセスはオペレーティングシステムの一部であり、SYSTEMとして実行されるため、ターゲットに保存されているハッシュにアクセスするには、SYSTEM（またはローカル管理者）権限が必要
 - Mimikatzなどのツールによるハッシュ抽出を防ぐ効果的な防御策の一つは、LSA保護機能を追加することです。LSAにはLSASSプロセスが含まれています。レジストリキーを設定することで、Windowsはこのプロセスによるメモリの読み取りをブロックします。OffSecの 「回避技術と侵入防御」コース「PEN-300」では、この保護機能をはじめとする強力な防御メカニズムを回避する方法について詳しく説明します。
-## キャッシュされた認証ハッシュの抽出
+### キャッシュされた認証ハッシュの抽出
 #### 接続
 
 ```bash
