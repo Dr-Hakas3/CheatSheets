@@ -56,13 +56,16 @@ evil-winrm -i 192.168.121.96 -u Eric.Wallows -p EricLikesRunning800
 </details>
 
 ---
-# 最終的な目標のユーザを明確化する
+# *最終的な目標を明確化する*
+---
 
 ## BloodHoundでDomain Adminsのユーザを検索
 
 👉Check:
 - GenericALL
 - WriteAble
+
+![](../../assets/images/Pasted%20image%2020260523103114.png)
 
 ## ユーザとグループを列挙する
 Local
@@ -94,7 +97,6 @@ impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x
 ---
 <details markdown="1">
 # <summary>*Enumeration for Privilege Escalation*</summary>
-
 
 <details markdown="1">
 <summary>Automation</summary>
@@ -186,7 +188,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 
 ---
-# *Attack*
+# *Attack on AD Authentication*
 ---
 
 <details markdown="1">
@@ -194,3 +196,19 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 [AS-REP_Roasting](../tools/assets/old_cheatsheet/02_Red/08_ActiveDirectory/Attacks_on_AD_authentication/AS-REP_Roasting.md)
  </details>
+
+<summary>AS-REP Roasting</summary>
+
+
+ </details>
+
+---
+# *Lateral Movement*
+
+---
+
+
+---
+# *Persistent*
+
+---
