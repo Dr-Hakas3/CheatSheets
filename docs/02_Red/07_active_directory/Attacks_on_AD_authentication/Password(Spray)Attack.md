@@ -1,3 +1,9 @@
+---
+title: Password (Spray) Attack
+parent: Active Directory
+grand_parent: Red Team
+---
+
 # アカウントポリシーを取得
 ロックアウト回数及び解除時間を把握しておく
 ```powershell
