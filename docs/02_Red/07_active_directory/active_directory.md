@@ -190,4 +190,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 ---
 
 <details markdown="1">
-<summary>AS-REP</summary>
+<summary>AS-REP Roasting</summary>
+
+[AS-REP_Roasting](../tools/assets/old_cheatsheet/02_Red/08_ActiveDirectory/Attacks_on_AD_authentication/AS-REP_Roasting.md)
+ </details>
