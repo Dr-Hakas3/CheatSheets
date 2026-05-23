@@ -253,6 +253,8 @@ $krb5asrep$23$svc-admin@THM-AD:f3e18b69dda06e33d6d11c3fc92685f3$4e27cdbad0ca885b
 ```
 ![](../../../../assets/images/Pasted%20image%2020260524045534.png)
 
+https://hashcat.net/wiki/doku.php?id=example_hashes
+
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/THM/AttacktiveDirectory]
 └─$ hashcat -m 18200 -a 0 hash.txt pass.txt                                                          
