@@ -84,7 +84,7 @@ supported encryption types
 
 ---
 
-# 2. Enumeration
+# Enumeration
 
 ```zsh
 kerbrute userenum -d <DOMAIN> users.txt --dc <IP>

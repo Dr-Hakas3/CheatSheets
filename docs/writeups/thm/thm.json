@@ -1,20 +1,11 @@
 [
   {
-    "title": "Forest",
-    "description": "Active Directory enumeration and privilege escalation.",
+    "title": "Attacktive Directory",
+    "description": "Active Directory enumeration",
     "difficulty": "Easy",
-    "platform": "HTB",
+    "platform": "THM",
     "os": "Windows",
-    "tags": ["AD", "SMB", "Kerberos"],
-    "path": "/writeups/htb/forest/"
-  },
-  {
-    "title": "PingPong",
-    "description": "Web exploitation and privilege escalation.",
-    "difficulty": "Medium",
-    "platform": "HTB",
-    "os": "Linux",
-    "tags": ["Web", "LFI"],
-    "path": "/writeups/htb/pingpong/"
+    "tags": ["AD", "SMB", "Kerberos", "ASREP Roast", "impacket-secetdump"],
+    "path": "/writeups/thm/AD/Attacktive_Directory/"
   }
 ]

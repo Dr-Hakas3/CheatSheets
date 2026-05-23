@@ -1,3 +1,9 @@
+---
+title: Golden Ticket
+parent: Active Directory
+grand_parent: Red Team
+---
+
 `Golden Ticket`は、ドメインコントローラ上の`krbtgt`アカウントの秘密情報を使用して、任意のユーザーとして認証を行う攻撃です。
 
 ```bash

@@ -4,10 +4,6 @@ parent: Red Team
 nav_order: 7
 has_children: true
 ---
-# Summary
-
----
-
 # Goal
 
 ## DC Administrator or Domain Admins Member
@@ -183,12 +179,14 @@ Get-ChildItem env:
 *調査を進めやすくするため最初にインポートしておく*
 
 ## Domain Userの列挙
-kerbrute
+[kerbrute](../03_services/kerberos)
+
 👉Check:
-特徴的なユーザ名
+- Domain Admins User
+- 特徴的なユーザ名
 
 👉If:
-AS-REP Roasting
+- Valid Account -> [AS-REP Roasting](../07_active_directory/Attacks_on_AD_authentication/AS-REP_Roasting)
 
 
 ## SPNの列挙
@@ -200,6 +198,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 👉Check:
 
 👉If:
+- SPN detected? → [Kerberoast](../07_active_directory/Attacks_on_AD_authentication/Kerberoasting) candidate
 ## オブジェクト権限の列挙
 
 👉Check:
