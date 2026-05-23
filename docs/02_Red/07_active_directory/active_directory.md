@@ -93,7 +93,7 @@ impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x
 # *Enumeration for Privilege Escalation*
 ---
 <details markdown="1">
-<summary>*Enumeration for Privilege Escalation*</summary>
+# <summary>*Enumeration for Privilege Escalation*</summary>
 
 
 <details markdown="1">
