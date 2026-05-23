@@ -198,6 +198,8 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 [PsLoggedOn.exe](../tools/PsLoggedOn.exe.md)
 
+👉If:
+
 ---
 
 #  Attack on AD Authentication
