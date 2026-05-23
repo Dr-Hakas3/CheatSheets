@@ -324,8 +324,17 @@ crypto モジュールに は、 CryptoAPI 関数に crypto::capiを適用する
 
 </details>
 
-[AS-REP_Roasting](../tools/assets/old_cheatsheet/02_Red/08_ActiveDirectory/Attacks_on_AD_authentication/AS-REP_Roasting.md)
+[AS-REP_Roasting](Attacks_on_AD_authentication/AS-REP_Roasting.md)
  
+[Kerberoasting](Attacks_on_AD_authentication/Kerberoasting.md)
+
+[Password Spray Attack](Attacks_on_AD_authentication/Password(Spray)Attack.md)
+
+[DC Sync](Attacks_on_AD_authentication/DC_Synchronization)
+
+[Golden Ticket](Attacks_on_AD_authentication/Golden_Ticket)
+
+[Silver Ticket](Attacks_on_AD_authentication/Silver_Ticket.md)
 
 ---
 # *Lateral Movement*
