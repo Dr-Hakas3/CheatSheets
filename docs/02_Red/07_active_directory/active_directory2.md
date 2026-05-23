@@ -1,6 +1,7 @@
 ---
 title: Active Directory2
 parent: Red Team
+has_children: true
 ---
 <details markdown="1">
 <summary># Initial Access</summary>
