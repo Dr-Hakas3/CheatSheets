@@ -414,7 +414,7 @@ Exploration for Horizontal Expansion
 
 ---
 
-##  [Mimikatz](../tools/8_mimikatz.md)
+##  [Mimikatz](../tools/windows_privilege/8_mimikatz.md)
 
 ```powershell
 .\mimikatz.exe

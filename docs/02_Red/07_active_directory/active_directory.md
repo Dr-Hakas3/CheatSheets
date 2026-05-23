@@ -90,9 +90,28 @@ impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x
 ```
 
 ---
-# *Enumeration for PrivilegeEscalation*
+# *Enumeration for Privilege Escalation*
 ---
+<details markdown="1">
+<summary>*Enumeration for Privilege Escalation*</summary>
 
+
+<details markdown="1">
+<summary>Automation</summary>
+
+# Automation
+
+## [Winpeas](../tools/windows_privilege/winpeas)
+
+## PowerUp
+
+</details>
+
+
+<details markdown="1">
+<summary>Manual</summary>
+# Manual
+  
 # ユーザ情報の確認
 
 ## 権限
@@ -136,12 +155,18 @@ Get-ChildItem env:
 
 👉Check:
 - C:\automation
-- C:\Windows\Log\task.bat
+- C:\Windows\Log\task.bat -> memo
+
+</details>
+
+</details>
 
 ---
 # *Enumeration for  Lateral Movement*
 ---
-## SPNの確認
+# Automation
+
+## PowerView
 
 ```zsh
 ~/Tools/PrivEsc/AD/Enum/PowerSploit/Recon/PowerView.ps1
@@ -150,6 +175,8 @@ Get-ChildItem env:
 ```powershell
 Import-Module .\PowerView.ps1
 ```
+
+## SPNの確認
 
 ```zsh
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
@@ -162,4 +189,5 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 # *Attack*
 ---
 
-
+<details markdown="1">
+<summary>AS-REP</summary>
