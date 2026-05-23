@@ -199,6 +199,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 👉If:
 - SPN detected? → [Kerberoast](../07_active_directory/Attacks_on_AD_authentication/Kerberoasting) candidate
+
 ## オブジェクト権限の列挙
 
 👉Check:
@@ -343,7 +344,7 @@ crypto モジュールに は、 CryptoAPI 関数に crypto::capiを適用する
  
 [Kerberoasting](Attacks_on_AD_authentication/Kerberoasting.md)
 
-[Password Spray Attack](Attacks_on_AD_authentication/Password(Spray)Attack.md)
+[Password Spray Attack](Attacks_on_AD_authentication/Password(Spray)Attack)
 
 [DC Sync](Attacks_on_AD_authentication/DC_Synchronization)
 
