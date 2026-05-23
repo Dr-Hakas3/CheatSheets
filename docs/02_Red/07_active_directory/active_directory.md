@@ -115,16 +115,17 @@ impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x
 # *Enumeration for Local Privilege Escalation*
 ---
 <details markdown="1">
-<summary>*Enumeration for Privilege Escalation*</summary>
-
-# Automation
+<summary>Automation</summary>
 
 ## [Winpeas](../tools/windows_privilege/winpeas)
 
 ## PowerUp
 
+</details>
 
-# Manual
+
+<details markdown="1">
+<summary>Manual</summary>
   
 # ユーザ情報の確認
 
@@ -171,6 +172,8 @@ Get-ChildItem env:
 - C:\automation
 - C:\Windows\Log\task.bat -> memo
 
+
+</details>
 
 </details>
 
