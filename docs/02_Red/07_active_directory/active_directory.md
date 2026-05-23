@@ -27,14 +27,14 @@ has_children: true
 2. → Enumeration / Discovery
 3. → Local Privilege Escalation
 4. → Searching for Domain User Information
-5. → Attack or Lateral Movement
+5. → Lateral Movement
 
 ## 2nd Machine
 1. → Domain Pivot
 2. → Enumeration / Discovery
 3. → Local Privilege Escalation
 4. → Searching for Domain Admins Information
-5. → Attack or Lateral Movement
+5. → Lateral Movement
 
 ## Last Machine
 1. → Domain lateral
@@ -178,7 +178,7 @@ Get-ChildItem env:
 </details>
 
 ---
-# *Enumeration for  Domain
+# *Enumeration for  Domain*
 ---
 [PowerView](../tools/active_directory/Powerview.ps1.md)
 
@@ -367,6 +367,6 @@ evil-winrm -i 192.168.121.96 -u Eric.Wallows -p EricLikesRunning800
 </details>
 
 ---
-# *Persistentce
+# *Persistentce*
 
 ---
