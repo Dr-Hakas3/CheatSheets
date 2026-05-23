@@ -180,11 +180,9 @@ Get-ChildItem env:
 ---
 # *Enumeration for  Domain
 ---
-# Automation
-
 [PowerView](../tools/active_directory/Powerview.ps1.md)
 
-## SPNの確認
+## SPNの列挙
 
 ```zsh
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
@@ -192,6 +190,15 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
 👉Check:
 
+## オブジェクト権限の列挙
+
+
+## ユーザーがその端末にログインしているかの列挙
+
+👉Check:
+- Domain Admins Userもしくはそこにつながるユーザの認証情報のキャッシュやメモなどを探す
+
+[PsLoggedOn.exe](../tools/PsLoggedOn.exe.md)
 
 ---
 # *Attack*
@@ -270,6 +277,7 @@ AP -REQのユーザー名がサービスチケットから復号されたユー�
 - Mimikatzなどのツールによるハッシュ抽出を防ぐ効果的な防御策の一つは、LSA保護機能を追加することです。LSAにはLSASSプロセスが含まれています。レジストリキーを設定することで、Windowsはこのプロセスによるメモリの読み取りをブロックします。OffSecの 「回避技術と侵入防御」コース「PEN-300」では、この保護機能をはじめとする強力な防御メカニズムを回避する方法について詳しく説明します。
 ## キャッシュされた認証ハッシュの抽出
 #### 接続
+
 ```bash
 xfreerdp3 /cert:ignore /u:jeff /d:corp.com /p:HenchmanPutridBonbon11 /v:192.168.206.75 /dynamic-resolution
 ```
@@ -292,6 +300,7 @@ sekurlsa::logonpasswords
 ## キャッシュされたサービスチケットの取得
 #Terminal02 
 ### チケットのキャッシュ
+
 ```powershell
 dir \\web04.corp.com\backup
 ```
@@ -316,7 +325,9 @@ Service Name (02) : cifs ; web04.corp.com ; @ CORP.COM
 ---
 ## 秘密鍵を含む証明書をエクスポートする方法
 crypto モジュールに は、 CryptoAPI 関数に crypto::capiを適用するか 、KeyIsoサービスに crypto::cng を適用して、エクスポートできない鍵をエクスポート可能にする 機能 が含まれています。
+
 </details>
+
 [AS-REP_Roasting](../tools/assets/old_cheatsheet/02_Red/08_ActiveDirectory/Attacks_on_AD_authentication/AS-REP_Roasting.md)
  
 
