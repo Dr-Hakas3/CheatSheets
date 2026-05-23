@@ -21,14 +21,20 @@ has_children: true
 
 # Attack Flow
 
-1. Initial foothold in Domain PC / Server
+## 1st Machine
+
+1. Initial foothold in Domain PC
 2. → Enumeration / Discovery
-3. → Identify misconfiguration
-4. → ☠ exploit:
-5. → Administrator / SYSTEM
-6. → Searching for Domain User Information
-7. → Domain Pivot / Domain lateral
-8. → Privilege Escalation
+3. → Local Privilege Escalation
+4. → Searching for Domain User Information
+
+## 2nd Machine
+1. → Domain Pivot
+2. → Local Privilege Escalation
+3. → Searching for Domain Admins Information
+
+## Last Machine
+1. → Domain lateral
 
 ---
 # *Initial Access*
@@ -62,6 +68,7 @@ evil-winrm -i 192.168.121.96 -u Eric.Wallows -p EricLikesRunning800
 ## BloodHoundでDomain Adminsのユーザを検索
 
 👉Check:
+- Domain Admins User
 - GenericALL
 - WriteAble
 
@@ -93,13 +100,10 @@ impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x
 ```
 
 ---
-# *Enumeration for Privilege Escalation*
+# *Enumeration for Local Privilege Escalation*
 ---
 <details markdown="1">
-# <summary>*Enumeration for Privilege Escalation*</summary>
-
-<details markdown="1">
-<summary>Automation</summary>
+<summary>*Enumeration for Privilege Escalation*</summary>
 
 # Automation
 
@@ -107,11 +111,8 @@ impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x
 
 ## PowerUp
 
-</details>
 
 
-<details markdown="1">
-<summary>Manual</summary>
 # Manual
   
 # ユーザ情報の確認
@@ -159,28 +160,15 @@ Get-ChildItem env:
 - C:\automation
 - C:\Windows\Log\task.bat -> memo
 
-</details>
 
 </details>
 
 ---
-# *Enumeration for  Lateral Movement*
+# *Enumeration for  Domain
 ---
 # Automation
 
-## PowerView
-
-```zsh
-~/Tools/PrivEsc/AD/Enum/PowerSploit/Recon/PowerView.ps1
-```
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-```powershell
-Import-Module .\PowerView.ps1
-```
+[PowerView](../tools/active_directory/Powerview.ps1.md)
 
 ## SPNの確認
 
@@ -194,17 +182,8 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 ---
 # *Attack on AD Authentication*
 ---
-
-<details markdown="1">
-<summary>AS-REP Roasting</summary>
-
 [AS-REP_Roasting](../tools/assets/old_cheatsheet/02_Red/08_ActiveDirectory/Attacks_on_AD_authentication/AS-REP_Roasting.md)
- </details>
-
-<summary>AS-REP Roasting</summary>
-
-
- </details>
+ 
 
 ---
 # *Lateral Movement*
