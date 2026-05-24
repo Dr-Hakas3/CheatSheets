@@ -3,27 +3,27 @@
     "title": "Kevin",
     "description": "",
     "difficulty": "Easy",
-    "platform": "PG Plactice",
+    "platform": "PG Practice",
     "os": "Windows",
     "tags": ["Windows", "Web"],
-    "path": "/writeups/PG_Plactice/Kevin"
+    "path": "/writeups/PG_Practice/Kevin"
   },
   {
     "title": "Pwned1",
     "description": "Linux privilege escalation",
     "difficulty": "Easy",
-    "platform": "PG Plactice",
+    "platform": "PG Practice",
     "os": "Linux",
     "tags": ["Linux"],
-    "path": "/writeups/PG_Plactice/Pwned1"
+    "path": "/writeups/PG_Practice/Pwned1"
   },
   {
     "title": "Sumo",
     "description": "Linux privilege escalation",
     "difficulty": "Intermidait",
-    "platform": "PG Plactice",
+    "platform": "PG Practice",
     "os": "Linux",
     "tags": ["Linux"],
-    "path": "/writeups/PG_Plactice/Sumo"
+    "path": "/writeups/PG_Practice/Sumo"
   }
 ]
