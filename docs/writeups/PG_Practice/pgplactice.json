@@ -1,0 +1,29 @@
+[
+  {
+    "title": "Kevin",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Plactice",
+    "os": "Windows",
+    "tags": ["Windows", "Web"],
+    "path": "/writeups/PG_Plactice/Kevin"
+  },
+  {
+    "title": "Pwned1",
+    "description": "Linux privilege escalation",
+    "difficulty": "Easy",
+    "platform": "PG Plactice",
+    "os": "Linux",
+    "tags": ["Linux"],
+    "path": "/writeups/PG_Plactice/Pwned1"
+  },
+  {
+    "title": "Sumo",
+    "description": "Linux privilege escalation",
+    "difficulty": "Intermidait",
+    "platform": "PG Plactice",
+    "os": "Linux",
+    "tags": ["Linux"],
+    "path": "/writeups/PG_Plactice/Sumo"
+  }
+]
