@@ -16,8 +16,9 @@ nmap -p- --min-rate 1000 -T4 <IP>
 ```
 
 ```zsh
-sudo nmap -Pn -p- -sS -oN open-port_scan.txt --open 192.168.201.100 --min-rate=5000
+sudo nmap -Pn -p- -sS -oN open-port_scan.txt --open 192.168.201.100
 ```
+-  --min-rate=5000
 
 ```zsh
 sudo nmap -Pn -p- -sSCV -A -oN full_tcp-scan.txt --open 192.168.201.100

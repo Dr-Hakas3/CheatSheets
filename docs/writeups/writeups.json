@@ -1,5 +1,17 @@
 [
   {
+    "id": "pgplay",
+    "title": "Proving Grounds Play",
+    "description": "",
+    "path": "/writeups/pgplay/"
+  },
+  {
+    "id": "pgpractice",
+    "title": "Proving Grounds Practice",
+    "description": "",
+    "path": "/writeups/PG_Practice/"
+  },
+  {
     "id": "htb",
     "title": "Hack The Box",
     "description": "HTB machines and challenges",
@@ -22,11 +34,6 @@
     "title": "vulnHUB",
     "description": "vulnHUB Machine",
     "path": "/writeups/vulnhub/"
-  },
-  {
-    "id": "pgplay",
-    "title": "Proving Grounds Play",
-    "description": "",
-    "path": "/writeups/pgplay/"
   }
+  
 ]
