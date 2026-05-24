@@ -1,137 +1,29 @@
 [
   {
-    "title": "Internal",
-    "description": "CVE-2009-3103",
+    "title": "Kevin",
+    "description": "",
     "difficulty": "Easy",
-    "platform": "PG Play",
+    "platform": "PG Plactice",
     "os": "Windows",
-    "tags": ["Windows", "SMB"],
-    "path": "/writeups/pgplay/internal/"
+    "tags": ["Windows", "Web"],
+    "path": "/writeups/PG_Plactice/Kevin"
   },
   {
-    "title": "Sorcerer",
+    "title": "Pwned1",
+    "description": "Linux privilege escalation",
+    "difficulty": "Easy",
+    "platform": "PG Plactice",
+    "os": "Linux",
+    "tags": ["Linux"],
+    "path": "/writeups/PG_Plactice/Pwned1"
+  },
+  {
+    "title": "Sumo",
     "description": "Linux privilege escalation",
     "difficulty": "Intermidait",
-    "platform": "PG Play",
+    "platform": "PG Plactice",
     "os": "Linux",
     "tags": ["Linux"],
-    "path": "/writeups/pgplay/sorcerer/"
-  },
-  {
-    "title": "Geisha",
-    "description": "Linux privilege escalation",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux"],
-    "path": "/writeups/pgplay/geisha/"
-  },
-  {
-    "title": "Sams",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Windows",
-    "tags": ["Linux"],
-    "path": "/writeups/pgplay/sams/"
-  },
-  {
-    "title": "Wpwn",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","OSCP"],
-    "path": "/writeups/pgplay/wpwn/"
-  },
-  {
-    "title": "Billyboss",
-    "description": "",
-    "difficulty": "Intermediate",
-    "platform": "PG Play",
-    "os": "Windows",
-    "tags": ["Windows","SMB Ghost"],
-    "path": "/writeups/pgplay/billyboss/"
-  },
-  {
-    "title": "ColdBoxEasy",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web"],
-    "path": "/writeups/pgplay/coldboxeasy/"
-  },
-  {
-    "title": "Lampiao",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web"],
-    "path": "/writeups/pgplay/lampiao/"
-  },
-  {
-    "title": "Sar",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web"],
-    "path": "/writeups/pgplay/sar/"
-  },
-  {
-    "title": "Inclusiveness",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web","LFI","rootshell.c"],
-    "path": "/writeups/pgplay/inclusiveness/"
-  },
-  {
-    "title": "Vegeta1",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web","Write Able /etc/passwd"],
-    "path": "/writeups/pgplay/vegeta1/"
-  },
-  {
-    "title": "katana",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web"],
-    "path": "/writeups/pgplay/katana/"
-  },
-  {
-    "title": "Amaterasu",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web","File upload to SSH authorized_keys","crontab"],
-    "path": "/writeups/pgplay/amaterasu/"
-  },
-  {
-    "title": "Empire-breakout",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux"],
-    "path": "/writeups/pgplay/empire-breakout/"
-  },
-  {
-    "title": "Solstice",
-    "description": "",
-    "difficulty": "Easy",
-    "platform": "PG Play",
-    "os": "Linux",
-    "tags": ["Linux","Web","Write Able /etc/passwd"],
-    "path": "/writeups/pgplay/solstice/"
+    "path": "/writeups/PG_Plactice/Sumo"
   }
 ]
