@@ -1,6 +1,6 @@
 ---
 title:
-parent: Proving Grounds Play
+parent: Proving Grounds Practice
 grand_parent: Writeups
 nav_order:
 ---
