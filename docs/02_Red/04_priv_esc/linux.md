@@ -99,7 +99,7 @@ stty raw -echo;fg
 
 ---
 
-## System Enumeration
+# System Enumeration
 ### basic info
 ```bash
 whoami
@@ -267,7 +267,7 @@ scripts executed by root
 
 ---
 
-## Cron Jobs
+# Cron Jobs
 
 ```zsh
 cat /etc/crontab
@@ -327,7 +327,7 @@ id
 
 ---
 
-## PATH Hijacking
+# PATH Hijacking
 
 ```zsh
 echo $PATH
@@ -347,6 +347,10 @@ grep -r "password" /home 2>/dev/null
 
 ```zsh
 grep -r "pass" /etc 2>/dev/null
+```
+
+```bash
+grep -rinE '(password|username|user|pass|key|token|secret|admin|login|credentials|cred)'
 ```
 
 👉 Common locations:
