@@ -36,6 +36,60 @@ has_children: true
 1. → Domain lateral
 2. → Persistence
 
+```
+
+| 手法                  | 必要なもの                          | 現在の認証情報        | 実施タイミング      | 狙う対象            | 取得するもの             | 主目的            |
+| ------------------- | ------------------------------ | -------------- | ------------ | --------------- | ------------------ | -------------- |
+| **Kerbrute**        | DC到達性、ユーザーリスト                  | 不要             | 最初           | 有効ユーザー / 弱パスワード | ユーザー一覧・認証成功        | 列挙・初期侵入        |
+| **AS-REP Roasting** | 有効ユーザー名                        | 不要             | ユーザー列挙後      | PreAuth無効ユーザー   | AS-REP ハッシュ        | 初期資格情報取得       |
+| **Kerberoasting**   | ドメインユーザー資格情報                   | 必要（通常ドメインユーザー） | 初期資格情報取得後    | SPN付きサービスアカウント  | TGS ハッシュ           | 権限拡大           |
+| **DCSync**          | Replication権限（DA / DC / 特権ACL） | 高権限必要          | 権限奪取後        | ドメインユーザー全体      | NTLMハッシュ（krbtgt含む） | ドメイン完全掌握       |
+| **Silver Ticket**   | サービスアカウントのNTLM/AES鍵、SPN名       | サービスアカウント鍵が必要  | サービスアカウント奪取後 | 特定サービス          | 偽造TGS              | 特定サービスへの不正アクセス |
+| **Golden Ticket**   | krbtgtハッシュ、Domain SID          | krbtgtハッシュ必要   | DCSync後      | ドメイン全体          | 偽造TGT              | 永続的ドメイン支配      |
+```
+```
+[domain user]
+    │
+    ├─ local admin on any host?
+    │     ├─ yes
+    │     │    ├─ dump creds
+    │     │    ├─ SAM/LSASS
+    │     │    └─ lateral movement
+    │     │
+    │     └─ no
+    │
+    ├─ SPN exists?
+    │     ├─ yes → kerberoast
+    │     └─ no
+    │
+    ├─ interesting shares/files?
+    │     ├─ yes → creds/configs
+    │     └─ no
+    │
+    ├─ writable ACL?
+    │     ├─ yes → ACL abuse
+    │     └─ no
+    │
+    ├─ delegation issue?
+    │     ├─ yes → delegation abuse
+    │     └─ no
+    │
+    ├─ ADCS vulnerable?
+    │     ├─ yes → cert abuse
+    │     └─ no
+    │
+    ├─ local privilege escalation?
+    │     ├─ yes → admin shell
+    │     └─ no
+    │
+    ├─ replication rights?
+    │     ├─ yes → DCSync
+    │     └─ no
+    │
+    └─ DA?
+          ├─ yes → objectives complete
+          └─ no → continue enum
+```
 ---
 # *Initial Foothold*
 ---

