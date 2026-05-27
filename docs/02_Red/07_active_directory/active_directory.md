@@ -94,7 +94,7 @@ has_children: true
 # *Initial Foothold*
 ---
 <details markdown="1">
-<summary>RDP</summary>
+# <summary>RDP</summary>
 ## RDP
 
 ```zsh
