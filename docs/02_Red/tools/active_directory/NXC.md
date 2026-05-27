@@ -8,6 +8,8 @@ grand_parent: Red Team
 # RDP
 </details>
 
+---
+
 <details markdown="1"><summary>SMB</summary>
 # SMB
 
@@ -206,7 +208,10 @@ nxc smb 192.168.145.30 -u 'a' -p '' --rid-brute
 ![](../../../../assets/images/Pasted%20image%2020260528001424.png)
 </details>
 
+---
+
 <details markdown="1"><summary>WinRM</summary>
+
 # Win-RM
 
 ```zsh
@@ -215,6 +220,8 @@ nxc winrm eighteen.htb -u users -p 'iloveyou1'
 ![](../../../../assets/images/Pasted%20image%2020260528002320.png)
 
 </details>
+
+---
 
 <details markdown="1"><summary>MSSQL</summary>
 # MSSQL
@@ -230,6 +237,8 @@ nxc mssql eighteen.htb -u 'kevin' -p 'iNa2we6haRj2gaw!' --rid-brute --local-auth
 ![](../../../../assets/images/Pasted%20image%2020260528001719.png)
 ![](../../../../assets/images/Pasted%20image%2020260528001730.png)
 </details>
+
+---
 
 <details markdown="1"><summary>LDAP</summary>
 # LDAP
