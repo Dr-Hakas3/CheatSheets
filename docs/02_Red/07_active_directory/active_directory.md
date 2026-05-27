@@ -48,6 +48,25 @@ has_children: true
 ```
 [domain user]
     │
+    ├─ nmap ─  3389 ─ rdp login
+    │       │    
+    │       └─ 5985 ─ yes winrm
+    │            
+    │
+    ├─ nxc 
+    ├─ 
+    ├─ bloodhound
+    ├─ enum domain users 
+    ├─ enum local users
+    ├─ nxc other host
+    │
+    ├─ local privilege escalation?
+    │     ├─ yes → admin shell
+    │     │         ├─ dump creds in mimikatz
+    │     │         ├─ user folder check
+    │     │         └─ nxc other host
+    │     │
+    │     └─ no
     ├─ local admin on any host?
     │     ├─ yes
     │     │    ├─ dump creds
@@ -91,8 +110,7 @@ has_children: true
 ---
 # *Initial Foothold*
 ---
-<details markdown="1">
- <summary>RDP</summary>
+<details markdown="1"><summary>RDP</summary>
 ## RDP
 
 ```zsh
@@ -100,11 +118,9 @@ xfreerdp3 /cert:ignore /u:jeffadmin /d:corp.com /p:BrouhahaTungPerorateBroom2023
 ```
 - /pth:NTLMHash
 
-
 </details>
 
-<details markdown="1">
-<summary>Win-RM</summary>
+<details markdown="1"><summary>Win-RM</summary>
 ## Win-RM
 
 ```bash
@@ -113,11 +129,8 @@ evil-winrm -i 192.168.121.96 -u Eric.Wallows -p EricLikesRunning800
 
 </details>
 
-
 <details markdown="1">
 <summary>Impacket-*</summary>
-
-
 
 </details>
 
