@@ -97,6 +97,21 @@ http://192.168.184.217/assets/fonts/blog/
 ```
 
 ```zsh
+[+] wpdiscuz
+ | Location: http://blogger.pg/assets/fonts/blog/wp-content/plugins/wpdiscuz/
+ | Last Updated: 2026-05-27T16:54:00.000Z
+ | Readme: http://blogger.pg/assets/fonts/blog/wp-content/plugins/wpdiscuz/readme.txt
+ | [!] The version is out of date, the latest version is 7.6.56
+ |
+ | Found By: Known Locations (Aggressive Detection)
+ |  - http://blogger.pg/assets/fonts/blog/wp-content/plugins/wpdiscuz/, status: 200
+ |
+ | Version: 7.0.4 (80% confidence)
+ | Found By: Readme - Stable Tag (Aggressive Detection)
+ |  - http://blogger.pg/assets/fonts/blog/wp-content/plugins/wpdiscuz/readme.txt
+```
+
+```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/Blogger]
 └─$ searchsploit wpdiscuz
 ---------------------------------------------------------------------- ---------------------------------
