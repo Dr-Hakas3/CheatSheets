@@ -578,6 +578,11 @@ ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclis
 
 ### WordPress
 #### [2_wpscan](../tools/web_scan/cms/2_wpscan.md)
+
+```zsh
+wpscn --url http//192.168.218.217/assets/fonts/blog/ --plugins-detection aggressive
+```
+
 ```bash
 wpscan --url http://192.168.201.239/ --enumerate vp,u,vt,tt --verbose
 ```

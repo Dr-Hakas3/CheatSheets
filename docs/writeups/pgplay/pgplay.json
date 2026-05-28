@@ -1,11 +1,11 @@
 [
   {
-    "title": "Kevin",
+    "title": "Blogger",
     "description": "",
     "difficulty": "Easy",
-    "platform": "PG Practice",
-    "os": "Windows",
-    "tags": ["Windows", "Web"],
-    "path": "/writeups/pgplay/Kevin"
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux", "Web"],
+    "path": "/writeups/pgplay/Blogger"
   }
 ]

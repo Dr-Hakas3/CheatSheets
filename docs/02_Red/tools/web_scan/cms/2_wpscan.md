@@ -71,3 +71,24 @@ wpscan --url http://192.168.175.55/shenzi -e ap,at,u --plugins-detection aggress
 - --plugins-detection aggressive: Set plugin detection to aggressive mode
 - -t 20: Set the number of threads to 20
 
+# update Database
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Play/Blogger]
+└─$ wpscan --update
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
+
+         WordPress Security Scanner by the WPScan Team
+                         Version 3.8.28
+       Sponsored by Automattic - https://automattic.com/
+       @_WPScan_, @ethicalhack3r, @erwan_lr, @firefart
+_______________________________________________________________
+
+[i] Updating the Database ...
+[i] Update completed.
+```
