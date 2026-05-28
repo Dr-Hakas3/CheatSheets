@@ -234,9 +234,9 @@ select * from users;
 
 * Other hosts via WinRM
 * SMB / RDP
-- [ligolo](../05_pivot/ligolo.md)
-- [chisel](../05_pivot/chisel.md)
-- [ssh-tunnel](../05_pivot/ssh_tunnel.md)
+- [ligolo](../04_pivot/ligolo.md)
+- [chisel](../04_pivot/chisel.md)
+- [ssh-tunnel](../04_pivot/ssh_tunnel.md)
 
 ---
 

@@ -45,11 +45,11 @@ The flag is definitely there; you just can't see it.
 
 ## 🔐 Privilege Escalation
 
-* [Privilege Escalation](./02_Red/04_priv_esc/privesc.md)
+* [Privilege Escalation](02_Red/05_priv_esc/privesc.md)
 
 ## 🔀 Pivoting
 
-* [Pivoting](./02_Red/05_pivot/pivot.md)
+* [Pivoting](02_Red/04_pivot/pivot.md)
 
 ## 🔑 Password Cracking
 
@@ -65,7 +65,7 @@ The flag is definitely there; you just can't see it.
 
 ## ⚔️ Weaponization
 
-* [Weaponization](02_Red/weaponization/weaponization.md)
+* [Weaponization](02_Red/09_weaponization/weaponization.md)
 
 ## 🧠 Attack Repository
 

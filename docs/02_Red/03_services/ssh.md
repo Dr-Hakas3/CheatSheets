@@ -181,14 +181,14 @@ ssh -i id_rsa user@<IP>
 * SSH keys across hosts
 * Internal pivot via tunneling
 * Credential reuse in SMB / WinRM
-* [ligolo](../05_pivot/ligolo.md)
-- [chisel](../05_pivot/chisel.md)
-- [ssh-tunnel](../05_pivot/ssh_tunnel.md)
+* [ligolo](../04_pivot/ligolo.md)
+- [chisel](../04_pivot/chisel.md)
+- [ssh-tunnel](../04_pivot/ssh_tunnel.md)
 
 ---
 
 ## 7.Privilege Escalation
 
-- [Linux](../04_priv_esc/linux.md)
-- [Windows](../04_priv_esc/windows.md)
+- [Linux](../05_priv_esc/linux.md)
+- [Windows](../05_priv_esc/windows.md)
 
