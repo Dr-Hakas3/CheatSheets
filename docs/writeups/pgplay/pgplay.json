@@ -7,5 +7,14 @@
     "os": "Linux",
     "tags": ["Linux", "Web"],
     "path": "/writeups/pgplay/Blogger"
+  },
+  {
+    "title": "Dawn",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux", "Web"],
+    "path": "/writeups/pgplay/Dawn"
   }
 ]
