@@ -210,6 +210,21 @@ NOPASSWD entries
 allowed binaries
 
 👉 Example:
+
+```bash
+ariana@pwned:~$ sudo -l
+Matching Defaults entries for ariana on pwned:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User ariana may run the following commands on pwned:
+    (selena) NOPASSWD: /home/messenger.sh
+```
+
+```bash
+ariana@pwned:~$ sudo -u selena /home/messenger.sh
+```
+
+👉 Example:
 -  (root) /usr/bin/ftp
 
 👉 Exploit:

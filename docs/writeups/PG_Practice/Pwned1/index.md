@@ -1,5 +1,5 @@
 ---
-title:
+title: Pwned1
 parent: Proving Grounds Practice
 grand_parent: Writeups
 nav_order:

