@@ -227,8 +227,14 @@ No reply from 192.168.201.248
 ```
 
 ```zsh
-
+┌──(kali㉿kali)-[~/CTF/OffSec/Play/Sams]
+└─$ nxc smb 192.168.157.248 -u '' -p '' --shares
+SMB         192.168.157.248 445    SAMS-PC          [*] Windows 10 / Server 2019 Build 19041 (name:SAMS-PC) (domain:Sams-PC) (signing:False) (SMBv1:None)
+SMB         192.168.157.248 445    SAMS-PC          [-] Sams-PC\: STATUS_ACCESS_DENIED 
+SMB         192.168.157.248 445    SAMS-PC          [-] Error enumerating shares: Error occurs while reading from remote(104)
 ```
+
+SAMS-PC
 
 ```zsh
 

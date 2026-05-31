@@ -61,6 +61,20 @@ mysql -u root -p 'root' -h 192.168.56.16 -P 3306
 mysql -h 192.168.121.16 -u root -p --skip-ssl
 ```
 
+## One LIner
+
+```zsh
+mysql -u root -prootpassword! -e 'show databases;'
+```
+
+```zsh
+mysql -uroot -p -D wordpress -e 'show tables;'
+```
+
+```zsh
+mysql -uroot -prootpassword! -D wordpress -e 'select * from wp_users;'
+```
+
 ---
 
 ## 5. DB Harvesting
