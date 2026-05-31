@@ -16,5 +16,14 @@
     "os": "Linux",
     "tags": ["Linux", "Web"],
     "path": "/writeups/pgplay/Dawn"
+  },
+  {
+    "title": "Potato",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Play",
+    "os": "Linux",
+    "tags": ["Linux", "Web"],
+    "path": "/writeups/pgplay/Potato"
   }
 ]
