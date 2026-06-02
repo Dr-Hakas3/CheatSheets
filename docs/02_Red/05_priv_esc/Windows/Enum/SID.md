@@ -47,13 +47,13 @@ DC01
 APPSRV01
 ```
 
-![](../../../assets/images/Pasted%20image%2020260602234449.png)
+![](../../../../assets/images/Pasted%20image%2020260602234449.png)
 
 ```powershell
 PS C:\Windows\system32> (Get-ADComputer -Identity "APPSRV01").SID.Value
 S-1-5-21-2661071818-1767017692-878076344-1103
 ```
-![](../../../assets/images/Pasted%20image%2020260602234304.png)
+![](../../../../assets/images/Pasted%20image%2020260602234304.png)
 or
 
 ```powershell
@@ -64,6 +64,6 @@ Name     SID
 DC01     S-1-5-21-2661071818-1767017692-878076344-1000
 APPSRV01 S-1-5-21-2661071818-1767017692-878076344-1103
 ```
-![](../../../assets/images/Pasted%20image%2020260602234324.png)
+![](../../../../assets/images/Pasted%20image%2020260602234324.png)
 
 
