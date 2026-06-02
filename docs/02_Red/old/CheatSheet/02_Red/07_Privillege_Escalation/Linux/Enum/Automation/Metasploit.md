@@ -1,0 +1,2 @@
+# multi/recon/local_exploit_suggester
+Metasploitフレームワーク内の`multi/recon/local_exploit_suggester`モジュールは、ターゲットシステムでの特権昇格に利用できるローカルエクスプロイトを提案します。このモジュールは、ターゲットシステム上の既知の脆弱性を分析し、適切なエクスプロイトを推奨します。
