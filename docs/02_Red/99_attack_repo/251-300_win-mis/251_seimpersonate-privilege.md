@@ -31,10 +31,6 @@ nt authority\system
 ```
 
 ---
-
-
----
-
 # Who has SeImpersonatePrivilege Check
 
 ```powershell
@@ -79,4 +75,4 @@ OSCP\r.andrews
 RESTRICTED SERVICES\PrintSpoolerService
 ```
 
-![](../../assets/images/Pasted%20image%2020260602001439.png)
+![](../../../assets/images/Pasted%20image%2020260602001439.png)

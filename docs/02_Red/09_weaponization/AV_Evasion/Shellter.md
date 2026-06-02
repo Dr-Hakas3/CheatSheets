@@ -1,5 +1,4 @@
-# shellter
-shellterのインストール
+# インストール
 
 ```bash
 apt-cache search shellter

