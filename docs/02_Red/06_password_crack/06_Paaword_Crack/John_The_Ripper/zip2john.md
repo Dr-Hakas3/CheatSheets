@@ -8,12 +8,18 @@ Archive:  spammer.zip
 
 ```bash
 zip2john spammer.zip > spammer.zip.hash
+```
+
+```
 Created directory: /root/.john
 ver 2.0 spammer.zip/creds.txt PKZIP Encr: cmplen=27, decmplen=15, crc=B003611D ts=ADCB cs=b003 type=0
 ```
 
 ```bash
-john spammer.zip.hash 
+john spammer.zip.hash
+```
+
+```
 Using default input encoding: UTF-8
 Loaded 1 password hash (PKZIP [32/64])
 Will run 12 OpenMP threads
