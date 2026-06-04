@@ -165,6 +165,21 @@ net group /domain
 impacket-GetADUsers -all oscp.exam/r.andrews:BusyofficeWorker890 -dc-ip 172.16.x.200
 ```
 
+## コンピュータの所有者の一覧
+
+```powershell
+PS C:\Windows\system32> $computers = Get-ADComputer -Filter *
+PS C:\Windows\system32> foreach ($computer in $computers) {
+>>   $acl = Get-Acl -Path "AD:\$($computer.DistinguishedName)"
+>>   $owner = $acl.Owner
+>>   Write-Output "$($computer.Name) owned by $owner"
+>> }
+DC01 owned by DEMO\Domain Admins
+APPSRV01 owned by DEMO\Domain Admins
+```
+
+![](../../assets/images/Pasted%20image%2020260605043816.png)
+
 ---
 # *Enumeration for Local Privilege Escalation*
 ---
