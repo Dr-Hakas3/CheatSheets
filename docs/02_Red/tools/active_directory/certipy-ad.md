@@ -1,3 +1,10 @@
+---
+title: certipy-ad
+parent: Tools
+grand_parent: Red Team
+---
+
+
 ```zsh
 certipy-ad req \
   -u c.roberts@ping.htb \
