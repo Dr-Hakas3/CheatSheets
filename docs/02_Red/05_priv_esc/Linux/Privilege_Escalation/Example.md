@@ -75,7 +75,7 @@ DPwf7nemkGSlI
 Password: 
 ┌──(root💀6cfa0a805f4d)-[/home/student]
 └─# cat /root/flag.txt 
-OS{48bf116b9aa78bc0e76e6b929ce581e6}
+OS{}
 ```
 ---
 ## VM5

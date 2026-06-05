@@ -80,6 +80,6 @@ iwr -UseDefaultCredentials http://web04
 
 ## Lab
 ```powershell
-(iwr -UseDefaultCredentials http://web04).Content | findstr /i "OS{"
+(iwr -UseDefaultCredentials http://web04).Content | findstr /i "OS{}"
 ```
 これをしないとエラーでフラグが見れなかった。フラグはコメントアウトに隠されていたため、.contentで取得しないと勝手に棄てられていた。

@@ -83,7 +83,7 @@ Dooomain Admins
 ```powershell
 PS C:\Users\Student> net group /domain "Dooomain Admins"
 Group name     Dooomain Admins
-Comment        Here is your flag: OS{c8b96fbff7186895312d23be70169211}
+Comment        Here is your flag: OS{}
 
 Members
 

@@ -77,7 +77,7 @@ chmod 777 1e4c3abaa24721e69c1359811673c91f-ssh_local_client
 
 ./1e4c3abaa24721e69c1359811673c91f-ssh_local_client -i 192.168.162.63 -p 4242 
 Connecting to 192.168.162.63:4242
-Flag: "OS{3b5ef7f2b1f54f6646b11b39a2aae30e}"
+
 ```
 ---
 # SSHダイナミックポートフォワーディング

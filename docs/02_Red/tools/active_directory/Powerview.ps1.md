@@ -130,7 +130,7 @@ operatingsystemversion
 ```powershell
 Get-NetComputer | findstr OS
 
-operatingsystem        : OS{f9c846478fdf5cca4e451af625ce56dc}
+operatingsystem        : OS{}
 ```
 ---
 

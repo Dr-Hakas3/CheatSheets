@@ -109,7 +109,7 @@ root@35766e16ac75:/home/student# cd /root
 root@35766e16ac75:~# ls
 flag.txt
 root@35766e16ac75:~# cat flag.txt
-OS{f95297332fbce7ebe7369a52bf8b50ef}
+OS{}
 
 ```
 
