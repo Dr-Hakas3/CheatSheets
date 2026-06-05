@@ -1,17 +1,37 @@
 ---
-title:
-parent: Proving Grounds Play
+title: Adventofcyber2024
+parent: Try Hack Me
 grand_parent: Writeups
 nav_order:
 ---
-# Machine
+# 17
 ## OS
 ## Level
 
 ---
+
+# Wireless device information
+
+```zsh
+glitch@wifi:~$ iw dev
+phy#2
+	Interface wlan2
+		ifindex 5
+		wdev 0x200000001
+		addr 02:00:00:00:02:00
+		type managed
+		txpower 20.00 dBm 
+```
 # Reconnaissance
 ```zsh
-
+glitch@wifi:~$ iw dev
+phy#2
+	Interface wlan2
+		ifindex 5
+		wdev 0x200000001
+		addr 02:00:00:00:02:00
+		type managed
+		txpower 20.00 dBm 
 ```
 
 ```zsh
