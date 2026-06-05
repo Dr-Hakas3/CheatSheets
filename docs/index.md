@@ -59,7 +59,7 @@ The flag is definitely there; you just can't see it.
 
 ## ⚔️ Weaponization
 
-* [Weaponization](02_Red/09_weaponization/weaponization.md)
+* [Weaponization](02_Red/10_weaponization/weaponization.md)
 
 ## 🧠 Attack Repository
 
