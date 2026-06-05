@@ -42,8 +42,9 @@ impacket-mssqlclient Administrator:Password@192.168.50.18 -windows-auth
 SQL Server には2種類の認証があります：
 
 モード	内容
-SQL Authentication	SQL独自ユーザー（saなど）
-Windows Authentication	AD / NTLM / Kerberos
+1. SQL Authentication	SQL独自ユーザー（saなど）
+
+2. Windows Authentication	AD / NTLM / Kerberos
 ● -windows-auth を付けると：
 NTLM認証（またはKerberos）でログイン
 Windowsアカウントとして認証される
