@@ -1,3 +1,9 @@
+---
+title: Disk
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 # File_&_Disk
 
 
