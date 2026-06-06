@@ -1,0 +1,85 @@
+watchコマンドの使い方
+
+watch コマンドは、指定したコマンドを一定間隔で繰り返し実行し、結果を画面更新しながら表示します。
+
+基本
+```zsh
+watch COMMAND
+```
+
+例:
+
+```zsh
+watch date
+```
+
+2秒ごとに date を実行します。
+
+実行間隔を変更
+
+1秒ごと:
+
+```zsh
+watch -n 1 date
+```
+
+5秒ごと:
+
+```zsh
+watch -n 5 "df -h"
+```
+
+## よく使う例
+
+CPU・メモリ監視
+```
+watch -n 1 free -h
+```
+ディスク使用量
+```
+watch -n 5 df -h
+```
+ファイルの増加確認
+```
+watch -n 1 'ls -lh logs/'
+```
+プロセス監視
+```
+watch -n 1 'ps aux | grep nginx'
+```
+変更箇所をハイライト
+```
+watch -d "netstat -tulpn"
+```
+
+前回との差分が強調表示されます。
+
+終了
+Ctrl + C
+CTFやペンテストでの例
+
+リバースシェル待ち:
+
+```
+watch -n 1 "ss -lntp | grep 4444"
+```
+
+ファイル作成待ち:
+
+```
+watch -n 1 "find /tmp -type f | wc -l"
+```
+
+BloodHoundやSharpHoundの出力確認:
+
+```
+watch -n 2 "ls -lh *.zip"
+```
+
+ログ監視なら watch よりも tail -f の方が適していることが多いです。
+
+```
+tail -f /var/log/nginx/access.log
+```
+
+watch は「コマンド結果を定期的に見たいとき」、tail -f は「追記されるログをリアルタイムで見たいとき」に使い分けます。
