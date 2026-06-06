@@ -7,6 +7,15 @@
     "os": "Linux",
     "tags": ["Linux", "PrivEsc"],
     "path": "/writeups/vulnhub/hack_me_please/"
+  },
+  {
+    "title": "FALL",
+    "description": "Linux privilege escalation",
+    "difficulty": "Easy",
+    "platform": "vulnHUB",
+    "os": "Linux",
+    "tags": ["Linux", "PrivEsc"],
+    "path": "/writeups/vulnhub/FALL/"
   }
 ]
 
