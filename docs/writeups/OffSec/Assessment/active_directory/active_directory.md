@@ -1,6 +1,7 @@
 ---
 title: Active_Directory_Level_1_Assessment
-parent:
+parent: offsec_assessment
+grand_parent: Writeups
 ---
 
 # 1

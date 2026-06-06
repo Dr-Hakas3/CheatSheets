@@ -1,3 +1,9 @@
+---
+title: Red_Team_Operator–Level_1_Assessment
+parent: offsec_assessment
+grand_parent: Writeups
+---
+
 # 1
 ```zsh
 ssh Freddy@192.168.228.51
