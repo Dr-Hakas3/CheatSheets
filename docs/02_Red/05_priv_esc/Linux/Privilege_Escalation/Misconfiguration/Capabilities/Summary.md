@@ -1,3 +1,4 @@
+
 # 解説
 以下に、内容を整理した英語版を提示する。
 
@@ -17,9 +18,12 @@ However, **Capabilities** split root privileges into smaller, fine-grained units
 
 ## 2. Abnormal Capabilities on /usr/bin/python3.8
 
-```bash id="2gqzjz"
-/usr/bin/python3.8
-  cap_setuid, cap_net_bind_service
+```bash
+id="2gqzjz"
+```
+
+```bash
+/usr/bin/python3.8  cap_setuid, cap_net_bind_service
 ```
 This configuration is **clearly non-standard**.
 ### Normal Python binary
