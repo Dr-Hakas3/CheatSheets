@@ -1,3 +1,9 @@
+---
+title: 機密ファイル探索
+parent: Privilege Escalation
+grand_parent: Red Team
+---
+
 # 機密ファイル探索
 ## Searching for Passwords
 

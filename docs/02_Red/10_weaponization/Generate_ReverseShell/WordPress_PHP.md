@@ -1,5 +1,5 @@
 ---
-titl: WordPress PHP
+title: WordPress PHP
 parent: Weaponization
 grand_parent: Red Team
 ---

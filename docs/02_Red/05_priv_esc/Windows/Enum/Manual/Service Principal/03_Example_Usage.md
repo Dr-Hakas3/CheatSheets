@@ -1,3 +1,9 @@
+---
+title: Service Principal Name
+parent: Active Directory
+grand_parent: Red Team
+---
+
 # 01_SPNを取得
 
 ```powershell
