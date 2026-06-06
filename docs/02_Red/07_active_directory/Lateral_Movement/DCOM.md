@@ -1,3 +1,9 @@
+---
+title: DCOM
+parent: Attack Repository
+grand_parent: Red Team
+---
+
 # 概要
 DCOMとのやり取りはTCPポート135のRPC経由で行われ、DCOMサービスコントロールマネージャー（基本的にはAPI）を呼び出すにはローカル管理者のアクセスが必要
 

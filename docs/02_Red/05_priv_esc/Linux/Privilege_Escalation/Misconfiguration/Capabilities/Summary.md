@@ -1,3 +1,8 @@
+---
+title: Python3.8 capability
+parent: Attack Repository
+grand_parent: Red Team
+---
 
 # 解説
 以下に、内容を整理した英語版を提示する。
