@@ -1,3 +1,9 @@
+---
+titl: WordPress PHP
+parent: Weaponization
+grand_parent: Red Team
+---
+
 # function.php
 1. WordPress 管理ダッシュボードで、「外観」->「テーマファイルエディター」に移動します。
 

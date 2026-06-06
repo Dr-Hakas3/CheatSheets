@@ -1,3 +1,9 @@
+---
+title: net rpc
+parent: Pivot
+grand_parent: Red Team
+---
+
 # Kaliから入手したユーザのクレデンシャルを用いてADへの操作を行う
 bloodhoundにてユーザがグループへの権限を有していることを確認
 ![](../../../assets/images/Pasted%20image%2020260502094043.png)

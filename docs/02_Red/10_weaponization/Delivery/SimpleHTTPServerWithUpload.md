@@ -1,3 +1,9 @@
+---
+title: Simple HTTP Server With Upload
+parent: Weaponization
+grand_parent: Red Team
+---
+
 # SimpleHTTPServer
 https://github.com/Tallguy297/SimpleHTTPServerWithUpload
 ## Start HTTP Server

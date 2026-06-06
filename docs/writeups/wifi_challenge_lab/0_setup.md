@@ -1,6 +1,7 @@
 ---
-title: Wi-Fi Challenge Lab
-parent:
+title: Setup
+parent: Wi-Fi Challenge Lab
+grand_parent: Writeups
 ---
 
 

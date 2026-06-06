@@ -1,3 +1,9 @@
+---
+title: Shadow Copies
+parent: Active Directory
+grand_parent: Red Team
+---
+
 # 攻撃の概要
 - ドメイン管理者は、vshadow ユーティリティを使用してシャドウコピーを作成し、Active Directory データベースの NTDS.dit データベースファイルを抽出できる
 - データベースのコピーを取得したら、SYSTEM ハイブを使用して、ローカルの Kali マシン上ですべてのユーザー認証情報をオフラインで抽出できる
