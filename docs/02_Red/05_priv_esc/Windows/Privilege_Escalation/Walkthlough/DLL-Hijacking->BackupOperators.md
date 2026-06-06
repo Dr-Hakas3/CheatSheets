@@ -1,3 +1,9 @@
+---
+title: DLL Hijacking -> BackupOperators
+parent: sinario
+grand_parent: WIn Privilege Escalation
+---
+
 # walkthlough
 1. dianaに初期侵入
 2. 初期パスワードメモを発見
