@@ -1,3 +1,7 @@
+---
+title: PING
+parent: Ansible
+---
 
 # PING
 
