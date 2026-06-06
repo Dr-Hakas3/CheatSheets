@@ -1,3 +1,9 @@
+---
+title: lnk File
+parent: Weaponization
+grand_parent: Red Team
+---
+
 # Repogitory
 ```
 git clone https://github.com/Greenwolf/ntlm_theft.git
