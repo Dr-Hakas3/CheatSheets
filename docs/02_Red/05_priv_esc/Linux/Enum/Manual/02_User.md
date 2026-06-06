@@ -1,3 +1,9 @@
+---
+title: User
+parent: Lin Privilege Escalation
+grand_parent: Privilege Escalation
+---
+
 # Current_User
 ```bash
 id

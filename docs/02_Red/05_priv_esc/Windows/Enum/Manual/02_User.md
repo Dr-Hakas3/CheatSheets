@@ -1,3 +1,9 @@
+---
+title: User
+parent: Win Privilege Escalation
+grand_parent: Privilege Escalation
+---
+
 ### Username and hostname
 
 ```cmd
