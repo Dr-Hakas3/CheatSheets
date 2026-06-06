@@ -1,6 +1,6 @@
 ---
 title: 機密ファイル探索
-parent: Privilege Escalation
+parent: Win Privilege Escalation
 grand_parent: Red Team
 ---
 

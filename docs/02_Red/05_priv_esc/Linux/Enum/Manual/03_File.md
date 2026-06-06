@@ -1,3 +1,9 @@
+---
+title: File
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 ## ファイルの権限
 ```bash
 ls -la /etc/shadow
