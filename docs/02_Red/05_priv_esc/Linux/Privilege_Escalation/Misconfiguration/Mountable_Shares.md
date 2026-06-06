@@ -1,3 +1,9 @@
+---
+title: Mountable Shares
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 ### ターゲット上の共有ディレクトリを確認
 ```bash
 cat /etc/exports

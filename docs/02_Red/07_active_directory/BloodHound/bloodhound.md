@@ -1,3 +1,8 @@
+---
+title: bloodhound
+parent: Tools
+grand_parent: Red Team
+---
 
 <details markdown="1">
 <summary>Install</summary>

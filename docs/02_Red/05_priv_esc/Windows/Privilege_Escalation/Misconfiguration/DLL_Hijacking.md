@@ -1,3 +1,9 @@
+---
+title: DLL Hijacking
+parent: Win Privilege Escalation
+grand_parent: Red Team
+---
+
 # 02_DLL Hijacking
 
 
