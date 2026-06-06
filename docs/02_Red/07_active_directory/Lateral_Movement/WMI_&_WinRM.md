@@ -1,3 +1,9 @@
+---
+title: WMI & WinRM
+parent: Active Directory
+grand_parent: Red Team
+---
+
 # WMI
 ## WMI概要
 - Win32_Processクラスの Createメソッドを介してプロセスを作成できる。

@@ -1,3 +1,9 @@
+---
+title: Python3.8 capability
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 # linpeas.sh
 ![](../../../../../../assets/images/Pasted%20image%2020260503234536.png)
 

@@ -1,3 +1,9 @@
+---
+title: aria2c
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 # `aria2c`
 ファイルの並列ダウンロード）コマンドを使用したファイルの上書き
 

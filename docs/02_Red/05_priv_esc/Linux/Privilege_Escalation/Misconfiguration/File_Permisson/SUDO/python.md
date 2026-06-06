@@ -1,3 +1,9 @@
+---
+title: Python
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 ## Pythonで書かれているファイルに付与する例
 # 必須条件
 このPythonスクリプトが root権限で実行されること

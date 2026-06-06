@@ -1,3 +1,9 @@
+---
+title: process
+parent: Win Privilege Escalation
+grand_parent: Red Team
+---
+
 # Running processes
 現在実行中のアプリケーションを特定
 ```powershell

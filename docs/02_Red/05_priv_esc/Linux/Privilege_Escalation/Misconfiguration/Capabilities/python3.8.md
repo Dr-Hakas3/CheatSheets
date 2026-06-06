@@ -1,3 +1,9 @@
+---
+title: Python3.8
+parent: Lin Privilege Escalation
+grand_parent: Red Team
+---
+
 # linpeas.sh
 
 ```bash

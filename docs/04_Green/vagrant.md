@@ -1,3 +1,8 @@
+---
+title: Vagrant
+parent: Green Team
+---
+
 # SCP
 
 ```powershell
