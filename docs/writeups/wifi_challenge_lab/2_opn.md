@@ -1,3 +1,9 @@
+---
+title: OPN
+parent: Wi-Fi Challenge Lab
+grand_parent: Red Team
+---
+
 # 5. What is the flag in the hidden AP router behind default credentials?
 
 create free.conf

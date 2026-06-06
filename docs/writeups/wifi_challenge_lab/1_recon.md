@@ -1,3 +1,8 @@
+---
+title: Recon
+parent: Wi-Fi Challenge Lab
+grand_parent: Writeups
+---
 
 # 01. What is the channel that the wifi-global Access Point is currently using?
 

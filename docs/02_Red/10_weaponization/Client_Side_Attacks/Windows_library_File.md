@@ -1,3 +1,9 @@
+---
+title: Windows Library FIle
+parent: Weaponization
+grand_parent: Red Team
+---
+
 # WebDAV共有を設定
 ```bash
 # wsgidavのインストール
