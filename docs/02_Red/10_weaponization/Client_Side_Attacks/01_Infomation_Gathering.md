@@ -1,5 +1,7 @@
 ---
-title:
+title: 01_Infomation_Gathering
+parent: Weaponization
+grand_parent: Red Team
 ---
 
 # 情報収集

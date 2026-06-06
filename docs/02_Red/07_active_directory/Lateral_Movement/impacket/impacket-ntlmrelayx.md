@@ -1,3 +1,9 @@
+---
+title: impacket-ntlmrelayx
+parent: Tools
+grand_parent: Red Team
+---
+
 # 受信したNTLMハッシュを使って中継先にログインする
 ```zsh
 impacket-ntlmrelayx -t 192.168.159.174 -smb2support
