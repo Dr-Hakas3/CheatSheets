@@ -1,5 +1,4 @@
-# OPN
-## 5. What is the flag in the hidden AP router behind default credentials?
+# 5. What is the flag in the hidden AP router behind default credentials?
 
 create free.conf
 ```zsh
@@ -31,7 +30,9 @@ sudo dhclient wlan2 -v
 ![](../../assets/images/Pasted%20image%2020260606102840.png)
 admin:admin
 
-## 06. What is the flag on the AP router of the wifi-guest network?
+---
+
+# 06. What is the flag on the AP router of the wifi-guest network?
 
 ```zsh
 sudo airodump-ng wlan60 -w ~/wifi/scanc6 --manufacturer --wps -c6
