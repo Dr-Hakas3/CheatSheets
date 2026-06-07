@@ -1,3 +1,9 @@
+---
+title: Evil-WinRM
+parent: Tools
+grand_parent: Red Team
+---
+
 # ログイン方法
 - **パスワードでログイン**
   ```bash

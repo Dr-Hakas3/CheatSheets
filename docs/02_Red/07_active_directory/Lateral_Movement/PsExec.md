@@ -1,3 +1,9 @@
+---
+title: PsExec
+parent: Active Directory
+grand_parent: Red Team
+---
+
 ## 前提条件
 - 標的マシンに認証するユーザーがAdministratorsローカルグループに属していること
 - ADMIN$共有が利用可能であること　※デフォルトで有効

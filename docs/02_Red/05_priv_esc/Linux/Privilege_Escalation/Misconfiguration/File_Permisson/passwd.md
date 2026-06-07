@@ -1,3 +1,9 @@
+---
+title: passwdファイルの悪用
+parent: Attack Repository
+grand_parent: Red Team
+---
+
 # パスワード認証の悪用
  /etc/passwdユーザーレコードの2列目にパスワードハッシュが存在する場合 、それは認証に有効とみなされ、/etc/shadow内の対応するエントリ（存在する場合）よりも優先されます。
  つまり、 /etc/passwdに書き込むことができれば、事実上、任意のアカウントに任意のパスワードを設定できることになります。
