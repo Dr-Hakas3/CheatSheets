@@ -1,3 +1,10 @@
+---
+title: 2_プロセス
+parent: Windows
+grand_parent: General
+nav_order: 2
+---
+
 ## プロセス確認
 #### tasklist
 

@@ -1,3 +1,10 @@
+---
+title: Session
+parent: Windows
+grand_parent: General
+nav_order: 9
+---
+
 ## Login
 ### lock
 ```cmd

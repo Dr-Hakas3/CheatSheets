@@ -1,5 +1,5 @@
 ---
-title: Web操作
+title: Web
 parent: Linux
 grand_parent: General
 nav_order: 5

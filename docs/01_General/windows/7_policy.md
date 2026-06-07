@@ -1,3 +1,10 @@
+---
+title: Policy
+parent: Windows
+grand_parent: General
+nav_order: 7
+---
+
 ## 監査ポリシー
 - ポリシーの確認
 ```bash

@@ -1,3 +1,9 @@
+---
+title: Registory
+parent: Windows
+grand_parent: General
+nav_order: 8
+---
 ```powershell
 reg query HKLM /f password /t REG_SZ /s
 ```

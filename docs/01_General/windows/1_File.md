@@ -1,5 +1,5 @@
 ---
-title: File操作
+title: File
 parent: Windows
 grand_parent: General
 ---
@@ -87,4 +87,15 @@ gcc hello.c -o hello.exe
 <details markdown="1">
 <summary>証明書のインポート</summary>
 ［スタート］→［ファイル名を指定して実行］をクリックし、名前の枠に「certmgr.msc」と入力して［OK］をクリックします。証明書管理画面が表示されますので、[信頼されたルート証明機関]の証明書フォルダを右クリックして、「すべてのタスク」から「インポート」を選択します
+</details>
+
+<details markdown="1">
+<summary>certutil</summary>
+# ハッシュ値の取得
+
+## certutil
+```bash
+certutil -hashfile ファイル名 sha1
+```
+
 </details>
