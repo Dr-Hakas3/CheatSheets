@@ -5,6 +5,15 @@ grand_parent: General
 nav_order: 1
 ---
 # File操作
+<details markdown="1">
+
+<summary>echo</summary>
+hosts
+
+```bash
+echo "10.10.11.249 play.crafty.htb" | sudo tee -a /etc/hosts
+```
+</details>
 
 <details markdown=1><summary>awk</summary>
 - ログ解析などに有用なコマンド

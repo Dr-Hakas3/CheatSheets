@@ -1,3 +1,12 @@
+---
+title: Web操作
+parent: Linux
+grand_parent: General
+nav_order: 5
+---
+<details markdown="1">
+
+<summary>curl</summary>
 ```zsh
 sudo curl -s --user-agent Googlebot http://192.168.143.14/robots.txt -v
 ```
@@ -36,13 +45,13 @@ curl: try 'curl --help' or 'curl --manual' for more information
 {"message":"No filename part in the request"}
 ```
 
-```
+```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
 └─$ curl -X POST -F "file=@test.txt" http://192.168.231.249:33414/file-upload 
 {"message":"No filename part in the request"}
 ```
 
-```
+```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
 └─$ curl -X POST -F "file=@test.txt" http://192.168.231.249:40080/file-upload
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -54,7 +63,7 @@ curl: try 'curl --help' or 'curl --manual' for more information
 </body></html>
 ```
 
-```
+```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
 └─$ curl -X POST -F "filename=@test.txt" http://192.168.231.249:33414/file-upload
 {"message":"No file part in the request"}
@@ -68,3 +77,4 @@ curl: try 'curl --help' or 'curl --manual' for more information
   http://192.168.231.249:33414/file-upload
 {"message":"File successfully uploaded"}
 ```
+</details>

@@ -1,3 +1,10 @@
+---
+title: 設定
+parent: Linux
+grand_parent: General
+nav_order: 0
+---
+
 # 設定
 
 ### 日本語化
