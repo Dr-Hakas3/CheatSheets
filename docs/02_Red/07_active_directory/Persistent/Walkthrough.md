@@ -1,3 +1,9 @@
+---
+title: Walkthrough
+parent: Active Directory
+grand_parent: Red Team
+---
+
 # VMGp2 DCSync
 ## 接続
 #Kali
