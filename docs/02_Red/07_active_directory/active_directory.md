@@ -261,7 +261,7 @@ Get-ChildItem env:
 *調査を進めやすくするため最初にインポートしておく*
 
 ## Domain Userの列挙
-[kerbrute](../03_services/kerberos)
+[kerbrute](../03_services/00088_kerberos.md)
 
 👉Check:
 - Domain Admins User

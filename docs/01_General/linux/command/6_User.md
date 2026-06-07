@@ -1,3 +1,10 @@
+---
+title: User
+parent: Linux
+grand_parent: General
+nav_order: 6
+---
+
 ## Interactive
 
 ```bash

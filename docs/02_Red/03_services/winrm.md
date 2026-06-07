@@ -117,7 +117,7 @@ evil-winrm -i 10.10.11.14 -u localadmin -H 9aa582783780d1546d62f2d102daefae
 👉 Credentials usually come from:
 
 * [SMB](smb.md)
-* [HTTP](http.md)
+* [HTTP](000_80http.md)
 * [MSSQL](mssql.md)
 * Password attacks → [Password Attacks](../03_initial_access/password_attacks.md)
 ### File Transfer (Upload / Download)

@@ -219,7 +219,7 @@ which python3
 
 <details markdown="1">
 
-<summary>zip</summary>
+<summary>zip,unzip,gunzip,7zip</summary>
 # 圧縮・解凍
 
 #### .zip
@@ -236,6 +236,7 @@ zip archive.zip file.txt
 unzip test.zip
 ```
 
+</details>
 
 #### .gz
 
@@ -250,6 +251,190 @@ unzip test.zip
 ```bash
 gzip -d file.gz
 ```
+
+#### 7zip
+# 7-Zip コマンドチートシート
+
+## 圧縮
+
+### 単一ファイル
+
+```bash
+7z a archive.7z file.txt
+```
+
+### 複数ファイル
+
+```bash
+7z a archive.7z file1.txt file2.txt
+```
+
+### ディレクトリごと圧縮
+
+```bash
+7z a archive.7z mydir/
+```
+
+---
+
+## 展開
+
+### 現在のディレクトリへ展開
+
+```bash
+7z x archive.7z
+```
+
+### 別ディレクトリへ展開
+
+```bash
+7z x archive.7z -ooutput
+```
+
+> `-o` とディレクトリ名の間にスペースを入れない
+
+---
+
+## アーカイブ内容確認
+
+```bash
+7z l archive.7z
+```
+
+---
+
+## 整合性チェック
+
+```bash
+7z t archive.7z
+```
+
+---
+
+## パスワード付き圧縮
+
+### パスワード設定
+
+```bash
+7z a archive.7z mydir -pMyPassword
+```
+
+### ファイル名も暗号化
+
+```bash
+7z a archive.7z mydir -pMyPassword -mhe=on
+```
+
+---
+
+## ZIP形式で圧縮
+
+```bash
+7z a -tzip archive.zip mydir/
+```
+
+---
+
+## 圧縮率指定
+
+### 最大圧縮
+
+```bash
+7z a archive.7z mydir/ -mx=9
+```
+
+| オプション | 説明 |
+|------------|------|
+| `-mx=0` | 無圧縮 |
+| `-mx=1` | 最速 |
+| `-mx=5` | 標準 |
+| `-mx=9` | 最大圧縮 |
+
+---
+
+## 分割圧縮
+
+### 2GBごとに分割
+
+```bash
+7z a backup.7z bigdir/ -v2g
+```
+
+生成例:
+
+```text
+backup.7z.001
+backup.7z.002
+backup.7z.003
+...
+```
+
+---
+
+## Linuxでよく使う例
+
+### ログをまとめる
+
+```bash
+7z a logs.7z *.log
+```
+
+### 日付付きバックアップ
+
+```bash
+7z a backup_$(date +%F).7z /home/kali/Documents/
+```
+
+---
+
+## インストール確認
+
+```bash
+which 7z
+```
+
+インストールされていない場合:
+
+```bash
+sudo apt install p7zip-full
+```
+
+---
+
+## よく使うオプション一覧
+
+| オプション | 説明 |
+|------------|------|
+| `a` | 圧縮（Add） |
+| `x` | 展開（フォルダ構造維持） |
+| `e` | 展開（フォルダ構造無視） |
+| `l` | 一覧表示 |
+| `t` | テスト |
+| `-oDIR` | 展開先指定 |
+| `-pPASS` | パスワード指定 |
+| `-mhe=on` | ファイル名暗号化 |
+| `-mx=9` | 最大圧縮 |
+| `-v2g` | 2GBごとに分割 |
+| `-tzip` | ZIP形式で作成 |
+
+## 覚えておくと便利な3つ
+
+```bash
+# 圧縮
+7z a archive.7z dir/
+
+# 展開
+7z x archive.7z
+
+# 中身確認
+7z l archive.7z
+```
+
+</details>
+
+<details markdown="1">
+
+<summary>tar</summary>
 ### .tar
 #### 圧縮
 ```bash
@@ -282,8 +467,5 @@ tar -jcvf xxxx.tar.bz2 directory
 ```bash
 tar -jxvf xxxx.tar.bz2
 ```
-#### 7zip
-```bash
-# 7zipのコマンドがありませんでしたので、必要であれば追記してください。
-```
+
 </details>
