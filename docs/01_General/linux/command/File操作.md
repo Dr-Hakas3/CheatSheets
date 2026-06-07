@@ -24,17 +24,55 @@ awk '{print $6}' wordpress.log | sort | uniq -c
 
 </details>
 
-<details markdown=1><summary></summary>
+<details markdown=1><summary>find</summary>
+### find
+
+```bash
+find / -name ファイル名
+```
+
+```zsh
+find /home/kevin /home/alice -name test -type f
+```
+
 
 </details>
 
 
-<details markdown=1><summary></summary>
+<details markdown=1><summary>grep</summary>
+
+# Recurs
+```bash
+grep -r hoge
+```
+
+#### AND
+
+```bash
+grep hoge | grep fuga
+```
+
+#### OR
+```bash
+grep -e hoge -e fuga
+```
 
 </details>
 
 
-<details markdown=1><summary></summary>
+<details markdown=1><summary>tree</summary>
+
+# treeコマンド
+
+```bash
+tree -l -L 3 /usr/share/wordlists
+```
+
+# フォルダだけ
+
+```zsh
+tree -d .
+```
 
 </details>
 
