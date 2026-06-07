@@ -1,5 +1,5 @@
 ---
-title: 2_プロセス
+title: プロセス
 parent: Windows
 grand_parent: General
 nav_order: 2
