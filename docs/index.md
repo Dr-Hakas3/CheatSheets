@@ -5,7 +5,7 @@ nav_order: 1
 ---
 # 📚 Dr.Hakas3's Cheat Sheet
 
-![](../../../assets/images/IMG_3710.jpg)
+![](assets/images/Pasted%20image%2020260607090232.png)
 
 <!--
 The flag is definitely there; you just can't see it.
