@@ -1,5 +1,5 @@
 ---
-title: 01_Infomation_Gathering
+title: Infomation_Gathering
 parent: Weaponization
 grand_parent: Red Team
 ---
@@ -8,6 +8,7 @@ grand_parent: Red Team
 1. ファイル収集
 -  Google検索で「 **site:example.com filetype:pdf」**と入力しファイルを調査する
 - [_gobuster_](https://github.com/OJ/gobuster)などのツールに**-x**パラメータを指定して、ターゲットのウェブサイト上で特定のファイル拡張子を検索する
+
 ```bash
 gobuster dir -u http://192.168.214.197 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x pdf,php,html,txt,zip
 ```
@@ -23,6 +24,7 @@ exiftool -a -u example.pdf
 - Create Date 
 - Creator Tool Office等が記載されている
 - Modify Date
+
 ---
 # クライアントのフィンガープリンティング
 ### [_Canarytokens_](https://canarytokens.com/) 
