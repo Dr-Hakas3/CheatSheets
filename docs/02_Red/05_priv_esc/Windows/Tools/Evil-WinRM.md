@@ -3,13 +3,17 @@ title: Evil-WinRM
 parent: Tools
 grand_parent: Red Team
 ---
-
+注意点
+Evil-WinRMのコンソール上で権限昇格ツール（PrintSpoofer等）を使用した場合、コンソール内ではユーザは変更されないため権限昇格後のユーザのセッションを用いたリバースシェルを接続するなどの工夫が必要
 # ログイン方法
 - **パスワードでログイン**
-  ```bash
+```bash
   evil-winrm -i <IP> -u user -p pass
+```
+  
+```zsh
   evil-winrm -i <IP> -u user -p pass -S
-  ```
+```
 
 - **ハッシュでログイン**
   ```bash

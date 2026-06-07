@@ -17,3 +17,7 @@ b8329118119e   specterops/bloodhound:latest             "/bloodhound -config…"
 0e3809d95042   neo4j:4.4                                "tini -g -- /startup…"   11 days ago     Exited (0) 4 days ago                     bloodhound-graph-db-1
 ef2e1dfba5fd   postgres:16                              "docker-entrypoint.s…"   11 days ago     Exited (0) 4 days ago                     bloodhound-app-db-1
 ```
+
+```zsh
+docker exec -it WiFiChallengeLab-Clients bash
+```
