@@ -1,3 +1,9 @@
+---
+title: rpcclient
+parent: Active Directory
+grand_parent: Red Team
+---
+
 # Generic権限を持つ対象の操作
 - Hazel高権限
 - Molly 低権限グループ
