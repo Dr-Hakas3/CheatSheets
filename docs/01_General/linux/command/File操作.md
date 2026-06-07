@@ -1,5 +1,5 @@
 ---
-title: Linux Command FIle操作
+title: FIle操作
 parent: Linux
 grand_parent: General
 nav_order: 1
