@@ -1,3 +1,9 @@
+---
+title: linux-smart-enumeration
+parent: Tools
+grand_parent: Red Team
+---
+
 # github
 ```
 https://github.com/diego-treitos/linux-smart-enumeration
@@ -13,7 +19,8 @@ python3 -m http.server 80
 chmod +x lse.sh 
 ```
 
-- Enum for Level1
+# Enum for Level1
+
 ```zsh
 ./lse.sh -l1
 ```
