@@ -31,4 +31,22 @@ awk '
 ' residents.txt
 ```
 
+```bash
+awk '
+{
+    tel=$NF
+
+    gsub(/-/, "", tel)
+
+    last4=substr(tel, length(tel)-3)
+
+    count[last4]++
+    data[last4]=data[last4] $0 "\n"
+}
+END {
+    for (n in count)
+        if (count[n] > 1)
+            printf "%s", data[n]
+}' residents.txt
+```
 ---
