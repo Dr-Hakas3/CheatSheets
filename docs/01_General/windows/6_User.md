@@ -1,5 +1,12 @@
-## ユーザ関連
+---
+title: User
+parent: Windows
+grand_parent: General
+nav_order: 6
+---
 
+## ユーザ関連
+net_user
 - ユーザの追加
 ```bash
 net user hacker hacker123 /add
