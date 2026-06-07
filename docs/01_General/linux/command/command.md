@@ -4,6 +4,7 @@ parent: Linux
 grand_parent: General
 ---
 # File操作
+
 <details markdown=1>
 ## <summary>awk</summary>
 - ログ解析などに有用なコマンド
