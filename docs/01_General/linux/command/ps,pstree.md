@@ -1,7 +1,11 @@
 # ps
 
 ```zsh
-ps aux
+ps aux 
+```
+
+```zsh
+ps f -f
 ```
 
 ---
