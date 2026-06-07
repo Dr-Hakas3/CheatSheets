@@ -1,3 +1,9 @@
+---
+title: PingPong
+parent: HTB
+grand_parent: Writeups
+---
+
 # Initial Access
 ## hosts
 ```zsh

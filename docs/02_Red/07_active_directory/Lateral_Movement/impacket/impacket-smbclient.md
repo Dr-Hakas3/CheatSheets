@@ -1,3 +1,9 @@
+---
+title: impacket-smbclient
+parent: Tools
+grand_parent: Red Team
+---
+
 # 接続
 ```zsh
 impacket-smbclient 'zeus/o.foller:EarlyMorningFootball777@192.168.159.160'

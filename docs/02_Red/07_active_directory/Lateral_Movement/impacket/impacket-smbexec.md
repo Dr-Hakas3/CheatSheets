@@ -1,3 +1,9 @@
+---
+title: impacket-smbexec
+parent: Tools
+grand_parent: Red Team
+---
+
 smbexec.py は内部的に ファイルのコピー機能を持っています。
 
 例：

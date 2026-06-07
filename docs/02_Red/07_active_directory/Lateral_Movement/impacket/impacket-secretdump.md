@@ -1,3 +1,9 @@
+---
+title: impacket-secretdump
+parent: Tools
+grand_parent: Red Team
+---
+
 # Local
 
 ```zsh

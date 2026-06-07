@@ -1,3 +1,9 @@
+---
+title: impacket-wmiexec
+parent: Tools
+grand_parent: Red Team
+---
+
 wmiexec.py は 標準のツールだとファイル転送できないが、
 攻撃者はよく「Base64エンコード → echo で送る → デコード」で実現する。
 

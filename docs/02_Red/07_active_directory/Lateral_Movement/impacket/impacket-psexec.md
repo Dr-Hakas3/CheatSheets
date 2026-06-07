@@ -1,3 +1,9 @@
+---
+title: impacket-psexec
+parent: Tools
+grand_parent: Red Team
+---
+
 https://omomuki-tech.com/archives/1260
 # シェルの取得
 ## パスワード認証

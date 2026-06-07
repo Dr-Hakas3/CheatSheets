@@ -1,3 +1,9 @@
+---
+title: Veil
+parent: Weaponization
+grand_parent: Red Team
+---
+
 # Install
 ```bash
 sudo apt install veil-evasion
