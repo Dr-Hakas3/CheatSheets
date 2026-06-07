@@ -243,7 +243,22 @@ icacls C:\Temp | findstr "(M) (F) (W)"
 - Authenticated Users
 
 ---
+# Network information
+- すべてのネットワークインターフェース、ルート、そしてアクティブなネットワーク接続を特定する
+- この情報に基づいて、新しいサービスや他のネットワークへのアクセスを特定できる可能性があり、この情報は必ずしも権限の昇格に直接つながるわけではありませんが、マシンの目的を理解し、他のシステムやネットワークへのベクトルを取得する
 
+```bash
+ipconfig /all
+```
+
+```bash
+route print
+```
+
+```bash
+netstat -ano
+```
+---
 ## Services
 
 ```powershell
