@@ -86,6 +86,22 @@ pre {
    SIDEBAR CUSTOM COLORS
 ========================= */
 
+/* ---------- General ---------- */
+
+.side-bar a[href*="01_General"] {
+  color: #ff3b3b !important;
+}
+
+.side-bar a[href*="01_General"]:hover {
+  color: #ff7a7a !important;
+  text-shadow: 0 0 6px #ff3b3b;
+}
+
+.side-bar a[href*="01_General"]::before {
+  content: "🔴 ";
+}
+
+
 /* ---------- Red Team ---------- */
 
 .side-bar a[href*="02_Red"] {
