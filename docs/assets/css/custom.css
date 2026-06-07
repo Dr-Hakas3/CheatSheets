@@ -89,11 +89,11 @@ pre {
 /* ---------- General ---------- */
 
 .side-bar a[href*="01_General"] {
-  color: #ff3b3b !important;
+  color: #ffffff !important;
 }
 
 .side-bar a[href*="01_General"]:hover {
-  color: #ff7a7a !important;
+  color: #ffffff !important;
   text-shadow: 0 0 6px #ff3b3b;
 }
 
