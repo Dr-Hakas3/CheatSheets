@@ -1,3 +1,10 @@
+---
+title: Sinario
+parent: Linux
+grand_parent: General
+nav_order: 99
+---
+
 # 日本の住所
 
 ```zsh
