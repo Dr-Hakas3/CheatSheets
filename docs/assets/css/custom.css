@@ -98,7 +98,7 @@ pre {
 }
 
 .side-bar a[href*="01_General"]::before {
-  content: "🔴 ";
+  content: "◉ ";
 }
 
 
