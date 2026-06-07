@@ -6,7 +6,6 @@ nav_order: 1
 ---
 # File操作
 <details markdown="1">
-
 <summary>echo</summary>
 hosts
 
@@ -113,18 +112,18 @@ sed 's/User\\//g' inputfile.txt > outputfile.txt
 ```zsh
 sed 's/$/!!!/' rockyou.txt > mask_word.txt
 ```
-![](../../../assets/images/Pasted%20image%2020260502140113.png)
+![](../../assets/images/Pasted%20image%2020260502140113.png)
 # ABC123 + wordlist
 ```zsh
 sed 's/^/ABC123/' rockyou.txt > word_mask.txt
 ```
-![](../../../assets/images/Pasted%20image%2020260502140333.png)
+![](../../assets/images/Pasted%20image%2020260502140333.png)
 
 # ABC123 + wordlist + !!!
 ```zsh
 sed 's/^/ABC123/' rockyou.txt | sed 's/$/!!!/' > rockyou_hybrid.txt
 ```
-![](../../../assets/images/Pasted%20image%2020260502140450.png)
+![](../../assets/images/Pasted%20image%2020260502140450.png)
 </details>
 
 

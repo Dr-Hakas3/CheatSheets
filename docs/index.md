@@ -15,7 +15,7 @@ The flag is definitely there; you just can't see it.
 
 # 🧭 Overview
 
-* [General](01_General/windows/command/command.md)
+* [General](01_General/windows/command.md)
 * [Red Team](../../../02_Red/red.md)
 * [Blue Team](../../../03_Blue/blue.md)
 * [Green Team](../../../04_Green/green.md)
@@ -27,9 +27,9 @@ The flag is definitely there; you just can't see it.
 
 # 🧩 General
 
-* [Command](01_General/windows/command/command.md)
-* [File](01_General/windows/command/file.md)
-* [Words](01_General/windows/command/words.md)
+* [Command](01_General/windows/command.md)
+* [File](01_General/windows/1_File操作.md)
+* [Words](01_General/windows/words.md)
 
 ---
 

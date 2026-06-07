@@ -1,3 +1,10 @@
+---
+title: Important File
+parent: Linux
+grand_parent: General
+nav_order: 100
+---
+
 # 重要ファイル一覧
 
 ```bash

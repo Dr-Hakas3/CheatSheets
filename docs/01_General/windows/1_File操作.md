@@ -1,3 +1,11 @@
+---
+title: File操作
+parent: Windows
+grand_parent: General
+---
+
+<details markdown="1">
+<summary>type,gc</summary>
 # ファイルの中身
 ## type
 ```cmd
@@ -9,8 +17,12 @@ type hoge.txt
 gc nsclient.ini
 ```
 ![](../../../assets/images/Pasted%20image%2020260515200136.png)
+</details>
 
 ---
+
+<details markdown="1">
+<summary>findstr</summary>
 # ファイル探索
 
 ##### findstr
@@ -27,6 +39,7 @@ Expand-Archive -Path .\mimikatz.zip
 ```
 
 # Share
+
 ## net use
 net use + copy を使う（psexec で実現する方法）
 

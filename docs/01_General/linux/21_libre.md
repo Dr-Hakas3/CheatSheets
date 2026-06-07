@@ -1,3 +1,10 @@
+---
+title: Office Libre
+parent: Linux
+grand_parent: General
+nav_order: 21
+---
+
 # Linuxでdocxやxlsxファイルを表示する方法
 
 ### 1. LibreOfficeを使用する
