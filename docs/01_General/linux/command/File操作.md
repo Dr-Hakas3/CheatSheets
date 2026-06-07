@@ -1,3 +1,46 @@
+---
+title: Linux Command FIle操作
+parent: Linux
+grand_parent: General
+nav_order: 1
+---
+# File操作
+
+<details markdown=1><summary>awk</summary>
+- ログ解析などに有用なコマンド
+- awkはスペースでフィールドを区切る
+- awk '条件 {処理}'
+
+exeのあるファイルを表示
+```bash
+awk '/exe/  {print $0}'
+```
+
+
+```bash
+awk '{print $6}' wordpress.log | sort | uniq -c
+```
+
+
+</details>
+
+<details markdown=1><summary></summary>
+
+</details>
+
+
+<details markdown=1><summary></summary>
+
+</details>
+
+
+<details markdown=1><summary></summary>
+
+</details>
+
+<details markdown="1">
+
+<summary>sed</summary>
 ### sed
 ####標準入力からバックスラッシュを削除
 ```bash
@@ -35,3 +78,4 @@ sed 's/^/ABC123/' rockyou.txt > word_mask.txt
 sed 's/^/ABC123/' rockyou.txt | sed 's/$/!!!/' > rockyou_hybrid.txt
 ```
 ![](../../../assets/images/Pasted%20image%2020260502140450.png)
+</details>
