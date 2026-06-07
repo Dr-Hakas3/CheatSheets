@@ -5,8 +5,7 @@ grand_parent: General
 ---
 # File操作
 
-<details markdown=1>
-## <summary>awk</summary>
+<details markdown=1><summary>awk</summary>
 - ログ解析などに有用なコマンド
 - awkはスペースでフィールドを区切る
 - awk '条件 {処理}'
@@ -27,7 +26,7 @@ awk '{print $6}' wordpress.log | sort | uniq -c
 
 
 <details markdown="1">
-## <summary>tcpdump</summary>
+ <summary>tcpdump</summary>
 
 tcpdump でパケットをキャプチャし、後で Wireshark で開ける形式（pcap）で保存するには -w オプションを使います。
 
