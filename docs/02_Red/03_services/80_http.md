@@ -801,7 +801,7 @@ download.php?file=
 
 ## Things to Test
 
-### Directory Traversal
+### [Directory Traversal](docs/02_Red/04_web_attack/directory_traversal)
 
 ```text
 ../../../etc/passwd
@@ -833,7 +833,7 @@ download.php?file=
 1 → 2
 ```
 
-### Directory Traversal
+### [Directory Traversal](docs/02_Red/04_web_attack/directory_traversal)
 
 ```text
 ../../../etc/passwd
