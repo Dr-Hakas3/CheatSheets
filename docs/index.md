@@ -41,13 +41,13 @@ The flag is definitely there; you just can't see it.
 
 ## [🔄 Services](../../../02_Red/03_services/services.md)
 
-## [🔐 Privilege Escalation](../../../02_Red/05_priv_esc/privesc.md)
+## [🔐 Privilege Escalation](02_Red/06_priv_esc/privesc.md)
 
 ## 🔀 Pivoting../../../02_Red/04_pivot/pivot.md)
 
 ## 🔑 Password Cracking
 
-* [Password Cracking](../../../02_Red/06_password_crack/password_crack.md)
+* [Password Cracking](02_Red/05_password_crack/password_crack.md)
 
 ## 🏗 Platforms
 
@@ -55,11 +55,11 @@ The flag is definitely there; you just can't see it.
 
 ## 🛠 Tools
 
-* [Tools](../../../02_Red/tools/tools.md)
+* [Tools](02_Red/97_tools/tools.md)
 
 ## ⚔️ Weaponization
 
-* [Weaponization](02_Red/10_weaponization/weaponization.md)
+* [Weaponization](02_Red/98_weaponization/weaponization.md)
 
 ## 🧠 Attack Repository
 

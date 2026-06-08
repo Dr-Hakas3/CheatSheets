@@ -78,23 +78,23 @@ nmap -Pn -p <PORTS> -sC -sV -A <IP>
 
 ## Quick Triage
 
-20 / 21 | [FTP](../03_services/00021_ftp.md) - File transfer |
-22       | [SSH](../03_services/ssh.md) - Secure login |
-23       | [TELNET](../03_services/telnet.md) - Plaintext login |
-25       | [SMTP](../03_services/smtp.md) - Mail service |
-53       | [DNS](../03_services/000_53dns.md) - Name resolution |
+20 / 21 | [FTP](../03_services/21_ftp.md) - File transfer |
+22       | [SSH](../03_services/22_ssh.md) - Secure login |
+23       | [TELNET](../03_services/23_telnet.md) - Plaintext login |
+25       | [SMTP](../03_services/25_smtp.md) - Mail service |
+53       | [DNS](../03_services/53_dns.md) - Name resolution |
 67 / 68 | [DHCP(../02_services/dhcp.md)] | 
-80/443   | [HTTP/HTTPS](../03_services/000_80http.md) - Web |
-88      | [Kerberos](../03_services/00088_kerberos.md) - AD auth |
-111/2049 | [NFS](../03_services/nfs.md) - File sharing |
-135      | [RPC](../03_services/rpc.md) - Windows RPC |
-139/445  | [SMB](../03_services/smb.md) - File share |
-161/162  | [SNMP](../03_services/snmp.md) - Info leak |
-389/636  | [LDAP](../03_services/ldap.md) - Directory |
-1433     | [MSSQL](../03_services/mssql.md) - DB |
+80/443   | [HTTP/HTTPS](../03_services/80_http.md) - Web |
+88      | [Kerberos](../03_services/88_kerberos.md) - AD auth |
+111/2049 | [NFS](../03_services/111_nfs.md) - File sharing |
+135      | [RPC](../03_services/135_rpc.md) - Windows RPC |
+139/445  | [SMB](../03_services/139,445_smb.md) - File share |
+161/162  | [SNMP](../03_services/161,162_snmp.md) - Info leak |
+389/636  | [LDAP](../03_services/389_ldap.md) - Directory |
+1433     | [MSSQL](../03_services/1433_mssql.md) - DB |
 3306     | [MySQL](../02_services/mysql.md) - DB |
-3389     | [RDP](../03_services/rdp.md) - Remote desktop |
-5985/5986| [WinRM](../03_services/winrm.md) - Remote mgmt |
+3389     | [RDP](../03_services/3389_rdp.md) - Remote desktop |
+5985/5986| [WinRM](../03_services/5985,5986_winrm.md) - Remote mgmt |
 
 ---
 
