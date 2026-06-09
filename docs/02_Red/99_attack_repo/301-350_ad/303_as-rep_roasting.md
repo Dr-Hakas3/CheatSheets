@@ -74,6 +74,10 @@ ls /usr/share/windows-resources/rubeus
 Rubeus.exe
 ```
 
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Access]
+└─$ cp /usr/share/windows-resources/rubeus/Rubeus.exe . 
+```
 ## AS-REPハッシュの取得
 ### 
 Rubeus.exeを使用する

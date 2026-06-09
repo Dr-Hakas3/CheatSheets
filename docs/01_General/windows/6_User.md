@@ -42,4 +42,5 @@ runas /user:Administrator cmd
 runas /user:Administrator /savecred "notepad.exe"
 ```
 ※通常は使用しない
+
 ---

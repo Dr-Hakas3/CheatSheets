@@ -26,6 +26,13 @@ Evil-WinRMのコンソール上で権限昇格ツール（PrintSpoofer等）を�
   evil-winrm -i <IP> -c certificate.pem -k priv-key.pem -S
   ```
 
+```zsh
+evil-winrm -i logging.htb \
+-u svc_recovery \
+-p 'Em3rg3ncyPa$$2025' \
+-r logging.htb
+```
+
 ### ログの表示
 
 - **ログ表示**
