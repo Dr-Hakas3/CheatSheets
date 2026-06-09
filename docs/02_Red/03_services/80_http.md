@@ -576,6 +576,10 @@ ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclis
 
 # CMS-Specific
 
+
+<details markdown="1">
+<summary>WordPress</summary>
+
 ### WordPress
 #### [2_wpscan](../97_tools/web_scan/cms/2_wpscan.md)
 
