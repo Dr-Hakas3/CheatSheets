@@ -338,7 +338,7 @@ https://github.com/DominicBreuker/pspy
 ./pspy64
 ```
 ## passphraseが取得可能な例
-![651](../../../../../assets/images/Pasted%20image%2020260430181307.png)
+![651](../../assets/images/Pasted%20image%2020260430181307.png)
 
 # サービスフットプリントの検査
 ### 実行中のプロセスの動作を検査
@@ -468,7 +468,7 @@ lsblk
 ```
 
 ## Disk権限
-![](../../../../../assets/images/Pasted%20image%2020260430184908.png)
+![](../../assets/images/Pasted%20image%2020260430184908.png)
 
 ```bash
 df -h
