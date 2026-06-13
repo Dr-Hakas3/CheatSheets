@@ -151,15 +151,6 @@ hydra -l username -P /path/to/passwordlist.txt smtp://smtp.example.com
 - **-P**: パスワードリストファイルを指定します。
 
 ---
-
-### With Hash
-
-```bash
-evil-winrm -i <IP> -u <USER> -H <NTLM_HASH>
-```
-
----
-
 ## 4. swaks
 
 `swaks`（Swiss Army Knife for SMTP）は、SMTPサーバーに対してメール送信のテストを行うためのツールです。詳細な設定を指定してメールの送信をテストするのに利用します。

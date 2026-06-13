@@ -55,7 +55,7 @@ grep -r hoge
 ```
 
 ```zsh
-grep -rinE '(password|pword|username|user|pass|key|token|secret|admin|login|credentials|cred)'
+grep -rinE '(password|pword|username|user|pass|key|token|secret|admin|login|credentials|cred)' 2>/dev/null
 ```
 #### AND
 
