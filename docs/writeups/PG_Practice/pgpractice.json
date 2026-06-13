@@ -25,5 +25,14 @@
     "os": "Linux",
     "tags": ["Linux"],
     "path": "/writeups/PG_Practice/Sumo"
+  },
+  {
+    "title": "Detection",
+    "description": "changedetection.io",
+    "difficulty": "Easy",
+    "platform": "PG Practice",
+    "os": "Linux",
+    "tags": ["Linux","changedetection"],
+    "path": "/writeups/PG_Practice/Detection"
   }
 ]

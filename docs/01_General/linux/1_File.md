@@ -54,6 +54,9 @@ find /home/kevin /home/alice -name test -type f
 grep -r hoge
 ```
 
+```zsh
+grep -rinE '(password|pword|username|user|pass|key|token|secret|admin|login|credentials|cred)'
+```
 #### AND
 
 ```bash
