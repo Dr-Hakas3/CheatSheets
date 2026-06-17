@@ -917,6 +917,18 @@ X-Forwarded-For:
 
 ## Things to Test
 
+### Bypassing Forbidden
+
+![](../../assets/images/Pasted%20image%2020260618021801.png)
+
+*送信元を偽装*
+
+```zsh
+X-Forwarded-For: 10.10.10.10
+```
+![](../../assets/images/Pasted%20image%2020260618021134.png)
+*headerに追加せずBodyに記載することで成功?*
+
 ### Cross-Site Scripting (XSS)
 
 ```http
