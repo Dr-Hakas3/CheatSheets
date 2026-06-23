@@ -2,7 +2,7 @@
 title: gdb
 parent: Reverse Engineering
 has_children: true
-nav_order: 1
+nav_order: 11
 ---
 # 命令（データ転送系）
 

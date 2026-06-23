@@ -1,3 +1,8 @@
+---
+title: Register
+parent: Reverse Engineering
+nav_order: 1
+---
 
 # REで最重要レジスタ
 | レジスタ | 意味 |

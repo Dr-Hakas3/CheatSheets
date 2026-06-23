@@ -1,6 +1,7 @@
 ---
 title: Words
 parent: Reverse Engineering
+nav_order: 2
 ---
 
 # 命令
