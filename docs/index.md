@@ -20,7 +20,7 @@ The flag is definitely there; you just can't see it.
 * [Blue Team](../../../03_Blue/blue.md)
 * [Green Team](../../../04_Green/green.md)
 * [Programming](../../../05_Programing/programing.md)
-* [AI](../../../06_AI/ai.md)
+* [AI](06_Reverse_Engineering/reverse_engineering.md)
 * [Writeups](../../../writeups/index.html)
 
 ---
@@ -94,7 +94,7 @@ The flag is definitely there; you just can't see it.
 
 # 🤖 AI
 
-* [AI](../../../06_AI/ai.md)
+* [AI](06_Reverse_Engineering/reverse_engineering.md)
 
 ---
 
