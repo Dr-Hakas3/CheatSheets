@@ -4,436 +4,194 @@ parent: Reverse Engineering
 has_children: true
 nav_order: 1
 ---
-
-# GDBの基本的なコマンド
+# 命令（データ転送系）
 
 <details markdown="1">
-<summary>GDB起動</summary>
+<summary><b>一覧を表示</b></summary>
 
-### 起動
-
-```bash
-gdb ./program
-```
-
-### 実行中プロセスへ接続
-
-```bash
-gdb -p PID
-```
+| 命令 | 役割 | 例 |
+|------|------|------|
+| `mov` | データをコピーする | `mov eax, ebx` |
+| `push` | スタックへ値を積む | `push eax` |
+| `pop` | スタックから値を取り出す | `pop eax` |
+| `lea` | アドレス計算 | `lea eax, [ebx+4]` |
+| `xchg` | 値を交換 | `xchg eax, ebx` |
+| `nop` | 何もしない | `nop` |
 
 </details>
 
+---
+
+# 計算（算術演算系）
+
 <details markdown="1">
-<summary>実行</summary>
+<summary><b>一覧を表示</b></summary>
 
-### プログラム開始
-
-```gdb
-run
-```
-
-### 引数付き実行
-
-```gdb
-run arg1 arg2
-```
-
-### 再実行
-
-```gdb
-run
-```
+| 命令 | 役割 |
+|------|------|
+| `add` | 加算 |
+| `sub` | 減算 |
+| `inc` | +1 |
+| `dec` | -1 |
+| `imul` | 符号付き乗算 |
+| `mul` | 符号なし乗算 |
+| `idiv` | 符号付き除算 |
+| `div` | 符号なし除算 |
 
 </details>
 
+---
+
+# 比較・条件分岐
+
 <details markdown="1">
-<summary>ブレークポイント</summary>
+<summary><b>一覧を表示</b></summary>
 
-### mainで停止
-
-```gdb
-break main
-```
-
-### 関数で停止
-
-```gdb
-break function_name
-```
-
-### 行番号で停止
-
-```gdb
-break 123
-```
-
-### ブレークポイント一覧
-
-```gdb
-info breakpoints
-```
-
-### ブレークポイント削除
-
-```gdb
-delete 1
-```
-
-### 全削除
-
-```gdb
-delete
-```
+| 命令 | 役割 |
+|------|------|
+| `cmp` | 比較 |
+| `test` | AND比較 |
+| `je` | 等しいならジャンプ |
+| `jne` | 等しくないならジャンプ |
+| `jg` | より大きい |
+| `jl` | より小さい |
+| `jge` | 以上 |
+| `jle` | 以下 |
 
 </details>
 
+---
+
+# 関数呼び出し
+
 <details markdown="1">
-<summary>ステップ実行</summary>
+<summary><b>一覧を表示</b></summary>
 
-### 関数内部に入る
-
-```gdb
-step
-```
-
-または
-
-```gdb
-s
-```
-
-### 関数内部に入らない
-
-```gdb
-next
-```
-
-または
-
-```gdb
-n
-```
-
-### 関数終了まで実行
-
-```gdb
-finish
-```
-
-### 次のブレークポイントまで実行
-
-```gdb
-continue
-```
-
-または
-
-```gdb
-c
-```
-
-### 命令単位で実行（REで重要）
-
-```gdb
-stepi
-```
-
-または
-
-```gdb
-si
-```
-
-### 命令単位で実行（関数に入らない）
-
-```gdb
-nexti
-```
-
-または
-
-```gdb
-ni
-```
+| 命令 | 役割 |
+|------|------|
+| `call` | 関数呼び出し |
+| `ret` | 関数から戻る |
+| `enter` | スタックフレーム作成 |
+| `leave` | スタックフレーム破棄 |
 
 </details>
 
+---
+
+# ジャンプ系
+
 <details markdown="1">
-<summary>変数確認</summary>
+<summary><b>一覧を表示</b></summary>
 
-### 変数表示
-
-```gdb
-print variable
-```
-
-### 例
-
-```gdb
-print count
-```
-
-### 16進表示
-
-```gdb
-p/x variable
-```
-
-### アドレス表示
-
-```gdb
-p &variable
-```
+| 命令 | 役割 |
+|------|------|
+| `jmp` | 無条件ジャンプ |
+| `je` | Equal |
+| `jne` | Not Equal |
+| `ja` | Above |
+| `jb` | Below |
+| `jo` | Overflow |
+| `js` | Sign |
 
 </details>
 
+---
+
+# ビット演算
+
 <details markdown="1">
-<summary>レジスタ確認</summary>
+<summary><b>一覧を表示</b></summary>
 
-### 全レジスタ表示
-
-```gdb
-info registers
-```
-
-### RIP
-
-```gdb
-p/x $rip
-```
-
-### RSP
-
-```gdb
-p/x $rsp
-```
-
-### RAX
-
-```gdb
-p/x $rax
-```
+| 命令 | 役割 |
+|------|------|
+| `and` | AND |
+| `or` | OR |
+| `xor` | XOR |
+| `not` | 反転 |
+| `shl` | 左シフト |
+| `shr` | 右シフト |
+| `sar` | 算術右シフト |
+| `rol` | 左ローテート |
+| `ror` | 右ローテート |
 
 </details>
 
+---
+
+# リバースエンジニアリングで頻出
+
 <details markdown="1">
-<summary>メモリ確認</summary>
+<summary><b>一覧を表示</b></summary>
 
-### アドレス内容表示
-
-```gdb
-x ADDRESS
-```
-
-### 例
-
-```gdb
-x 0x404000
-```
-
-### 16バイトを16進表示
-
-```gdb
-x/16xb 0x404000
-```
-
-### 8個の整数表示
-
-```gdb
-x/8dw 0x404000
-```
-
-### 文字列表示
-
-```gdb
-x/s 0x404000
-```
-
-### RIP周辺の命令表示
-
-```gdb
-x/20i $rip
-```
-
-### スタック確認
-
-```gdb
-x/64xb $rsp
-```
+| 命令 | 意味 |
+|------|------|
+| `push rbp` | 関数開始 |
+| `mov rbp, rsp` | スタックフレーム作成 |
+| `sub rsp, XX` | ローカル変数確保 |
+| `call` | 関数呼び出し |
+| `cmp` | 条件判定 |
+| `test eax, eax` | 戻り値チェック |
+| `jne` | エラー分岐 |
+| `xor eax, eax` | `eax = 0` |
+| `lea rcx, [...]` | 引数設定 |
+| `ret` | 関数終了 |
 
 </details>
 
+---
+
+# GDB・IDA・Ghidraで最初に覚えるべき14個の命令
+
 <details markdown="1">
-<summary>スタック解析</summary>
+<summary><b>一覧を表示</b></summary>
 
-### コールスタック表示
-
-```gdb
-backtrace
-```
-
-または
-
-```gdb
-bt
-```
-
-### フレーム移動
-
-```gdb
-frame 1
-```
-
-### ローカル変数表示
-
-```gdb
-info locals
-```
-
-### 引数表示
-
-```gdb
-info args
-```
+| 命令 | 用途 |
+|------|------|
+| `mov` | 値のコピー |
+| `push` | スタック保存 |
+| `pop` | スタック復元 |
+| `lea` | アドレス計算 |
+| `add` | 加算 |
+| `sub` | 減算 |
+| `cmp` | 比較 |
+| `test` | フラグ確認 |
+| `jmp` | 無条件ジャンプ |
+| `je` | 条件ジャンプ（Equal） |
+| `jne` | 条件ジャンプ（Not Equal） |
+| `call` | 関数呼び出し |
+| `ret` | 関数終了 |
+| `xor` | 初期化（`xor eax,eax`） |
 
 </details>
 
-<details markdown="1">
-<summary>アセンブリ解析</summary>
+---
 
-### 現在の関数を逆アセンブル
-
-```gdb
-disassemble
-```
-
-### main関数を逆アセンブル
-
-```gdb
-disassemble main
-```
-
-### Intel記法へ変更
-
-```gdb
-set disassembly-flavor intel
-```
-
-### 関数一覧
-
-```gdb
-info functions
-```
-
-### 現在実行位置確認
-
-```gdb
-x/10i $rip
-```
-
-</details>
+# 最低限覚えておくべき関数プロローグ・エピローグ
 
 <details markdown="1">
-<summary>値の変更（デバッグ・解析用）</summary>
+<summary><b>一覧を表示</b></summary>
 
-### 変数変更
+## 関数開始（プロローグ）
 
-```gdb
-set variable count=100
+```asm
+push rbp
+mov rbp, rsp
+sub rsp, 20h
 ```
 
-### レジスタ変更
+- ベースポインタ保存
+- スタックフレーム作成
+- ローカル変数領域確保
 
-```gdb
-set $rax=0
+## 関数終了（エピローグ）
+
+```asm
+mov rsp, rbp
+pop rbp
+ret
 ```
 
-### メモリ書き換え
-
-```gdb
-set *(int*)0x404000=1
-```
-
-</details>
-
-<details markdown="1">
-<summary>TUIモード（画面分割）</summary>
-
-### ソース表示
-
-```gdb
-layout src
-```
-
-### アセンブリ表示
-
-```gdb
-layout asm
-```
-
-### 分割表示
-
-```gdb
-layout split
-```
-
-### レジスタ表示
-
-```gdb
-layout regs
-```
-
-### TUI終了
-
-```gdb
-Ctrl + X → A
-```
-
-</details>
-
-<details markdown="1">
-<summary>CTF・リバースエンジニアリングでよく使う流れ</summary>
-
-```bash
-gdb ./chall
-
-set disassembly-flavor intel
-
-break main
-run
-
-info functions
-disassemble main
-
-info registers
-x/20i $rip
-
-x/64xb $rsp
-x/s $rdi
-
-ni
-ni
-si
-
-bt
-```
-
-</details>
-
-<details markdown="1">
-<summary>最重要コマンド（まず覚える）</summary>
-
-| コマンド | 用途 |
-|----------|------|
-| `run` | 実行 |
-| `break` | ブレークポイント |
-| `continue` | 続行 |
-| `ni` | 命令単位実行 |
-| `si` | 命令単位実行（関数に入る） |
-| `x` | メモリ表示 |
-| `info registers` | レジスタ確認 |
-| `disassemble` | 逆アセンブル |
-| `bt` | コールスタック確認 |
+- スタック復元
+- 呼び出し元へ戻る
 
 </details>
