@@ -7,7 +7,7 @@ nav_order: 1
 
 # GDBの基本的なコマンド
 
-<details>
+<details markdown="1">
 <summary>GDB起動</summary>
 
 ### 起動
@@ -24,7 +24,7 @@ gdb -p PID
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>実行</summary>
 
 ### プログラム開始
@@ -47,7 +47,7 @@ run
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>ブレークポイント</summary>
 
 ### mainで停止
@@ -88,7 +88,7 @@ delete
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>ステップ実行</summary>
 
 ### 関数内部に入る
@@ -159,7 +159,7 @@ ni
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>変数確認</summary>
 
 ### 変数表示
@@ -188,7 +188,7 @@ p &variable
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>レジスタ確認</summary>
 
 ### 全レジスタ表示
@@ -217,7 +217,7 @@ p/x $rax
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>メモリ確認</summary>
 
 ### アドレス内容表示
@@ -264,7 +264,7 @@ x/64xb $rsp
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>スタック解析</summary>
 
 ### コールスタック表示
@@ -299,7 +299,7 @@ info args
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>アセンブリ解析</summary>
 
 ### 現在の関数を逆アセンブル
@@ -334,7 +334,7 @@ x/10i $rip
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>値の変更（デバッグ・解析用）</summary>
 
 ### 変数変更
@@ -357,7 +357,7 @@ set *(int*)0x404000=1
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>TUIモード（画面分割）</summary>
 
 ### ソース表示
@@ -392,7 +392,7 @@ Ctrl + X → A
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>CTF・リバースエンジニアリングでよく使う流れ</summary>
 
 ```bash
@@ -421,7 +421,7 @@ bt
 
 </details>
 
-<details>
+<details markdown="1">
 <summary>最重要コマンド（まず覚える）</summary>
 
 | コマンド | 用途 |
