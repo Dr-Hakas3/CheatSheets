@@ -197,6 +197,13 @@ df -h
 ```bash
 du -sh /home
 ```
+
+### xargs
+
+```zsh
+sudo find / -type f -size +500M 2>/dev/null | xargs ls -lh
+```
+
 </details>
 
 <details markdown="1">
@@ -471,3 +478,7 @@ tar -jxvf xxxx.tar.bz2
 ```
 
 </details>
+
+```zsh
+sudo find / -type f -size +500M 2>/dev/null | xargs ls -lh
+```
