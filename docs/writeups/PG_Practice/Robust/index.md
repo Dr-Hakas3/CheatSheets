@@ -69,13 +69,12 @@ http://192.168.104.200/login.php
 ![](../../../assets/images/Pasted%20image%2020260618013953.png)
 
 ```zsh
-
-```
-
-```zsh
 wfuzz -H "X-Forwarded-For: 10.10.10.10"  --sc 302 -u http://192.168.104.200/FUZZ.php -w /usr/share/seclists/Discovery/Web-Content/big.txt
 ```
 ![](../../../assets/images/Pasted%20image%2020260618025549.png)
+
+![[Pasted image 20260630224201.png]]
+
 ```zsh
 
 ```
