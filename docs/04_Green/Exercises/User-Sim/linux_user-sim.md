@@ -208,8 +208,10 @@ wait $TB_PID 2>/dev/null
 
 # File
 
-```bash
+
 ■ ① シンプル版（毎ループ mount/unmount）
+
+```bash
 #!/bin/bash
 
 SHARE="//fileserver.lab.local/share"
@@ -241,10 +243,13 @@ do
 
     sudo umount $MOUNT
 done
+```
+
 ■ ② 推奨版（mountは1回だけ・現実的）
 
-実運用・ユーザー挙動的にはこっちが自然です。
+実運用・ユーザー挙動的にはこっちが自然。
 
+```bash
 #!/bin/bash
 
 SHARE="//fileserver.lab.local/share"
@@ -253,7 +258,9 @@ USER="user1"
 PASS="password"
 
 FILES=("a.txt" "b.txt" "c.txt" "report.docx")
+```
 
+```bash
 # 最初だけマウント
 sudo mount -t cifs $SHARE $MOUNT -o username=$USER,password=$PASS
 
@@ -276,11 +283,15 @@ do
     # たまに長い離席
     sleep $((RANDOM % 300 + 20))
 done
+```
+
 ■ ③ さらにリアル（業務っぽさ）
 
 追加すると一気に“人間っぽくなる要素”：
 
 ● ファイル操作の種類を増やす
+
+```
 ACTION=$((RANDOM % 3))
 
 case $ACTION in
