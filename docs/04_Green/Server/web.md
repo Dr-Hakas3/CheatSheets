@@ -1,5 +1,5 @@
 ---
 title: Web Sv
 parent: Server
-grand_parent: Exercises
+grand_parent: Green Team
 ---
