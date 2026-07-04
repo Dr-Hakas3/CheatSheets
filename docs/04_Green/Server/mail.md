@@ -155,7 +155,9 @@ openssl s_client -connect <サーバIP>:587 -starttls smtp
 
 IMAPS
 
+```
 openssl s_client -connect <サーバIP>:993
+```
 この構成で使用するポート
 ポート	用途
 25	SMTP（サーバ間配送用）
