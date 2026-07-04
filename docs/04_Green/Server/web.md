@@ -212,7 +212,8 @@ WordPressはURLをHTTPからHTTPSに変更しないと壊れます。
 
 wp-config.php に追加
 define('FORCE_SSL_ADMIN', true);
-管理画面でURL変更（またはDB）
+管理画面 -> 設定 -> 一般
+でURL変更（またはDB）
 WordPressアドレス
 サイトアドレス
 
