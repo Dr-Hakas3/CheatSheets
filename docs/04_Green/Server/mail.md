@@ -162,6 +162,6 @@ openssl s_client -connect <サーバIP>:993
 ```
 この構成で使用するポート
 ポート	用途
-25	SMTP（サーバ間配送用）
-587	Thunderbirdからの送信（STARTTLS）
-993	Thunderbirdからの受信（IMAPS）
+- 25	SMTP（サーバ間配送用）
+- 587	Thunderbirdからの送信（STARTTLS）
+- 993	Thunderbirdからの受信（IMAPS）
