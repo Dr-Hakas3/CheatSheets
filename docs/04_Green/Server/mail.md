@@ -7,8 +7,10 @@ grand_parent: Green Team
 
 まずは必要なソフトウェアをインストールします。
 
+```
 sudo apt update
 sudo apt install postfix dovecot-core dovecot-imapd mailutils openssl
+```
 Postfixインストール時の設定
 項目	設定値
 General type of mail configuration	Internet Site
@@ -77,11 +79,11 @@ smtpd_sasl_path = private/auth
 /etc/postfix/master.cf
 
 ```
-submission を有効化し、
+# submission を有効化
 
 submission inet n - y - - smtpd
 
-以下を追加
+# 以下を追加
 
 -o smtpd_tls_security_level=encrypt
 -o smtpd_sasl_auth_enable=yes
