@@ -1,6 +1,6 @@
 ---
 title: Web Sv
-parent: Server
+parent: Servers
 grand_parent: Green Team
 ---
 1. 全体構成

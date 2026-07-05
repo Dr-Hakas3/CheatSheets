@@ -1,6 +1,6 @@
 ---
 title: Proxy Sv
-parent: Server
+parent: Servers
 grand_parent: Green Team
 ---
 ```bash

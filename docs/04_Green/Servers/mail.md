@@ -1,6 +1,6 @@
 ---
 title: Mail Sv
-parent: Server
+parent: Servers
 grand_parent: Green Team
 ---
 1. パッケージのインストール（Ubuntu Server）
