@@ -1,3 +1,11 @@
+## Current Shell
+
+```bash
+echo $0
+```
+
+## Change Shell
+
 ```bash
 python -c 'import pty; pty.spawn("/bin/bash")'
 ```
