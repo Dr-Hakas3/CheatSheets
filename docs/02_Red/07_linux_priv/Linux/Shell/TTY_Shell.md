@@ -4,6 +4,16 @@
 echo $0
 ```
 
+```bash
+ps -p $$
+```
+
+## Login Shell
+
+```bash
+echo $SHELL
+```
+
 ## Change Shell
 
 ```bash
