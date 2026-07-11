@@ -110,10 +110,12 @@ impacket-mssqlclient -hashes :NTHASH domain/user@192.168.1.10
 
 # 接続後の基本確認
 
+*SQLのあとにgoすると実行される。goまでは複数行入力可*
 ## 現在のログインユーザー
 
 ```sql
 SELECT SYSTEM_USER;
+go
 ```
 
 ---
@@ -122,6 +124,7 @@ SELECT SYSTEM_USER;
 
 ```sql
 SELECT IS_SRVROLEMEMBER('sysadmin');
+go
 ```
 
 出力:
@@ -138,6 +141,7 @@ SELECT IS_SRVROLEMEMBER('sysadmin');
 
 ```sql
 SELECT @@VERSION;
+go
 ```
 
 ---
@@ -146,6 +150,7 @@ SELECT @@VERSION;
 
 ```sql
 SELECT @@SERVERNAME;
+go
 ```
 
 ---
@@ -154,6 +159,7 @@ SELECT @@SERVERNAME;
 
 ```sql
 SELECT name FROM sys.databases;
+go
 ```
 
 ---
@@ -162,9 +168,56 @@ SELECT name FROM sys.databases;
 
 ```sql
 SELECT DB_NAME();
+go
 ```
 
 ---
+
+## テーブル一覧
+
+```sql
+SELECT name FROM sys.tables;
+GO
+```
+
+or
+
+```sql
+SELECT TABLE_SCHEMA, TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_TYPE = 'BASE TABLE';
+GO
+```
+
+or
+
+```sql
+SELECT name
+FROM sys.objects
+WHERE type = 'U';
+GO
+```
+U は USER_TABLE（ユーザーテーブル）
+
+or
+
+```sql
+SELECT
+    SCHEMA_NAME(schema_id) AS schema_name,
+    name AS table_name
+FROM sys.objects
+WHERE type = 'U';
+GO
+```
+
+---
+
+## 現在のデータベース
+
+```sql
+SELECT DB_NAME();
+go
+```
 
 ## 現在の権限確認
 

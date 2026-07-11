@@ -35,6 +35,22 @@ Initial foothold
 → Domain Pivot
 
 ---
+# 日本語の文字化けの改善
+
+```
+chcp 65001
+```
+
+## 戻すとき
+
+```
+chcp 932
+```
+
+- CP932（Shift_JIS）
+- CP65001（UTF-8）
+
+---
 # When using a low-privilege user
 
 ## System Enumeration
