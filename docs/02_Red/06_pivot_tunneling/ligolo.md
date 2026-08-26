@@ -41,7 +41,7 @@ cp ~/github/Tools/Tunnel/ligolo-ng/proxy/ligolo-ng_proxy_0.8.3_linux_amd64/proxy
 
 `Windows`
 ```bash
-.\agent.exe -connect 192.168.49.117:11601 -ignore-cert
+.\agent.exe -connect 192.168.49.126:11601 -ignore-cert
 ```
 
 `Linux`
