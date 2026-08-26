@@ -450,7 +450,9 @@ project.dll
 なお、Havocのimplantを埋め込んで実行する用途については、実行ローダー部分ではなく、ここまでのWindowsリソース機構そのものなら確認・説明できます。
 ```
 
+https://aka.ms/vs/17/release/vs_community.exe
 ## demon.x64.bin
+
 
 ## encode.py
 
