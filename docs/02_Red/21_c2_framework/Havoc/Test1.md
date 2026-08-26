@@ -617,3 +617,97 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 
 IDR_DATA RCDATA "encrypted.bin"
 ```
+
+Visual Studioでビルドするとき
+
+基本的には、resource.rc が参照できる場所に encrypted.bin を置きます。
+
+例えば：
+
+```
+MyDll/
+├─ Loader.cpp
+├─ resource.h
+├─ resource.rc
+└─ encrypted.bin
+```
+
+この状態なら、
+
+IDR_DATA RCDATA "encrypted.bin"
+
+で参照できます。
+
+ビルドのやり方
+
+Visual Studio 2022で、今のDLLプロジェクトをビルドするだけなら以下です。
+
+1. 構成を確認
+
+ソリューション エクスプローラーで、
+
+```
+MyDll
+├─ Source Files
+│   └─ Loader.cpp
+├─ Resource Files
+│   └─ resource.rc
+├─ Header Files
+│   └─ resource.h
+└─ encrypted.bin
+```
+
+のようになっていることを確認します。
+
+2. プラットフォームを確認
+
+Visual Studio上部のツールバーで、
+
+Debug | x64
+
+などと表示されています。
+
+Havocなどの64bit Windows向け検証環境なら、通常は
+
+Release | x64
+
+を選択します。
+
+3. ビルド
+
+上部メニューから
+
+ビルド → ソリューションのビルド
+
+または、
+
+Ctrl + Shift + B
+
+です。
+
+下側の「出力」に、
+
+```
+========== ビルド: 1 正常終了、0 失敗 ==========
+```
+
+のように表示されれば成功です。
+
+4. DLLの場所
+
+通常はプロジェクトフォルダ内の、
+
+x64\
+└─ Release\
+   └─ MyDll.dll
+
+または、
+
+Release\
+└─ MyDll.dll
+
+に生成されます。
+
+まずは resource.rc と encrypted.bin が正常にコンパイルされているかを見るだけなら、ビルドまででOKです。
+
+なお、今回の Loader.cpp は復号したshellcodeをメモリ上で実行するコードなので、Havoc payloadを実行するところまでの手順ではなく、まずDLLが正常にビルドできるかを確認するのがおすすめです。
