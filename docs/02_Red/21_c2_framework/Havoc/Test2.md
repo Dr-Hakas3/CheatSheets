@@ -1,7 +1,7 @@
 ---
 title: Test2
-parent: Havoc
-grand_parent:
+parent: C2_Franework
+grand_parent: Red Team
 ---
 
 
