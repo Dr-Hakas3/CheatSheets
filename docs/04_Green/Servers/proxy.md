@@ -171,7 +171,7 @@ sudo systemctl status squid
 - これがないと、”sudo systemctl status squid”に”FATAL: mimeLoadIcon: cannot parse internal URL: [http://ホスト名:0/squid-internal-static/icons/silk/image.png”なるログが残り、squidが起動しない。](http://%E3%83%9B%E3%82%B9%E3%83%88%E5%90%8D:0/squid-internal-static/icons/silk/image.png%E2%80%9D%E3%81%AA%E3%82%8B%E3%83%AD%E3%82%B0%E3%81%8C%E6%AE%8B%E3%82%8A%E3%80%81squid%E3%81%8C%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%AA%E3%81%84%E3%80%82)
 - ssl-bumpの設定がなくても起動するが、”sudo systemctl status squid”に”WARNING: No ssl_bump configured. Disabling ssl-bump on https_port [::]:3129”なるログが残り、正常に動作しない。
 
-ポートのオープン状況は下記となる。
+ポートのオープン状況は下記。
 
 ```
 $ netstat -ntl
