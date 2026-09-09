@@ -144,7 +144,16 @@ http_port 3128 intercept
 https_port 3129 intercept ssl-bump generate-host-certificates=on tls-cert=/etc/squid/my.crt tls-key=/etc/squid/my.key tls-dh=prime256v1:/etc/squid/my.pem
 ```
 
-- ”http_port 8080”は必須のようだ（3128とは別に）。これがないと、”sudo systemctl status squid”に”FATAL: mimeLoadIcon: cannot parse internal URL: [http://ホスト名:0/squid-internal-static/icons/silk/image.png”なるログが残り、squidが起動しない。](http://%E3%83%9B%E3%82%B9%E3%83%88%E5%90%8D:0/squid-internal-static/icons/silk/image.png%E2%80%9D%E3%81%AA%E3%82%8B%E3%83%AD%E3%82%B0%E3%81%8C%E6%AE%8B%E3%82%8A%E3%80%81squid%E3%81%8C%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%AA%E3%81%84%E3%80%82)
+### 設定変更後の基本手順
+
+```bash
+sudo squid -k parse
+sudo systemctl restart squid
+sudo systemctl status squid
+```
+
+- ”http_port 8080”は必須のようだ（3128とは別に）。
+- これがないと、”sudo systemctl status squid”に”FATAL: mimeLoadIcon: cannot parse internal URL: [http://ホスト名:0/squid-internal-static/icons/silk/image.png”なるログが残り、squidが起動しない。](http://%E3%83%9B%E3%82%B9%E3%83%88%E5%90%8D:0/squid-internal-static/icons/silk/image.png%E2%80%9D%E3%81%AA%E3%82%8B%E3%83%AD%E3%82%B0%E3%81%8C%E6%AE%8B%E3%82%8A%E3%80%81squid%E3%81%8C%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%AA%E3%81%84%E3%80%82)
 - ssl-bumpの設定がなくても起動するが、”sudo systemctl status squid”に”WARNING: No ssl_bump configured. Disabling ssl-bump on https_port [::]:3129”なるログが残り、正常に動作しない。
 
 ポートのオープン状況は下記となる。
@@ -227,6 +236,122 @@ table ip filter { # handle 3
 }
 ```
 
+## clientにmy.pemをインストールする方法
+
+Windows 11クライアントに my.pem を**信頼されたルート証明書（CA）**としてインストールする方法。
+SquidのSSL Bumpで使うCA証明書を想定。
+
+GUIでインストールする方法
+my.pem をWindows 11へコピー
+my.pem を右クリック
+「証明書のインストール」
+.pem で直接開けない場合は、.crt にリネームしてから実行
+「現在のユーザー」または「ローカル コンピューター」を選択
+「証明書をすべて次のストアに配置する」
+「参照」
+「信頼されたルート証明機関」
+「次へ」→「完了」
+セキュリティ警告が出たら、証明書の発行者・フィンガープリントを確認して承認
+PowerShellで入れる場合
+
+管理者PowerShellで、
+
+```powershell
+Import-Certificate -FilePath "C:\path\my.pem" -CertStoreLocation Cert:\LocalMachine\Root
+```
+
+ただし、Windows環境によっては .pem のままだと扱えない場合があります。その場合、
+
+my.pem
+ ↓
+my.crt
+
+と拡張子を変更して、
+
+Import-Certificate -FilePath "C:\path\my.crt" -CertStoreLocation Cert:\LocalMachine\Root
+
+とします。
+
+インストール確認
+
+Win + R →
+
+certlm.msc
+
+↓
+
+信頼されたルート証明機関 → 証明書
+
+に my.pem のCA証明書が存在すればOKです。
+
+⚠️ 重要
+
+SquidのSSL Bump用CAの場合、my.pem の中身が「CA証明書」なのか、「秘密鍵まで含んだPEM」なのかで扱いが違います。
+
+クライアントに配布するのはCA証明書（公開鍵側）だけです。SquidサーバーにあるCAの秘密鍵は絶対にクライアントへコピーしません。
+
+もし今回のQiita記事の my.pem をそのまま使っているなら、my.pem の生成コマンド（または中身の先頭部分）を教えてもらえれば、Windowsに入れるべきファイルかどうか確認できます。
+
+## ubuntu
+
+Ubuntu側で my.pem をクライアント（Ubuntu）にインストールしたい、という意味ですね。
+
+SquidのSSL Bump用CA証明書をUbuntuクライアントで信頼させる場合は、通常こちらです。
+
+1. my.pem をCA証明書として配置
+```bash
+sudo cp my.pem /usr/local/share/ca-certificates/my.crt
+```
+
+.pem のままではなく、UbuntuのCAストアでは .crt にするのが一般的。
+
+2. CAストアを更新
+```
+sudo update-ca-certificates
+```
+
+正常なら、
+
+```
+1 added, 0 removed; done.
+```
+
+などと表示。
+
+3. 登録確認
+```
+ls -l /etc/ssl/certs/ | grep my
+```
+
+または、
+
+```bash
+openssl verify -CApath /etc/ssl/certs /usr/local/share/ca-certificates/my.crt
+```
+
+重要
+
+my.pem がSquidサーバーのCA証明書＋秘密鍵を含むファイルなら、そのファイルをそのままクライアントへコピーするのは避けてください。
+
+確認するなら、
+
+```
+openssl x509 -in my.pem -noout -subject -issuer
+```
+
+が通るか見てください。
+
+もし今回の構成が
+
+```
+Ubuntu（Squid）
+       ↓
+Ubuntu Client
+       ↓
+Internet
+```
+
+
 ## 検証
 
 ### /var/log/squid/access.log
@@ -258,6 +383,7 @@ CAをインストールしていないと、表示がいびつになるケース
 
 - ERROR: failure while accepting a TLS connection
 - security_file_certgen helper database '/var/spool/squid/ssl_db' failed: Failed to open file /var/spool/squid/ssl_db/index.txt  
+
     ネット上を調べると、前者は中間証明書の取り扱いに関連する可能性があり、後者はデータベースのハンドリングに失敗している様子、、、。少々調べたがタイムアウトで、今回はGiveUp。余裕ができたら、詳細に調べてみたい。
 
 
