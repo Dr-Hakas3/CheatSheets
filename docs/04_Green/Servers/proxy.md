@@ -28,13 +28,14 @@ http_access deny all
 
 [https://qiita.com/infinite1oop/items/ad146ec9f11cac8a4ffb](https://qiita.com/infinite1oop/items/ad146ec9f11cac8a4ffb)
 
-Squidで透過型プロキシを実現する。クライアントのブラウザにてProxy設定を不要とするものである（証明書インポートを除く）。
+Squidで透過型プロキシを実現する。クライアントのブラウザにてProxy設定を不要とするもの（証明書インポートを除く）。
 
 ## 環境
+- Ubuntu Server 26.04
 
 PCやUbuntuの状況は、[その１](https://qiita.com/infinite1oop/items/93e01ed5fe0fff2f6407)と同じ。  
 [![image.png](https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.ap-northeast-1.amazonaws.com%2F0%2F634816%2F2de504a8-da1b-cc69-9cff-db29a43e4c9a.png?ixlib=rb-4.0.0&auto=format&gif-q=60&q=75&s=72ac2d4c147c38032fe9195c36a8ce8c)](https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.ap-northeast-1.amazonaws.com%2F0%2F634816%2F2de504a8-da1b-cc69-9cff-db29a43e4c9a.png?ixlib=rb-4.0.0&auto=format&gif-q=60&q=75&s=72ac2d4c147c38032fe9195c36a8ce8c)  
-今回は、Squidを動作させるUbuntuに、IP Forwardingを設定したNATを用意する（これらがなければ動作しなかった）。
+今回は、Squidを動作させるUbuntuに、IP Forwardingを設定したNATを用意する（これらがなければ動作しない）。
 
 ## 設定
 
