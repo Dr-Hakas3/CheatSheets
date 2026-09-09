@@ -32,7 +32,7 @@ Squidで透過型プロキシを実現する。クライアントのブラウザ
 
 ## 環境
 
-PCやUbuntuの状況は、[その１](https://qiita.com/infinite1oop/items/93e01ed5fe0fff2f6407)と同じである。  
+PCやUbuntuの状況は、[その１](https://qiita.com/infinite1oop/items/93e01ed5fe0fff2f6407)と同じ。  
 [![image.png](https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.ap-northeast-1.amazonaws.com%2F0%2F634816%2F2de504a8-da1b-cc69-9cff-db29a43e4c9a.png?ixlib=rb-4.0.0&auto=format&gif-q=60&q=75&s=72ac2d4c147c38032fe9195c36a8ce8c)](https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.ap-northeast-1.amazonaws.com%2F0%2F634816%2F2de504a8-da1b-cc69-9cff-db29a43e4c9a.png?ixlib=rb-4.0.0&auto=format&gif-q=60&q=75&s=72ac2d4c147c38032fe9195c36a8ce8c)  
 今回は、Squidを動作させるUbuntuに、IP Forwardingを設定したNATを用意する（これらがなければ動作しなかった）。
 
@@ -47,13 +47,13 @@ net.ipv4.ip_forward = 1
 
 ### nftables
 
-NATおよび転送設定に、nftablesを利用した。
+NATおよび転送設定
 
 #### NAT
 
 I/F名などは異なるが、「[トライしたかったnftablesの基本（その２）](https://qiita.com/infinite1oop/items/0c999a4511e855274a88)」と同じ。
 
-”ens33”がLAN側、”ens34”がWAN側。
+”ens34”がLAN側、”ens33”がWAN側。
 
 ```
 sudo nft create table ip nat_filter
@@ -65,13 +65,27 @@ sudo nft add rule ip nat_filter filter_1 iif ens33 oif ens34 accept
 sudo nft add rule ip nat_filter filter_1 ct state related,established accept
 ```
 
-#### ポート80および443の転送
+#### Webポート80および443の転送
 
 ```
 sudo nft add rule ip nat_filter dst_nat iif ens33 tcp dport http redirect to :3128
 sudo nft add rule ip nat_filter dst_nat iif ens33 tcp dport https redirect to :3129
 ```
 
+#### ip_forwardも永続化
+
+```bash
+echo 'net.ipv4.ip_forward=1' | sudo tee /etc/sysctl.d/99-squid.conf
+sudo sysctl --system
+```
+
+確認：
+
+```
+cat /proc/sys/net/ipv4/ip_forward
+```
+
+1 ならOK。
 #### 状況
 
 下記となる。
