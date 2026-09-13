@@ -75,20 +75,44 @@ gcc -g -O0 test.c -o test
 strace ./test 2 3 result.txt
 ```
 
+![[Pasted image 20260913163212.png]]
+
+## ltrace
+
+```bash
+ltrace ./test 2 3 result.txt
+```
+
+![[Pasted image 20260913163645.png]]
+
 ### gdb
+
+```bash
+gdb ./test
+```
+
+
 
 #### break main
 
 ```bash
 break main
 run 2 3 result.txt
+```
 
+![[Pasted image 20260913163925.png]]
+
+```
 print argc
 print argv[0]
 print argv[1]
 print argv[2]
 print argv[3]
+```
 
+![[Pasted image 20260913164003.png]]
+
+```
 next
 next
 
@@ -96,27 +120,55 @@ print a
 print b
 ```
 
+![[Pasted image 20260913164158.png]]
 #### break add
 
 ```
 break add
 continue
+```
 
+![[Pasted image 20260913164218.png]]
+
+```
 info args
 info frame
-info registers
+```
 
+![[Pasted image 20260913164337.png]]
+
+```
+info registers
+```
+
+![[Pasted image 20260913164311.png]]
+![[Pasted image 20260913164355.png]]
+
+```
 print &a
 print &b
+```
 
+![[Pasted image 20260913164426.png]]
+
+```
 x/wd &a
 x/wd &b
+```
 
+![[Pasted image 20260913164645.png]]
+
+```
 next
 next
+```
 
+![[Pasted image 20260913164622.png]]
+
+```
 print result
 print &result
 x/wd &result
 ```
 
+![[Pasted image 20260913164602.png]]
