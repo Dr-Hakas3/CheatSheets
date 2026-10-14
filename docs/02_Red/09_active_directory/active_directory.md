@@ -280,7 +280,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 👉Check:
 
 👉If:
-- SPN detected? → [Kerberoast](Attacks_on_AD_authentication/Kerberoasting.md) candidate
+- SPN detected? → [Kerberoast](Kerberoasting.md) candidate
 
 ## オブジェクト権限の列挙
 
@@ -424,15 +424,15 @@ crypto モジュールに は、 CryptoAPI 関数に crypto::capiを適用する
 
 [AS-REP_Roasting](Attacks_on_AD_authentication/AS-REP_Roasting.md)
  
-[Kerberoasting](Attacks_on_AD_authentication/Kerberoasting.md)
+[Kerberoasting](Kerberoasting.md)
 
-[Password Spray Attack](Attacks_on_AD_authentication/Password(Spray)Attack.md)
+[Password Spray Attack](Password(Spray)Attack.md)
 
-[DC Sync](Attacks_on_AD_authentication/DC_Synchronization.md)
+[DC Sync](DC_Synchronization.md)
 
-[Golden Ticket](Attacks_on_AD_authentication/Golden_Ticket.md)
+[Golden Ticket](Golden_Ticket.md)
 
-[Silver Ticket](Attacks_on_AD_authentication/Silver_Ticket.md)
+[Silver Ticket](Silver_Ticket.md)
 
 ---
 # *Lateral Movement*
