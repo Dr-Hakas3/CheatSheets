@@ -35,11 +35,11 @@ The flag is definitely there; you just can't see it.
 
 # ⚔️ Red Team
 
-## [🌐 OSINT](02_Red/01_osint/index.html)
+## [🌐 OSINT](docs/02_Red/01_OSINT/index.html)
 
-## [🔎 Recon](../../../02_Red/02_recon/recon.md)
+## [🔎 Recon](recon.md)
 
-## [🔄 Services](../../../02_Red/03_services/services.md)
+## [🔄 Services](service_enumeration.md)
 
 ## [🔐 Privilege Escalation](02_Red/06_priv_esc/privesc.md)
 
@@ -55,11 +55,11 @@ The flag is definitely there; you just can't see it.
 
 ## 🛠 Tools
 
-* [Tools](02_Red/97_tools/tools.md)
+* [Tools](tools.md)
 
 ## ⚔️ Weaponization
 
-* [Weaponization](02_Red/98_weaponization/weaponization.md)
+* [Weaponization](weaponization.md)
 
 ## 🧠 Attack Repository
 

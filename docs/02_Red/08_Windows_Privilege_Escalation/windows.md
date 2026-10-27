@@ -274,7 +274,7 @@ route print
 netstat -ano
 ```
 ---
-## Services
+# Services
 
 ```powershell
 Get-Service
@@ -444,7 +444,7 @@ Exploration for Horizontal Expansion
 
 ---
 
-##  [Mimikatz](../97_tools/windows_privilege/mimikatz.md)
+##  [Mimikatz](mimikatz.md)
 
 ```powershell
 .\mimikatz.exe

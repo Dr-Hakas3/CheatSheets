@@ -186,7 +186,7 @@ APPSRV01 owned by DEMO\Domain Admins
 <details markdown="1">
 <summary>Automation</summary>
 
-## [Winpeas](../97_tools/windows_privilege/winpeas.md)
+## [Winpeas](docs/02_Red/97_Tools/windows_privilege/winpeas.md)
 
 ## PowerUp
 
@@ -257,11 +257,11 @@ Get-ChildItem env:
 | **Silver Ticket**   | サービスアカウントのNTLM/AES鍵、SPN名       | サービスアカウント鍵が必要  | サービスアカウント奪取後 | 特定サービス          | 偽造TGS              | 特定サービスへの不正アクセス |
 | **Golden Ticket**   | krbtgtハッシュ、Domain SID          | krbtgtハッシュ必要   | DCSync後      | ドメイン全体          | 偽造TGT              | 永続的ドメイン支配      |
 
-[PowerView](../97_tools/active_directory/Powerview.ps1.md)
+[PowerView](Powerview.ps1.md)
 *調査を進めやすくするため最初にインポートしておく*
 
 ## Domain Userの列挙
-[kerbrute](../03_services/88_kerberos.md)
+[kerbrute](88_kerberos.md)
 
 👉Check:
 - Domain Admins User
@@ -292,7 +292,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 👉Check:
 - Domain Admins Userもしくはそこにつながるユーザの認証情報のキャッシュやメモなどを探す
 
-[PsLoggedOn.exe](../97_tools/PsLoggedOn.exe.md)
+[PsLoggedOn.exe](PsLoggedOn.exe.md)
 
 👉If:
 

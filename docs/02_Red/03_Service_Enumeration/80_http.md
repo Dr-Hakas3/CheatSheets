@@ -47,7 +47,7 @@ nmap -Pn -p80 -sCV -A -oN 80_sCVA <IP> --min-rate=5000
 - --min-rate=5000 
 
 ## Vulnerability Scan Tools
-### [Nessus](../97_tools/web_scan/vulnerability/nessus.md)
+### [Nessus](nessus.md)
 
 ### Nikto
 
@@ -66,7 +66,7 @@ nuclei -target http://192.168.121.16
 kr scan http://localhost:8080 -A raft-small-words
 ```
 
-### [Arjun](../97_tools/web_scan/vulnerability/arjun.md)
+### [Arjun](docs/02_Red/97_Tools/web_scan/vulnerability/arjun.md)
 
 ```zsh
 arjun -u https://example.com/search
@@ -581,7 +581,7 @@ ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclis
 <summary>WordPress</summary>
 
 ### WordPress
-#### [2_wpscan](../97_tools/web_scan/cms/2_wpscan.md)
+#### [2_wpscan](2_wpscan.md)
 
 ```zsh
 wpscn --url http//192.168.218.217/assets/fonts/blog/ --plugins-detection aggressive
@@ -594,7 +594,7 @@ wpscan --url http://192.168.201.239/ --enumerate vp,u,vt,tt --verbose
 ```zsh
 wpscan --url http://192.168.201.239/ --passwords /usr/share/wordlists/rockyou.txt --usernames c0ldd,hugo,philip
 ```
-#### [3_wpprobe](../97_tools/web_scan/cms/3_wpprobe.md)
+#### [3_wpprobe](3_wpprobe.md)
 ```zsh
 wpprobe scan -u http://192.168.147.123/wordpress -v
 ```
@@ -604,10 +604,10 @@ wpprobe scan -f targets.txt -t 20 -o results.json
 ```
 
 👉 If login success:
-→ [WordPress_PHP](../98_weaponization/Generate_ReverseShell/WordPress_PHP.md) 
+→ [WordPress_PHP](WordPress_PHP.md) 
 ### Joomla 
 
-[4_joomscan](../97_tools/web_scan/cms/4_joomscan.md)
+[4_joomscan](4_joomscan.md)
 ```bash
 joomscan -u http://localhost/
 ```
@@ -1002,7 +1002,7 @@ Java Serialization
 
 → [Linux Privilege Escalation](../07_linux_priv/linux.md)
 
-→ [Windows Privilege Escalation](../08_windows_priv/windows.md)
+→ [Windows Privilege Escalation](docs/02_Red/08_Windows_Privilege_Escalation/windows.md)
 
 or
 

@@ -445,5 +445,5 @@ ssh -J user@192.168.1.10,user@10.0.0.5 \
 ## 7.Privilege Escalation
 
 - [Linux](../07_linux_priv/linux.md)
-- [Windows](../08_windows_priv/windows.md)
+- [Windows](docs/02_Red/08_Windows_Privilege_Escalation/windows.md)
 

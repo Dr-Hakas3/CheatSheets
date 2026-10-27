@@ -22,6 +22,6 @@ grand_parent: Red Team
 → If vulnerable → [Reverse Shell](../03_initial_access/reverse_shell.md)
 
 #### Example:
--  [git command](../99_attack_repo/01-50_web/01_web_command-injection_git.md)
+-  [git command](command-injection_git.md)
 
 </details>

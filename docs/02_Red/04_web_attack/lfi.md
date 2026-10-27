@@ -31,8 +31,8 @@ curl http://<IP>/index.php?file=../../../../home/user/.ssh/id_rsa
 If vulnerable → read files / get creds
 
 #### Example:
-- [Executing a Command](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
-- [Log Poisoning](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
+- [Executing a Command](web_lfi_executing-a-command.md)
+- [Log Poisoning](web_lfi_executing-a-command.md)
 
 ---
 

