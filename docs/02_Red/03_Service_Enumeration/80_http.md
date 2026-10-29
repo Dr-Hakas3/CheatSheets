@@ -66,7 +66,7 @@ nuclei -target http://192.168.121.16
 kr scan http://localhost:8080 -A raft-small-words
 ```
 
-### [Arjun](docs/02_Red/97_Tools/web_scan/vulnerability/arjun.md)
+### [Arjun](docs/02_Red/31_Tools/web_scan/vulnerability/arjun.md)
 
 ```zsh
 arjun -u https://example.com/search

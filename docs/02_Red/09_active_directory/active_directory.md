@@ -186,7 +186,7 @@ APPSRV01 owned by DEMO\Domain Admins
 <details markdown="1">
 <summary>Automation</summary>
 
-## [Winpeas](docs/02_Red/97_Tools/windows_privilege/winpeas.md)
+## [Winpeas](docs/02_Red/31_Tools/windows_privilege/winpeas.md)
 
 ## PowerUp
 

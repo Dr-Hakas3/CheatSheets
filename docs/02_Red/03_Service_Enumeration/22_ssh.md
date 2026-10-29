@@ -95,10 +95,11 @@ ssh -v user@<IP>
 #### hydra
 
 ```zsh
-hydra -l geisha -P /usr/share/wordlists/rockyou.txt ssh://geisha
+hydra -l geisha -P /usr/share/wordlists/rockyou.txt ssh://geisha -s 2222
 ```
 - **-l**: an user
 - **-P**: password file
+- -s: NoDefault Port
 
 #### shell script
 ```bash

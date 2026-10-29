@@ -3,9 +3,33 @@ title: XSS
 parent: Web Attack
 grand_parent: Red Team
 ---
+# Reflected
 
-<details markdown="1">
-<summary>XSS</summary>
+---
+
+# Stored
+
+---
+
+# DOM
+
+```
+Payload-<script>alert('BugBot19 was here')</script>
+```
+
+```
+
+```
+
+--- 
+
+## Reference
+
+https://github.com/kashrathod19/XSS-DVWA-SOLUTION
+
+---
+
+# memo
 
 #### Basic Syntax
 
