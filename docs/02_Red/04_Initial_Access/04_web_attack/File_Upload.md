@@ -8,7 +8,7 @@ grand_parent: Red Team
 AD系ラボやHTB系のファイルアップロード問題でよくある流れは、
 
 shell.php → 拒否
-![](../../assets/images/Pasted%20image%2020260609114951.png)
+![](Pasted%20image%2020260609114951.png)
 
 shell.php.jpg → アップロード成功
 しかし実行されず画像として配信
@@ -77,12 +77,12 @@ AddType application/x-httpd-php .evil
 ```
 .evilをphpとして解釈させる
 
-![](../../assets/images/Pasted%20image%2020260609115259.png)
+![](Pasted%20image%2020260609115259.png)
 
 Upload
-![](../../assets/images/Pasted%20image%2020260609115413.png)
+![](Pasted%20image%2020260609115413.png)
 
-![](../../assets/images/Pasted%20image%2020260609115433.png)
+![](Pasted%20image%2020260609115433.png)
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Access]
@@ -91,7 +91,7 @@ Upload
 
 [http://192.168.129.187/uploads/simple-backdoor.php.evil](http://192.168.129.187/uploads/simple-backdoor.php.evil?cmd=whoami)
 
-![](../../assets/images/Pasted%20image%2020260609120141.png)
+![](Pasted%20image%2020260609120141.png)
 
 ---
 <details markdown="1">

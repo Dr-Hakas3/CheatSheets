@@ -81,7 +81,7 @@ thecybergeek::CRAFT2:60f46e5174839f84:A42E88575DCF88DE4E3BF1F8FA75DCAC:010100000
 ```zsh
 sudo john thecybergeek_hash --wordlist=/usr/share/wordlists/rockyou.txt --rules=best64       
 ```
-![](../../assets/images/Pasted%20image%2020260508230759.png)
+![](Pasted%20image%2020260508230759.png)
 
 ---
 

@@ -15,7 +15,7 @@ grand_parent: Red Team
 <root>
 <name>hoge</name><tel>12345678901</tel><email>&xxe;</email><password>hoge</password></root>
 ```
-![](../../assets/images/Pasted%20image%2020260507093552.png)
+![](Pasted%20image%2020260507093552.png)
 
 #### read .bashrc
 
@@ -25,7 +25,7 @@ grand_parent: Red Team
 <root>
 <name>hoge</name><tel>12345678901</tel><email>&xxe;</email><password>hoge</password></root>
 ```
-![](../../assets/images/Pasted%20image%2020260507093608.png)
+![](Pasted%20image%2020260507093608.png)
 
 </details>
 

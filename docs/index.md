@@ -47,7 +47,7 @@ The flag is definitely there; you just can't see it.
 
 ## 🔑 Password Cracking
 
-* [Password Cracking](02_Red/05_password_crack/password_crack.md)
+* [Password Cracking](password_crack.md)
 
 ## 🏗 Platforms
 

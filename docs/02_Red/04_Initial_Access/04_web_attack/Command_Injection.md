@@ -21,6 +21,10 @@ Webサーバなどの入力フォームがユーザの入力値をのままOSに
 || whoami
 ```
 
+```zsh
+; sleep 10;
+```
+
 → If vulnerable → [Reverse Shell](../03_initial_access/reverse_shell.md)
 
 ## ReverseShell

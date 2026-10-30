@@ -189,21 +189,21 @@ hashcat -m 1000 -a 3 hash.txt ?u?u?u?d?d?d?l?l?l?l?l?l?l?l?l?l?s?s?s
 echo -n 'ABC123chocolate!!!' | sha256sum | awk '{print $1}' > hash.txt
 ```
 
-![](../../assets/images/Pasted%20image%2020260508231454.png)
+![](Pasted%20image%2020260508231454.png)
 
 # Create Dictionary
 ```zsh
 sed 's/^/ABC123/' rockyou.txt | sed 's/$/!!!/' > rockyou_hybrid.txt
 ```
 
-![](../../assets/images/Pasted%20image%2020260508231500.png)
+![](Pasted%20image%2020260508231500.png)
 
 # Crack
 ```zsh
  hashcat -a 0 -m 1400 hash.txt rockyou_hybrid.txt
 ```
-![](../../assets/images/Pasted%20image%2020260508231507.png)
-![](../../assets/images/Pasted%20image%2020260508231512.png)
+![](Pasted%20image%2020260508231507.png)
+![](Pasted%20image%2020260508231512.png)
 
 ---
 
@@ -299,12 +299,12 @@ hashcat -m 1400 -a 0 hash.txt rockyou_hybrid.txt -r /usr/share/hashcat/rules/bes
 ```zsh
 hashcat --example-hashes | grep zip2
 ```
-![](../../assets/images/Pasted%20image%2020260508231728.png)
+![](Pasted%20image%2020260508231728.png)
 
 ```zsh
 hashcat -m 13600 email.hash /usr/share/wordlists/rockyou.tx
 ```
-![](../../assets/images/Pasted%20image%2020260508231734.png)
+![](Pasted%20image%2020260508231734.png)
 
 ---
 
@@ -314,7 +314,7 @@ https://github.com/r0tn3x/pbkdf2-hashcat-converter
 ```zsh
 git clone https://github.com/r0tn3x/pbkdf2-hashcat-converter.git
 ```
-![](../../assets/images/Pasted%20image%2020260508231811.png)
+![](Pasted%20image%2020260508231811.png)
 
 ```zsh
 cd pbkdf2-hashcat-converter 
@@ -324,17 +324,17 @@ cd pbkdf2-hashcat-converter
 python3 pbkdf2-to-hashcat.py 'pbkdf2:sha256:600000$AMtzteQIG7yAbZIa$0673ad90a0b4afb19d662336f0fce3a9edd0b7b19193717be28ce4d66c887133'
 sha256:600000:QU10enRlUUlHN3lBYlpJYQ==:BnOtkKC0r7GdZiM28Pzjqe3Qt7GRk3F74ozk1myIcTM=
 ```
-![](../../assets/images/Pasted%20image%2020260508231818.png)
+![](Pasted%20image%2020260508231818.png)
 
 ```zsh
 echo "sha256:600000:QU10enRlUUlHN3lBYlpJYQ==:BnOtkKC0r7GdZiM28Pzjqe3Qt7GRk3F74ozk1myIcTM=" > hash_final.txt
 ```
-![](../../assets/images/Pasted%20image%2020260508231826.png)
+![](Pasted%20image%2020260508231826.png)
 
 ```zsh
 hashcat -m 10900 hash_final.txt /usr/share/wordlists/seclists/Passwords/Common-Credentials/10k-most-common.txt   -w 3 -O
 ```
-![](../../assets/images/Pasted%20image%2020260508231833.png)
+![](Pasted%20image%2020260508231833.png)
 
 ---
 
@@ -390,7 +390,7 @@ hydra -l nedian -P /usr/share/wordlists/rockyou.txt rdp://192.168.248.227
 ```
 
 2. アプリの検索とファイル探索
-![](../../assets/images/Pasted%20image%2020260508232103.png)
+![](Pasted%20image%2020260508232103.png)
 ```Powershell
 Get-ChildItem -Path C:\ -Include *.kdbx -File -Recurse -ErrorAction SilentlyContinue
 ```
