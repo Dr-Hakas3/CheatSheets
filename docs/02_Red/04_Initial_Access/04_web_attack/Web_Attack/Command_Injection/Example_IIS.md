@@ -2,5 +2,5 @@
 ```bash
 cp /usr/share/webshells/aspx/cmdasp.aspx ./
 ```
-![](../../../../../images/Pasted%20image%2020260428055106.png)
+![](Pasted%20image%2020260428055106.png)
 

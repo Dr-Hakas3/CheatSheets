@@ -7,7 +7,7 @@
 <root>
 <name>hoge</name><tel>12345678901</tel><email>&xxe;</email><password>hoge</password></root>
 ```
-![](../../../../../images/Pasted%20image%2020260430122842.png)
+![](Pasted%20image%2020260430122842.png)
 
 ---
 ## Read to .bashrc
@@ -18,5 +18,5 @@
 <root>
 <name>hoge</name><tel>12345678901</tel><email>&xxe;</email><password>hoge</password></root>
 ```
-![](../../../../../images/Pasted%20image%2020260430152425.png)
+![](Pasted%20image%2020260430152425.png)
 

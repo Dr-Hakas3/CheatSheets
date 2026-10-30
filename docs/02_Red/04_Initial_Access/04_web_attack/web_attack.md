@@ -1,6 +1,6 @@
 ---
 title: Web Attack
-parent: Red Team
+parent: Initial Access
 nav_order: 4
 has_children: true
 ---

