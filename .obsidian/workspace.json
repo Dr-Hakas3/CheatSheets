@@ -11,34 +11,26 @@
             "id": "5f5396435ea0eda5",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "01_General/VM.md",
-                "mode": "source",
-                "source": false
+                "file": "assets/images/Pasted image 20261114152717.png"
               },
-              "icon": "lucide-file",
-              "title": "VM"
+              "icon": "lucide-image",
+              "title": "Pasted image 20261114152717"
             }
-          }
-        ]
-      },
-      {
-        "id": "e8e3308ed5810a07",
-        "type": "tabs",
-        "children": [
+          },
           {
-            "id": "8dfb7c26f08374cf",
+            "id": "cd38ee53da1b78f5",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_RedTeam/03_Service_Enumeration/index.md",
+                "file": "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Error_Based.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "Error_Based"
             }
           }
         ]
@@ -75,7 +67,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "pty.",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -119,7 +111,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "01_General/VM.md",
+                "file": "assets/images/Pasted image 20261114152717.png",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -138,7 +130,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "01_General/VM.md",
+                "file": "assets/images/Pasted image 20261114152717.png",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -181,7 +173,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "01_General/VM.md",
+                "file": "assets/images/Pasted image 20261114152717.png",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -210,7 +202,24 @@
   },
   "active": "64e7e0815756bc2f",
   "lastOpenFiles": [
+    "assets/images/Pasted image 20261114152815.png",
+    "01_General/VM.md",
+    "writeups/HTB/Linux/Easy/DoubleTake/a33500f7-7aa1-4099-8953-d1cdc116ba1e-1794485550.pdf",
     "writeups/HTB/Linux/Easy/DoubleTake.md",
+    "writeups/HTB/Linux/Easy/DoubleTake/DoubleTake.md",
+    "writeups/HTB/Linux/Easy/DoubleTake",
+    "assets/images/Pasted image 20261114213447.png",
+    "assets/images/Pasted image 20261114213341.png",
+    "assets/images/Pasted image 20261114211936.png",
+    "assets/images/Pasted image 20261114211907.png",
+    "assets/images/Pasted image 20261114211850.png",
+    "assets/images/Pasted image 20261114211833.png",
+    "assets/images/Pasted image 20261114210737.png",
+    "assets/images/Pasted image 20261114210655.png",
+    "assets/images/Pasted image 20261114204857.png",
+    "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Error_Based.md",
+    "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Blind_SQL_Injection.md",
+    "assets/images/Pasted image 20261114202434.png",
     "writeups/HTB/Linux/DoubleTake.md",
     "writeups/HTB/Windows/Insane/PingPong/01_Recon/Port_5985_WinRM.md",
     "writeups/HTB/Windows/Insane/PingPong/01_Recon/All_ports.md",
@@ -231,29 +240,13 @@
     "writeups/HTB/PingPong 1/01_Recon/All_ports.md",
     "writeups/HTB/Linux/Easy/Cap",
     "writeups/HTB/Cap 1/01_Recon/All_ports.md",
-    "writeups/HTB/pingpong/metadata.json",
     "writeups/HTB/pingpong/index.md",
-    "writeups/HTB/Windows/medium",
     "writeups/HTB/forest/index.md",
     "writeups/HTB/cap/index.md",
     "writeups/HTB/PingPong 1/Machine_Info.md",
     "writeups/HTB/DoubleTake.md",
     "writeups/htb/DoubleTake.md",
     "writeups/wifi_challenge_lab/3_wep.md",
-    "writeups/wifi_challenge_lab/2_opn.md",
-    "writeups/wifi_challenge_lab/1_recon.md",
-    "writeups/wifi_challenge_lab/0_setup.md",
-    "writeups/vulnhub/hack_me_please/index.md",
-    "writeups/vulnhub/FALL/index.md",
-    "writeups/thm/AD/Attacktive_Directory/index.md",
-    "assets/images/Pasted image 20261114201318.png",
-    "assets/images/Pasted image 20261114193013.png",
-    "assets/images/Pasted image 20261114192845.png",
-    "assets/images/Pasted image 20261114192652.png",
-    "quartz/static/og-image.png",
-    "quartz/static/icon.png",
-    "assets/images/Pasted image 20261114183832.png",
-    "Pasted image 20261114152815.png",
-    "Pasted image 20261114152717.png"
+    "writeups/wifi_challenge_lab/2_opn.md"
   ]
 }
