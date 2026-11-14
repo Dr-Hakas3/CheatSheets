@@ -1,0 +1,35 @@
+---
+layout: default
+title: SANS CTF
+parent: Writeups
+has_children: true
+nav_order: 6 
+---
+
+<link rel="stylesheet"
+      href="../../renderer_shared/shared.css">
+
+# SANS CTF
+
+<div id="grid" class="grid"></div>
+<hr>
+<div id="viewer"></div>
+<script type="module">
+
+import { renderCards }
+from "../../renderer_shared/cards.js";
+
+async function loadMachines() {
+
+    const response =
+        await fetch("./sans.json");
+
+    const data =
+        await response.json();
+
+    renderCards("grid", data);
+}
+
+loadMachines();
+
+</script>

@@ -1,0 +1,32 @@
+---
+layout: default
+title: Offsec Assessment
+parent: Writeups
+nav_order: 1
+has_children: true
+---
+
+<link rel="stylesheet" href="../../renderer_shared/styles/shared.css">
+<link rel="stylesheet" href="../../renderer_shared/styles/cards.css">
+
+<div class="container">
+  <h1>PG Practice</h1>
+
+  <div id="cards"></div>
+</div>
+
+<script type="module">
+  import { loadJson } from "../../renderer_shared/core/index.js";
+  import { renderCards } from "../../renderer_shared/ui/index.js";
+
+  async function init() {
+    const data = await loadJson("./offsec_assessment.json");
+
+    renderCards({
+      data,
+      containerId: "cards"
+    });
+  }
+
+  init();
+</script>

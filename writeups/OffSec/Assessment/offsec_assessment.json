@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Active_Directory_L1",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "Offsec Assessment",
+    "os": "Windows",
+    "tags": ["Windows"],
+    "path": "/writeups/active_directory/active_directory.md"
+  },
+  {
+    "title": "Red Team L1",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "Offsec Assessment",
+    "os": "Windows",
+    "tags": ["Windows"],
+    "path": "/writeups/redteam/Red_Team_Operator–Level_1_Assessment.md"
+
+  }
+  	
+]
