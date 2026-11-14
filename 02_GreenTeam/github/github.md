@@ -52,6 +52,13 @@ echo.
 echo Finished.
 pause
 ```
+
+## ローカル変更を破棄
+
+```zsh
+ git restore .obsidian/workspace.json
+```
+
 ## delete branch
 
 ```zsh

@@ -205,10 +205,11 @@
       "bases:新規ベースを作成": false
     }
   },
-  "active": "8dfb7c26f08374cf",
+  "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
-    "03_RedTeam/03_Service_Enumeration/index.md",
+    "index.md",
     "02_GreenTeam/github/github.md",
+    "03_RedTeam/03_Service_Enumeration/index.md",
     "02_GreenTeam/VMWare/vmware_workstation.md",
     "02_GreenTeam/VMWare/push.bat",
     "02_GreenTeam/VMWare/pull.bat",
@@ -242,7 +243,6 @@
     "node_modules/to-buffer/CHANGELOG.md",
     "node_modules/strip-bom-string/README.md",
     "node_modules/strip-bom/readme.md",
-    "node_modules/strip-ansi/readme.md",
     "assets/images/Pasted image 20261114183832.png",
     "public/tags/index-og-image.webp",
     "public/tags/例1-og-image.webp",
