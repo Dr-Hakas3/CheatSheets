@@ -1,6 +1,10 @@
 ---
 title: github
-parent: Green Team
-nav_order: 1
-has_children: true
 ---
+## delete branch
+
+```zsh
+git push origin --delete v5
+```
+
+![[Pasted image 20261114183832.png]]

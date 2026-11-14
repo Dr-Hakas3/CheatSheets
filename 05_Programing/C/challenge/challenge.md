@@ -28,6 +28,7 @@ km/h×1000
 	​
 
 Cプログラム
+
 ```c
 #include <stdio.h>
 
@@ -45,6 +46,7 @@ int main(void) {
     return 0;
 }
 ```
+
 ポイント
 doubleを使うことで小数精度を確保
 5.0 / 18.0 にして整数除算を回避

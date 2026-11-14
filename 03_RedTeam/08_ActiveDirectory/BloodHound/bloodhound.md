@@ -45,7 +45,9 @@ BloodHound CEを導入したあとは、日々の起動・停止、パスワー�
 Docker Composeに慣れているとつい docker compose up/down を使いがちだが、私はdocker compose を直接使っていたことで設定ファイルの整合性に失敗し、初期化に失敗し復旧に苦労した。
 以後は素直に bloodhound-cli を使うことにした。
 ```
+
 # サービスの起動
+
 ```zsh
 bloodhound-cli containers up
 ```
