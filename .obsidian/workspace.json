@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "02_GreenTeam/github/github.md",
+                "file": "writeups/DoubleTake.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "github"
+              "title": "DoubleTake"
             }
           }
         ]
@@ -207,8 +207,13 @@
   },
   "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
-    "index.md",
+    "assets/images/Pasted image 20261114193013.png",
+    "assets/images/Pasted image 20261114192845.png",
+    "assets/images/Pasted image 20261114192652.png",
+    "03_RedTeam/02_Recon/Port_Scan.md",
+    "writeups/DoubleTake.md",
     "02_GreenTeam/github/github.md",
+    "index.md",
     "03_RedTeam/03_Service_Enumeration/index.md",
     "02_GreenTeam/VMWare/vmware_workstation.md",
     "02_GreenTeam/VMWare/push.bat",
@@ -240,9 +245,6 @@
     "node_modules/to-regex-range/README.md",
     "node_modules/toml/README.md",
     "node_modules/to-buffer/README.md",
-    "node_modules/to-buffer/CHANGELOG.md",
-    "node_modules/strip-bom-string/README.md",
-    "node_modules/strip-bom/readme.md",
     "assets/images/Pasted image 20261114183832.png",
     "public/tags/index-og-image.webp",
     "public/tags/例1-og-image.webp",
@@ -250,8 +252,6 @@
     "public/tags/terminal01-og-image.webp",
     "public/tags/kali-og-image.webp",
     "public/tags/client74-og-image.webp",
-    "public/tags/dc1-og-image.webp",
-    "public/tags/ペイロードを書き込み可能な場所に挿入し、どちらが機能しますか。-og-image.webp",
-    "public/tags/書き込み可能なパスを確認する-og-image.webp"
+    "public/tags/dc1-og-image.webp"
   ]
 }
