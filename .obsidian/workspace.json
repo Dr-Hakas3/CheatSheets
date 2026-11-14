@@ -11,12 +11,14 @@
             "id": "5f5396435ea0eda5",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "assets/images/Pasted image 20261114152717.png"
+                "file": "04_BlueTeam/index.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-image",
-              "title": "Pasted image 20261114152717"
+              "icon": "lucide-file",
+              "title": "index"
             }
           },
           {
@@ -111,7 +113,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "assets/images/Pasted image 20261114152717.png",
+                "file": "04_BlueTeam/index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -130,7 +132,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "assets/images/Pasted image 20261114152717.png",
+                "file": "04_BlueTeam/index.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -173,7 +175,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "assets/images/Pasted image 20261114152717.png",
+                "file": "04_BlueTeam/index.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -200,8 +202,9 @@
       "bases:新規ベースを作成": false
     }
   },
-  "active": "64e7e0815756bc2f",
+  "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
+    "assets/images/Pasted image 20261114152717.png",
     "assets/images/Pasted image 20261114152815.png",
     "01_General/VM.md",
     "writeups/HTB/Linux/Easy/DoubleTake/a33500f7-7aa1-4099-8953-d1cdc116ba1e-1794485550.pdf",
@@ -219,7 +222,6 @@
     "assets/images/Pasted image 20261114204857.png",
     "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Error_Based.md",
     "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Blind_SQL_Injection.md",
-    "assets/images/Pasted image 20261114202434.png",
     "writeups/HTB/Linux/DoubleTake.md",
     "writeups/HTB/Windows/Insane/PingPong/01_Recon/Port_5985_WinRM.md",
     "writeups/HTB/Windows/Insane/PingPong/01_Recon/All_ports.md",
