@@ -2,7 +2,7 @@
 title: Ping Pong
 parent: HTB
 grand_parent: Writeups
-nav_order: 1
+tag: OpenSSH,
 ---
 | OS | Windows(DC) |
 | Difficulty | Insane |
