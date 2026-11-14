@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "04_BlueTeam/index.md",
+                "file": "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "Wi-Fi_Password_Viewer_English_Windows_Version"
             }
           },
           {
@@ -69,7 +69,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "pty.",
+                "query": "\"pip \"",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -113,7 +113,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "04_BlueTeam/index.md",
+                "file": "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -132,7 +132,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "04_BlueTeam/index.md",
+                "file": "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -175,7 +175,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "04_BlueTeam/index.md",
+                "file": "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -204,13 +204,37 @@
   },
   "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
+    "05_Programing/Python/Other/GitManager/git_manager.py.md",
+    "05_Programing/Python/Other/GitManager/git_manager.py",
+    "05_Programing/Python/Other/git/GitPython/GitPython.egg-info/tmptq_pg4l1",
+    "05_Programing/Python/Other/git/GitPython/GitPython.egg-info/tmps_ewl190",
+    "05_Programing/Python/Other/git/GitPython/GitPython.egg-info/tmpqbhl2mji",
+    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/SOURCES.txt",
+    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/top_level.txt",
+    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/requires.txt",
+    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/dependency_links.txt",
+    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/PKG-INFO",
+    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info",
+    "05_Programing/Python/Other/GitManager/GitPython/test/performance/README.md",
+    "05_Programing/Python/Other/GitManager/GitPython/test/downstream/audit.md",
+    "05_Programing/Python/Other/GitManager/GitPython/test/downstream/README.md",
+    "05_Programing/Python/Other/GitManager/GitPython/smmap/SECURITY.md",
+    "05_Programing/Python/Other/GitManager/GitPython/smmap/README.md",
+    "05_Programing/Python/Other/GitManager/GitPython/gitdb/SECURITY.md",
+    "05_Programing/Python/Other/GitManager/GitPython/fuzzing/README.md",
+    "05_Programing/Python/Other/GitManager/GitPython/doc/gix-backend.md",
+    "05_Programing/Python/Other/GitManager/GitPython/SECURITY.md",
+    "05_Programing/Python/Other/GitManager/GitPython/README.md",
+    "05_Programing/Python/Other/GitManager/GitPython/CONTRIBUTING.md",
+    "05_Programing/Python/Other/GitManager/GitPython/AGENTS.md",
+    "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
+    "05_Programing/Python/python.md",
+    "04_BlueTeam/index.md",
     "assets/images/Pasted image 20261114152717.png",
     "assets/images/Pasted image 20261114152815.png",
     "01_General/VM.md",
-    "writeups/HTB/Linux/Easy/DoubleTake/a33500f7-7aa1-4099-8953-d1cdc116ba1e-1794485550.pdf",
     "writeups/HTB/Linux/Easy/DoubleTake.md",
     "writeups/HTB/Linux/Easy/DoubleTake/DoubleTake.md",
-    "writeups/HTB/Linux/Easy/DoubleTake",
     "assets/images/Pasted image 20261114213447.png",
     "assets/images/Pasted image 20261114213341.png",
     "assets/images/Pasted image 20261114211936.png",
@@ -219,36 +243,11 @@
     "assets/images/Pasted image 20261114211833.png",
     "assets/images/Pasted image 20261114210737.png",
     "assets/images/Pasted image 20261114210655.png",
-    "assets/images/Pasted image 20261114204857.png",
     "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Error_Based.md",
     "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Blind_SQL_Injection.md",
     "writeups/HTB/Linux/DoubleTake.md",
     "writeups/HTB/Windows/Insane/PingPong/01_Recon/Port_5985_WinRM.md",
     "writeups/HTB/Windows/Insane/PingPong/01_Recon/All_ports.md",
-    "writeups/HTB/Linux/Easy/Cap/03_Privilege_Escalation/python3.8_capability.md",
-    "writeups/HTB/Linux/Easy/Cap/01_Recon/All_ports.md",
-    "writeups/HTB/Windows/medium/logging/metadata.json",
-    "writeups/HTB/Windows/medium/logging/index.md",
-    "writeups/HTB/Windows/Insane/PingPong/PingPong.md",
-    "writeups/HTB/Windows/Insane/PingPong/Machine_Info.md",
-    "writeups/HTB/Windows/Insane/PingPong/01_Recon",
-    "writeups/HTB/Linux/Easy/Cap/03_Privilege_Escalation",
-    "writeups/HTB/Linux/Easy/Cap/02_Initial Access",
-    "writeups/HTB/Linux/Easy/Cap/01_Recon",
-    "writeups/HTB/Windows/medium/logging",
-    "writeups/HTB/Windows/Insane/PingPong",
-    "writeups/HTB/Windows/Hard/Pirate.md",
-    "writeups/HTB/PingPong 1/01_Recon/Port_5985_WinRM.md",
-    "writeups/HTB/PingPong 1/01_Recon/All_ports.md",
-    "writeups/HTB/Linux/Easy/Cap",
-    "writeups/HTB/Cap 1/01_Recon/All_ports.md",
-    "writeups/HTB/pingpong/index.md",
-    "writeups/HTB/forest/index.md",
-    "writeups/HTB/cap/index.md",
-    "writeups/HTB/PingPong 1/Machine_Info.md",
-    "writeups/HTB/DoubleTake.md",
-    "writeups/htb/DoubleTake.md",
-    "writeups/wifi_challenge_lab/3_wep.md",
-    "writeups/wifi_challenge_lab/2_opn.md"
+    "writeups/HTB/Linux/Easy/Cap/03_Privilege_Escalation/python3.8_capability.md"
   ]
 }
