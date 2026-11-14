@@ -1,3 +1,5 @@
 ---
-title: 01_General
+title: General
+nav_order: 1
+has_children: true
 ---
