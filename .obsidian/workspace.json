@@ -13,26 +13,32 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "writeups/HTB/pingpong/index.md",
+                "file": "03_RedTeam/12_WebAttacks/SQLi/index.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
               "title": "index"
             }
-          },
+          }
+        ]
+      },
+      {
+        "id": "e8e3308ed5810a07",
+        "type": "tabs",
+        "children": [
           {
-            "id": "cd38ee53da1b78f5",
+            "id": "8dfb7c26f08374cf",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_RedTeam/12_WebAttacks/SQLi/01_基礎/Error_Based.md",
+                "file": "02_GreenTeam/github/github.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Error_Based"
+              "title": "github"
             }
           }
         ]
@@ -69,7 +75,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "\"pip \"",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -113,7 +119,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "writeups/HTB/pingpong/index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -132,7 +137,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "writeups/HTB/pingpong/index.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -175,7 +179,6 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "writeups/HTB/pingpong/index.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -204,51 +207,51 @@
   },
   "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
-    "writeups/HTB/pingpong/All_ports.md",
-    "writeups/HTB/PingPong 1/01_Recon/Port_5985_WinRM.md",
-    "writeups/HTB/pingpong/Machine_Info.md",
-    "writeups/HTB/pingpong/index.md",
-    "writeups/HTB/cap/index.md",
-    "01_General/Browsa/index.md",
-    "assets/images/Pasted image 20261115002103.png",
-    "03_RedTeam/12_WebAttacks/BurpSuite.md",
-    "01_General/Browsa",
-    "assets/images/Pasted image 20261115001818.png",
-    "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
-    "03_RedTeam/12_WebAttacks/無題のフォルダ",
-    "05_Programing/Python/Other/GitManager/git_manager.py.md",
-    "05_Programing/Python/Other/GitManager/git_manager.py",
-    "05_Programing/Python/Other/git/GitPython/GitPython.egg-info/tmptq_pg4l1",
-    "05_Programing/Python/Other/git/GitPython/GitPython.egg-info/tmps_ewl190",
-    "05_Programing/Python/Other/git/GitPython/GitPython.egg-info/tmpqbhl2mji",
-    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/SOURCES.txt",
-    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/top_level.txt",
-    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/requires.txt",
-    "05_Programing/Python/Other/GitManager/GitPython/GitPython.egg-info/dependency_links.txt",
-    "05_Programing/Python/Other/GitManager/GitPython/test/performance/README.md",
-    "05_Programing/Python/Other/GitManager/GitPython/test/downstream/audit.md",
-    "05_Programing/Python/Other/GitManager/GitPython/test/downstream/README.md",
-    "05_Programing/Python/Other/GitManager/GitPython/smmap/SECURITY.md",
-    "05_Programing/Python/Other/GitManager/GitPython/smmap/README.md",
-    "05_Programing/Python/Other/GitManager/GitPython/gitdb/SECURITY.md",
-    "05_Programing/Python/Other/GitManager/GitPython/fuzzing/README.md",
-    "05_Programing/Python/Other/GitManager/GitPython/doc/gix-backend.md",
-    "05_Programing/Python/Other/GitManager/GitPython/SECURITY.md",
-    "05_Programing/Python/Other/GitManager/GitPython/README.md",
-    "05_Programing/Python/Other/GitManager/GitPython/CONTRIBUTING.md",
-    "05_Programing/Python/Other/GitManager/GitPython/AGENTS.md",
-    "05_Programing/Python/python.md",
-    "04_BlueTeam/index.md",
-    "assets/images/Pasted image 20261114152717.png",
+    "03_RedTeam/12_WebAttacks/SQLi/02_DBMS/NoSQL.md",
+    "03_RedTeam/12_WebAttacks/SQLi/index.md",
+    "writeups/DoubleTake.md",
+    "writeups/PG_Practice/Sumo/metadata.json",
+    "writeups/PG_Practice/Sumo/index.md",
+    "writeups/PG_Practice/Robust/metadata.json",
+    "writeups/PG_Practice/Robust/index.md",
+    "writeups/PG_Practice/Resouced/metadata.json",
+    "writeups/PG_Practice/Resouced/index.md",
+    "writeups/PG_Practice/Pwned1/metadata.json",
+    "writeups/PG_Practice/Pwned1/index.md",
+    "writeups/PG_Practice/PayDay/metadata.json",
+    "writeups/PG_Practice/PayDay/index.md",
+    "writeups/PG_Practice/Kevin/metadata.json",
+    "writeups/PG_Practice/Kevin/index.md",
+    "writeups/PG_Practice/Mailserver_phase2/metadata.json",
+    "writeups/PG_Practice/Mailserver_phase2/index.md",
+    "writeups/PG_Practice/Hub/metadata.json",
+    "writeups/PG_Practice/Hub/index.md",
+    "writeups/PG_Practice/GLPI/metadata.json",
+    "writeups/PG_Practice/GLPI/index.md",
+    "writeups/PG_Practice/Forward/metadata.json",
+    "writeups/PG_Practice/Forward/index.md",
+    "writeups/PG_Practice/Flimsy/index.md",
+    "writeups/PG_Practice/DevArmor/index.md",
+    "writeups/PG_Practice/Detection/index.md",
+    "writeups/PG_Practice/Access_2nd/index.md",
+    "writeups/PG_Practice/Access/index.md",
+    "writeups/OffSec/Assessment/redteam/Red_Team_Operator–Level_1_Assessment.md",
+    "writeups/OffSec/Assessment/active_directory/active_directory_Level_1_Assessment.md",
+    "writeups/HTB/Windows/Insane/PingPong/01_Recon/Port_5985_WinRM.md",
+    "writeups/HTB/Windows/Insane/PingPong/01_Recon/All_ports.md",
+    "writeups/HTB/Linux/Easy/Cap/03_Privilege_Escalation/python3.8_capability.md",
+    "writeups/HTB/Linux/Easy/Cap/01_Recon/All_ports.md",
+    "writeups/HTB/Windows/medium/logging/index.md",
+    "writeups/HTB/Windows/Insane/PingPong/PingPong.md",
+    "assets/images/Pasted image 20261114204857.png",
+    "assets/images/Pasted image 20261114202434.png",
+    "assets/images/Pasted image 20261114202159.png",
+    "assets/images/Pasted image 20261114202115.png",
+    "assets/images/Pasted image 20261114201318.png",
     "assets/images/Pasted image 20261114152815.png",
-    "01_General/VM.md",
-    "writeups/HTB/Linux/Easy/DoubleTake.md",
-    "writeups/HTB/Linux/Easy/DoubleTake/DoubleTake.md",
-    "assets/images/Pasted image 20261114213447.png",
-    "assets/images/Pasted image 20261114213341.png",
-    "assets/images/Pasted image 20261114211936.png",
-    "assets/images/Pasted image 20261114211907.png",
-    "assets/images/Pasted image 20261114211850.png",
-    "assets/images/Pasted image 20261114211833.png"
+    "assets/images/Pasted image 20261114152717.png",
+    "assets/images/Pasted image 20261114193013.png",
+    "assets/images/Pasted image 20261114192845.png",
+    "assets/images/Pasted image 20261114192652.png"
   ]
 }
