@@ -1,7 +1,5 @@
 ---
-title: Active Directory
-parent: Red Team
-nav_order: 9
+title: 08 Active Directory
 has_children: true
 ---
 # Goal

@@ -1,7 +1,5 @@
 ---
-title: Windows
-parent: Red Team
-nav_order: 8
+title: 07 Windows PrivEsc
 ---
 # Windows Privilege Escalation
 

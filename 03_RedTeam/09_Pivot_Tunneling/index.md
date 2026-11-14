@@ -1,6 +1,4 @@
 ---
-title: Pivot & Tunneling
-parent: Red Team
-nav_order: 6
+title: 09 Pivot & Tunneling
 has_children: true
 ---

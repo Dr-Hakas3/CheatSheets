@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "04_BlueTeam/index.md",
+                "file": "06_ReverseEngineering/index.md",
                 "mode": "source",
                 "source": false
               },
@@ -205,10 +205,26 @@
       "bases:新規ベースを作成": false
     }
   },
-  "active": "64e7e0815756bc2f",
+  "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
-    "writeups",
     "05_Programing/index.md",
+    "06_ReverseEngineering/index.md",
+    "04_BlueTeam/index.md",
+    "03_RedTeam/13_Wireless/index.md",
+    "03_RedTeam/10_Weaponization/index.md",
+    "03_RedTeam/12_WebAttacks/index.md",
+    "03_RedTeam/11_C2_Frameworks/index.md",
+    "03_RedTeam/09_Pivot_Tunneling/index.md",
+    "03_RedTeam/08_ActiveDirectory/index.md",
+    "03_RedTeam/01_OSINT/index.md",
+    "03_RedTeam/02_Recon/index.md",
+    "03_RedTeam/07_Windows_PrivEsc/index.md",
+    "03_RedTeam/06_Linux_PrivEsc/index.md",
+    "02_GreenTeam/index.md",
+    "02_GreenTeam/green.md",
+    "03_RedTeam/04_Evasion/index.md",
+    "03_RedTeam/05_InitialAccess/index.md",
+    "writeups",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/urllib3/LICENSE.txt",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/truststore/LICENSE",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/tomli_w/LICENSE",
@@ -218,7 +234,6 @@
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/requests/LICENSE",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/pyproject_hooks/LICENSE",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/platformdirs/LICENSE",
-    "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/pygments/LICENSE",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib64/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/idna/LICENSE.md",
     "06_ReverseEngineering/gdb/gdb.md",
     "06_ReverseEngineering/gdb/Exercises001.md",
@@ -227,21 +242,6 @@
     "06_ReverseEngineering/register.md",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib/python3.14/site-packages/pip-26.1.2.dist-info/licenses/src/pip/_vendor/idna/LICENSE.md",
     "05_Programing/Python/Black_Hat_Python2/bhp/venv3/lib/python3.14/site-packages/pip/_vendor/idna/LICENSE.md",
-    "05_Programing/Python/Black_Hat_Python2/Black_Hat_Python2.md",
-    "05_Programing/Python/Wi-Fi_Password_Viewer_Japanese_Windows_Version.md",
-    "05_Programing/Python/Wi-Fi_Password_Viewer_English_Windows_Version.md",
-    "05_Programing/Python/python.md",
-    "05_Programing/PHP/PHP.md",
-    "05_Programing/PHP/aes-256-cbc_decrypt.md",
-    "05_Programing/days/days.md",
-    "05_Programing/days/2026_05_21.md",
-    "05_Programing/C/challenge/challenge.md",
-    "05_Programing/C/c.md",
-    "02_GreenTeam/vagrant.md",
-    "02_GreenTeam/green.md",
-    "02_GreenTeam/Servers/web_php_mysql.md",
-    "02_GreenTeam/Servers/web.md",
-    "02_GreenTeam/Servers/shopping_site.md",
-    "02_GreenTeam/Servers/servers.md"
+    "05_Programing/Python/Black_Hat_Python2/Black_Hat_Python2.md"
   ]
 }

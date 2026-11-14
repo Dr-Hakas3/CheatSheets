@@ -1,7 +1,5 @@
 ---
-title: Linux
-parent: Red Team
-nav_order: 7
+title: 06 Linux PrivEsc
 has_children: true
 ---
 # Linux Privilege Escalation
