@@ -11,10 +11,14 @@
             "id": "5f5396435ea0eda5",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "04_BlueTeam/index.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新規タブ"
+              "title": "index"
             }
           }
         ]
@@ -203,6 +207,8 @@
   },
   "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
+    "04_BlueTeam/index.md",
+    "04_BlueTeam",
     "01_General.md",
     "03_RedTeam.md",
     "index.md",
@@ -228,7 +234,6 @@
     "03_RedTeam/14_Cloud/index.md",
     "03_RedTeam/14_Cloud/AWS/AWS.md",
     "03_RedTeam/13_Wireless/index.md",
-    "03_RedTeam/13_Wireless/IP_Camera/pwneye.md",
     "03_RedTeam/07_Windows_PrivEsc/Tools",
     "03_RedTeam/07_Windows_PrivEsc/Privilege_Escalation/Misconfiguration/Permissions",
     "03_RedTeam/07_Windows_PrivEsc/Privilege_Escalation/Walkthlough",
@@ -237,7 +242,6 @@
     "03_RedTeam/07_Windows_PrivEsc/Privilege_Escalation",
     "03_RedTeam/07_Windows_PrivEsc/Enum/Manual/Service Principal",
     "03_RedTeam/07_Windows_PrivEsc/Enum/Manual",
-    "03_RedTeam/07_Windows_PrivEsc/Enum/Automation",
-    "03_RedTeam/07_Windows_PrivEsc/Enum"
+    "03_RedTeam/07_Windows_PrivEsc/Enum/Automation"
   ]
 }
