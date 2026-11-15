@@ -18,7 +18,7 @@ wifi-globalという名前のアクセスポイントで使われているChanne
 sudo airodump-ng wlan60
 ```
 
-![](../../assets/images/Pasted%20image%2020260606090217.png)
+![[Pasted image 20261115195622.png]]
 
 ```flag
 44
@@ -27,7 +27,7 @@ sudo airodump-ng wlan60
 ---
 # 02. What is the MAC of the wifi-IT client?
 
-wifi-ITのマックアドレスを調査し、そこに接続したClientをMACアドレスをこたえる問題
+wifi-ITという名前のクライアントのMACアドレスを調査しこたえる問題
 
 wifi-ITのCHの特定
 
@@ -35,15 +35,17 @@ wifi-ITのCHの特定
 sudo airodump-ng wlan60 -w ~/wifi/scan --manufacturer --wps --band abg
 ```
 
-![](../../assets/images/Pasted%20image%2020260606090930.png)
+![[Pasted image 20261115195627.png]]
 
 ```zsh
 sudo airodump-ng wlan60 -w ~/wifi/scanc11 --manufacturer --wps -c11
 ```
 
-![](../../assets/images/Pasted%20image%2020260606090838.png)
+![[Pasted image 20261115195632.png]]
 
-wifi-ITのマックアドレスが`F0:9F:C2:1A:CA:25`でそこに接続したClientを待つ
+```flag
+F0:9F:C2:1A:CA:25
+```
 
 ---
 # 03. What is the probe of 78:C1:A7:BF:72:46?
@@ -52,7 +54,7 @@ wifi-ITのマックアドレスが`F0:9F:C2:1A:CA:25`でそこに接続したCli
 sudo airodump-ng wlan60 -w scan --manufacturer --wps --band abg
 ```
 
-![](../../assets/images/Pasted%20image%2020260606091843.png)
+![[Pasted image 20261115195637.png]]
 
 ---
 
@@ -69,13 +71,13 @@ cp root.bak/rockyou-top100000.txt .
 cat ./rockyou-top100000.txt | awk '{print "wifi-" $1}' > wifi-rockyou.txt
 ```
 
-![](../../assets/images/Pasted%20image%2020260606141538.png)
+![[Pasted image 20261115195642.png]]
 
 ```zsh
 sudo airmon-ng start wlan60  
 ```
 
-![](../../assets/images/Pasted%20image%2020260606092943.png)
+![[Pasted image 20261115195647.png]]
 
 ```zsh
 sudo iwconfig wlan60 channel 11

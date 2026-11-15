@@ -22,7 +22,7 @@ network={
 sudo wpa_supplicant -Dnl80211 -iwlan2 -c free.conf
 ```
 
-![](../../assets/images/Pasted%20image%2020260606102740.png)
+![[Pasted image 20261115195654.png]]
 
 別のターミナルから
 
@@ -30,9 +30,10 @@ sudo wpa_supplicant -Dnl80211 -iwlan2 -c free.conf
 sudo dhclient wlan2 -v
 ```
 
-![](../../assets/images/Pasted%20image%2020260606102810.png)
+![[Pasted image 20261115195701.png]]
 
-![](../../assets/images/Pasted%20image%2020260606102840.png)
+![[Pasted image 20261115195704.png]]
+
 admin:admin
 
 ---
@@ -42,7 +43,7 @@ admin:admin
 ```zsh
 sudo airodump-ng wlan60 -w ~/wifi/scanc6 --manufacturer --wps -c6
 ```
-![](../../assets/images/Pasted%20image%2020260606111007.png)
+![[Pasted image 20261115195711.png]]
 
 create open .conf
 
@@ -56,7 +57,7 @@ network={
 ```zsh
 sudo wpa_supplicant -Dnl80211 -iwlan2 -c open.conf
 ```
-![](../../assets/images/Pasted%20image%2020260606110948.png)
+![[Pasted image 20261115195721.png]]
 
 *このプロセスは止めずに以下を実行する*
 
@@ -66,13 +67,13 @@ sudo wpa_supplicant -Dnl80211 -iwlan2 -c open.conf
 sudo dhclient -v wlan2
 ```
 
-![](../../assets/images/Pasted%20image%2020260606110926.png)
+![[Pasted image 20261115195725.png]]
 
 ```zsh
 ip a show wlan2
 ```
 
-![](../../assets/images/Pasted%20image%2020260606115337.png)
+![[Pasted image 20261115195735.png]]
 
 ## MACアドレスの偽装
 
@@ -80,13 +81,13 @@ ip a show wlan2
 sudo ip link set wlan2 down
 ```
 
-![](../../assets/images/Pasted%20image%2020260606134745.png)
+![[Pasted image 20261115195739.png]]
 
 ```zsh
 ip link set wlan2 up
 ```
 
-![](../../assets/images/Pasted%20image%2020260606115100.png)
+![[Pasted image 20261115195743.png]]
 
 ## ログインのキャプチャ
 
@@ -96,8 +97,8 @@ sudo airodump-ng wlan2 -w ~/wifi/scanc6-01.cap
 
 *5分ほどキャプチャしたら止める*
 
-![](../../assets/images/Pasted%20image%2020260606135134.png)
+![[Pasted image 20261115195746.png]]
 
 free1:Jyl1iq8UajZ1fEK
 
-![](../../assets/images/Pasted%20image%2020260606140026.png)
+![[Pasted image 20261115195750.png]]
