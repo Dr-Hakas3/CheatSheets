@@ -1,20 +1,36 @@
 ---
 title: 2 Recon
 ---
+以下のフォルダで実行
+
+```zsh
+cd ~/CTF/WiFiChallengeLab-docker
+pwd
+```
+
+~/CTF/WiFiChallengeLab-docker
 
 # 01. What is the channel that the wifi-global Access Point is currently using?
 
+wifi-globalという名前のアクセスポイントで使われているChannelは？
+
 ```zsh
-┌──(kali㉿kali)-[~/CTF/WiFiChallengeLab-docker]
-└─$ sudo airodump-ng wlan60
+sudo airodump-ng wlan60
 ```
 
 ![](../../assets/images/Pasted%20image%2020260606090217.png)
 
+```flag
+44
+```
+
 ---
 # 02. What is the MAC of the wifi-IT client?
 
+wifi-ITのマックアドレスを調査し、そこに接続したClientをMACアドレスをこたえる問題
+
 wifi-ITのCHの特定
+
 ```zsh
 sudo airodump-ng wlan60 -w ~/wifi/scan --manufacturer --wps --band abg
 ```
@@ -26,6 +42,8 @@ sudo airodump-ng wlan60 -w ~/wifi/scanc11 --manufacturer --wps -c11
 ```
 
 ![](../../assets/images/Pasted%20image%2020260606090838.png)
+
+wifi-ITのマックアドレスが`F0:9F:C2:1A:CA:25`でそこに接続したClientを待つ
 
 ---
 # 03. What is the probe of 78:C1:A7:BF:72:46?
