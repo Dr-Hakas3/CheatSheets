@@ -1,5 +1,5 @@
 ---
-title: 01_General
+title: VM to host Copy Error
 ---
 ![[Pasted image 20261114201318.png]]
 

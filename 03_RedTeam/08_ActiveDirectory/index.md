@@ -389,6 +389,7 @@ privilege::debug
 ```powershell
 sekurlsa::logonpasswords
 ```
+
 キャッシュされたハッシュを含む、ドメイン ユーザーjeffおよびdaveの LSASS に保存されているすべての資格情報が表示されます。
 
 ## キャッシュされたサービスチケットの取得

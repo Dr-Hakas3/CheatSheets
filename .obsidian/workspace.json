@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_RedTeam/08_ActiveDirectory/index.md",
+                "file": "02_GreenTeam/VMWare/VM_to_Host_Copy_Error.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index"
+              "title": "VM_to_Host_Copy_Error"
             }
           },
           {
@@ -69,7 +69,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:termi",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -199,11 +199,13 @@
       "bases:新規ベースを作成": false
     }
   },
-  "active": "5f5396435ea0eda5",
+  "active": "64e7e0815756bc2f",
   "lastOpenFiles": [
+    "index.md",
+    "03_RedTeam.md",
+    "03_RedTeam/08_ActiveDirectory/index.md",
     "03_RedTeam/13_Wireless/index.md",
     "03_RedTeam/13_Wireless/Wi-Fi/index.md",
-    "03_RedTeam/08_ActiveDirectory/index.md",
     "writeups/wifi_challenge_lab/4_Legacy.md",
     "assets/images/Pasted image 20261116001018.png",
     "writeups/wifi_challenge_lab/2_recon.md",
@@ -244,8 +246,6 @@
     "writeups/OffSec/pgplay/internal/metadata.json",
     "writeups/OffSec/pgplay/internal/index.md",
     "writeups/OffSec/pgplay/inclusiveness/metadata.json",
-    "writeups/OffSec/pgplay/inclusiveness/index.md",
-    "writeups/OffSec/pgplay/geisha/index.md",
-    "writeups/OffSec/pgplay/empire-breakout/index.md"
+    "writeups/OffSec/pgplay/inclusiveness/index.md"
   ]
 }
