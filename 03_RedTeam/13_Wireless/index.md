@@ -1,8 +1,5 @@
 ---
 title: 13 Wireless
 ---
-# Setup
+https://wifi-hacking.cavementech.com/
 
-```zsh
-
-```

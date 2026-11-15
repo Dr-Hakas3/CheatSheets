@@ -1,5 +1,5 @@
 ---
-titl: Shopping Site
+title: Shopping Site
 parent: Servers
 grand_parent: Green Team
 ---
