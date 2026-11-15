@@ -1,22 +1,9 @@
+---
+title: NoSQL
 tags:
-
-- RedTeam
-    
-- WebSecurity
-    
-- NoSQL
-    
-- MongoDB  
-    aliases:
-    
-- NoSQL Injection
-    
-- NoSQLi
-    
-
+  - MongoDB
 ---
 
-# NoSQL Injection
 
 ## 1. 概要
 

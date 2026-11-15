@@ -1,6 +1,6 @@
 ---
 title: SQL Injection
-tag: RedTeam, Web
+tags: RedTeam, Web
 ---
 ## 1. 概要
 
