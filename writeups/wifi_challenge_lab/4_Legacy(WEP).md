@@ -1,7 +1,8 @@
 ---
-title: 4 Legacy
+title: 4 Legacy (WEP)
+tags:
+  - WEP
 ---
-
 # 7. Wi-Fiの古いパスワードを取得する
 
 ## WEPの偵察
