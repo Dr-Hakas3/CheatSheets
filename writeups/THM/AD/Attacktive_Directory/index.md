@@ -1,6 +1,5 @@
 ---
 title: Attacking Directory
-parent: Proving Grounds Play
 grand_parent: Writeups
 nav_order:
 ---
