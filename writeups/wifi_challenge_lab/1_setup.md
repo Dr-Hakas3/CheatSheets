@@ -173,6 +173,8 @@ AP/Client＝Docker内部
 ラボでは電波は存在しない
 ```
 
+---
+
 # トラブルシューティング
 
 ## トラブル例　１
@@ -238,7 +240,14 @@ docker compose up -d
 docker compose ps
 ```
 
+再起動
+
+```zsh
+docker compose restart
+```
+
 まずは `APs`、`Clients`、`nzyme` が `healthy` になるか確認しましょう。
+
 
 ## トラブル例２
 

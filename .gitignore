@@ -4,3 +4,4 @@ public/
 .quartz/
 prof/
 tsconfig.tsbuildinfo
+.obsidian/

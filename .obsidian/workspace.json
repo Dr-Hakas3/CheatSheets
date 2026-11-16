@@ -11,14 +11,12 @@
             "id": "5f5396435ea0eda5",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "writeups/THM/AD/Attacktive_Directory/index.md",
-                "mode": "source",
-                "source": false
+                "file": "06_ReverseEngineering/Practical_Malware_Analysys/[JP]Practical Malware Analysis.pdf"
               },
-              "icon": "lucide-file",
-              "title": "index"
+              "icon": "lucide-file-text",
+              "title": "[JP]Practical Malware Analysis"
             }
           },
           {
@@ -199,8 +197,13 @@
       "bases:新規ベースを作成": false
     }
   },
-  "active": "64e7e0815756bc2f",
+  "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
+    "03_RedTeam/index.md",
+    "03_RedTeam/01_OSINT/index.md",
+    "06_ReverseEngineering/index.md",
+    "writeups/wifi_challenge_lab/1_setup.md",
+    "writeups/THM/AD/Attacktive_Directory/index.md",
     "06_ReverseEngineering/Practical_Malware_Analysys/[JP]Practical Malware Analysis.pdf",
     "06_ReverseEngineering/Practical_Malware_Analysys/[EN] Practical Malware Analysis.pdf",
     "06_ReverseEngineering/Practical_Malware_Analysys",
@@ -211,13 +214,11 @@
     "05_Programing/Python/Black_Hat_Python2/black-hat-python-2e-ja/chapter-10/file_monitor1.py",
     "05_Programing/Python/Black_Hat_Python2/black-hat-python-2e-ja/chapter-10/bhservice_task.vbs",
     "05_Programing/Python/Black_Hat_Python2/black-hat-python-2e-ja/chapter-10/bhservice.py",
-    "05_Programing/Python/Black_Hat_Python2/black-hat-python-2e-ja/chapter-09/transmit_exfil.py",
     "05_Programing/Python/Black_Hat_Python2/black-hat-python-2e-ja/black-hat-python-2e-ja.png",
     "05_Programing/Python/Black_Hat_Python2/black-hat-python-2e-ja/README.md",
     "05_Programing/Python/Black_Hat_Python2/Practical_Malware_Analysys/black-hat-python-2e-ja/black-hat-python-2e-ja.png",
     "05_Programing/Python/Black_Hat_Python2/Practical_Malware_Analysys/black-hat-python-2e-ja/README.md",
     "05_Programing/Python/Black_Hat_Python2/Black_Hat_Python2.md",
-    "writeups/THM/AD/Attacktive_Directory/index.md",
     "writeups/THM/adventofcyber2024.md",
     "assets/images/Pasted image 20261117003651.png",
     "assets/images/Pasted image 20261117003632.png",
@@ -231,7 +232,6 @@
     "writeups/wifi_challenge_lab/3_opn.md",
     "03_RedTeam/13_Wireless/index.md",
     "03_RedTeam/13_Wireless/Wi-Fi/index.md",
-    "writeups/wifi_challenge_lab/1_setup.md",
     "assets/images/Pasted image 20261116000422.png",
     "assets/images/Pasted image 20261116000418.png",
     "assets/images/Pasted image 20261115234910.png",
@@ -244,8 +244,6 @@
     "writeups/HTB/pingpong/index.md",
     "writeups/OffSec/PG_Play/wpwn/index.md",
     "writeups/OffSec/PG_Play/vegeta1/index.md",
-    "writeups/OffSec/PG_Play/sorcerer/index.md",
-    "writeups/OffSec/PG_Play/solstice/index.md",
-    "writeups/OffSec/PG_Play/lampiao/index.md"
+    "writeups/OffSec/PG_Play/sorcerer/index.md"
   ]
 }
