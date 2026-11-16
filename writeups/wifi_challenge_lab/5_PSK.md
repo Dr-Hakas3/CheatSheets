@@ -471,3 +471,7 @@ Client Isolationが有効でも、ARP応答が見えるケースや、APの実�
 2. そのユーザーのIPアドレスをARPスキャンで発見する。
 3. Client Isolationが無効なら、端末間通信が成立する可能性がある。
 4. WebサーバーにHTTPアクセスしてFlagを取得する。
+
+---
+
+# 12. What is the wifi-office password? 
