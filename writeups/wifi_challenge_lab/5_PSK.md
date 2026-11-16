@@ -324,3 +324,50 @@ sudo airdecap-ng -e wifi-mobile -p starwars1 wifi-mobile-05.cap
 192.168.2.1
 ```
 
+```
+Cookie: PHPSESSID=68db49fa4e33fa3618936810f6b1222e
+```
+
+---
+
+# 10. what is the flag after login in wifi-mobile?
+
+![[Pasted image 20261117032512.png]]
+
+wifi-mobile.conf
+
+```
+network={
+  ssid="wifi-mobile"
+  psk="starwars1"
+  scan_ssid=1
+  key_mgmt=WPA-PSK
+  proto=WPA2
+}
+```
+
+```zsh
+sudo wpa_supplicant -Dnl80211 -i wlan3 -c wifi-mobile.conf
+```
+
+![[Pasted image 20261117032628.png]]
+
+```zsh
+sudo dhclient wlan3 -v
+```
+
+![[Pasted image 20261117032712.png]]
+
+Cookieを`68db49fa4e33fa3618936810f6b1222e`に書き換え
+
+![[Pasted image 20261117032829.png]]
+
+![[Pasted image 20261117032924.png]]
+
+```flag
+flag{2d5931f342c034a7e9d69f97fe23d13121898bc8}
+```
+
+---
+
+# 11. Is there client isolation in the wifi-mobile network?
