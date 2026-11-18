@@ -13,7 +13,7 @@ https://github.com/diego-treitos/linux-smart-enumeration
 python3 -m http.server 80
 ```
 
-![](../../../../../assets/images/Pasted%20image%2020260430180217.png)
+![[Pasted image 20260430180217.png]]
 
 ```bash
 chmod +x lse.sh 

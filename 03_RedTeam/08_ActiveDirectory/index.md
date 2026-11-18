@@ -136,7 +136,7 @@ evil-winrm -i 192.168.121.96 -u Eric.Wallows -p EricLikesRunning800
 - GenericALL
 - WriteAble
 
-![](../../assets/images/Pasted%20image%2020260523103114.png)
+![[Pasted image 20260523103114.png]]
 
 ## ユーザとグループを列挙する
 Local
@@ -176,7 +176,7 @@ DC01 owned by DEMO\Domain Admins
 APPSRV01 owned by DEMO\Domain Admins
 ```
 
-![](../../assets/images/Pasted%20image%2020260605043816.png)
+![[Pasted image 20260605043816.png]]
 
 ---
 # *Enumeration for Local Privilege Escalation*
@@ -313,7 +313,7 @@ Get-NetUser -SPN | select samaccountname,serviceprincipalname
 6. ドメインコントローラは、提供されたユーザー名のNTLMハッシュでノンス自体を暗号化し、サーバーから受信したレスポンスと比較します。
 7. 両者が一致した場合、認証要求は成功となります。
 
-![](../../../../images/Pasted%20image%2020260523052755.png)
+![[Pasted image 20260523052755.png]]
 
 ---
 

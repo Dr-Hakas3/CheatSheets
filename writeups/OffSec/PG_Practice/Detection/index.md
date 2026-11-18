@@ -49,11 +49,11 @@ Nmap done: 1 IP address (1 host up) scanned in 47.06 seconds
 
 http://192.168.165.97:5000/
 
-![](Pasted%20image%2020260613092353.png)
+![[Pasted image 20260613092353.png]]
 
 - v0.45.1
 
-![](Pasted%20image%2020260613152927.png)
+![[Pasted image 20260613152927.png]]
 *脆弱性がありそう*
 
 https://github.com/s0ck3t-s3c/CVE-2024-32651-changedetection-RCE/blob/main/CVE-2024-32651.py
@@ -65,7 +65,7 @@ source venv/bin/activate
 pip install requests
 ```
 
-![](Pasted%20image%2020260613153742.png)
+![[Pasted image 20260613153742.png]]
 
 ---
 
@@ -77,7 +77,7 @@ pip install requests
 
 
 ```
-![](Pasted%20image%2020260613153807.png)
+![[Pasted image 20260613153807.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Detection]

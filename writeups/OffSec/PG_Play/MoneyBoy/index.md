@@ -88,7 +88,7 @@ ftp> exit
 221 Goodbye.
 ```
 
-![](Pasted%20image%2020260605032339.png)
+![[Pasted image 20260605032339.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/MoneyBoy]
@@ -144,11 +144,11 @@ by Ben "epi" Risher 🤓                 ver: 2.13.1
 
 view-source:http://192.168.203.230/blogs/index.html
 
-![](Pasted%20image%2020260605025020.png)
+![[Pasted image 20260605025020.png]]
 
 view-source:http://192.168.201.230/S3cr3t-T3xt/index.html
 
-![](Pasted%20image%2020260605025524.png)
+![[Pasted image 20260605025524.png]]
 
 3xtr4ctd4t4
 
@@ -194,8 +194,8 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-06-05 03:27:
 
 # Initial Access
 
-![](Pasted%20image%2020260605033911.png)
-![](Pasted%20image%2020260605033940.png)
+![[Pasted image 20260605033911.png]]
+![[Pasted image 20260605033940.png]]
 
 ```zsh
 renu@MoneyBox:/home/lily$ ssh-copy-id lily@192.168.201.230 -f

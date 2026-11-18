@@ -610,7 +610,7 @@ fox@forward:~$ find / -perm -4000 2> /dev/null
 /usr/bin/gpasswd
 DOSBox runs in an X11 environment which will require X11Forwarding via SSH using the -X option.
 ```
-![](Pasted%20image%2020260613065255.png)
+![[Pasted image 20260613065255.png]]
 
 ```
 ssh -X fox@192.168.120.135
@@ -624,7 +624,7 @@ fox@forward:~$
 DOSBox:
 
 ```
-![](Pasted%20image%2020260613064812.png)
+![[Pasted image 20260613064812.png]]
 
 ```sh
 mount d /

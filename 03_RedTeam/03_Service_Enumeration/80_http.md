@@ -418,7 +418,7 @@ Setting	Value
 - Random User Agents	Enabled
 - Recommended Wordlist /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt
 
-![](../../assets/images/Pasted%20image%2020260512192606.png)
+![[Pasted image 20260512192606.png]]
 
 Source:
 https://github.com/danielmiessler/SecLists?utm_source=chatgpt.com
@@ -919,14 +919,14 @@ X-Forwarded-For:
 
 ### Bypassing Forbidden
 
-![](../../assets/images/Pasted%20image%2020260618021801.png)
+![[Pasted image 20260618021801.png]]
 
 *送信元を偽装*
 
 ```zsh
 X-Forwarded-For: 10.10.10.10
 ```
-![](../../assets/images/Pasted%20image%2020260618021134.png)
+![[Pasted image 20260618021134.png]]
 *headerに追加せずBodyに記載することで成功?*
 
 ### Cross-Site Scripting (XSS)

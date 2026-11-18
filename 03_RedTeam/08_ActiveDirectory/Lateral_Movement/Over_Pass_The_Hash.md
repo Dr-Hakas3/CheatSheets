@@ -18,7 +18,7 @@ jeff's Hash
 ```
 369def79d8372408bf6e93364cc93075
 ```
-![](../../../assets/images/Pasted%20image%2020260502093123.png)
+![[Pasted image 20260502093123.png]]
 
 # ハッシュを迂回したラテラルムーブメント
 ## 流れ

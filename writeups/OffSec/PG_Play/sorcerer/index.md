@@ -71,11 +71,11 @@ Nmap done: 1 IP address (1 host up) scanned in 65.69 seconds
 
 ## 80
 
-![](Pasted%20image%2020260509182245.png)
+![[Pasted image 20260509182245.png]]
 
 ## 7742
 
-![](Pasted%20image%2020260509183042.png)
+![[Pasted image 20260509183042.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/sorcerer]
@@ -107,7 +107,7 @@ Finished
 - zipfiles
 
 http://192.168.201.100:7742/zipfiles/
-![](Pasted%20image%2020260509220855.png)
+![[Pasted image 20260509220855.png]]
 
 ### Download & Extract
 
@@ -208,7 +208,7 @@ Archive:  sofia.zip
 ```
 ## 8080
 
-![](Pasted%20image%2020260509183109.png)
+![[Pasted image 20260509183109.png]]
 - Apache Tomcat/7.0.4
 
 # NFS
@@ -349,7 +349,7 @@ find / -perm -4000 -type f 2>/dev/null
 ```
 /usr/sbin/start-stop-daemon
 
-![](Pasted%20image%2020260510011452.png)
+![[Pasted image 20260510011452.png]]
 *This did not work as expected. I referenced an older GTFOBins entry in the writeup and executed the following command.*
 
 

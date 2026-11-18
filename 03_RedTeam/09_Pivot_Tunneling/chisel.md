@@ -172,7 +172,7 @@ chmod +x chisel
 - R:8080
 - 127.0.0.1:80  ターゲットの80番ポート
 
-![](../../assets/images/Pasted%20image%2020260508222935.png)
+![[Pasted image 20260508222935.png]]
 
 ---
 

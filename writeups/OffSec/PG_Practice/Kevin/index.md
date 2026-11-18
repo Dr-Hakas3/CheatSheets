@@ -95,26 +95,26 @@ Nmap done: 1 IP address (1 host up) scanned in 186.35 seconds
 
 ```
 
-![](Pasted%20image%2020260524143216.png)
+![[Pasted image 20260524143216.png]]
 
-![](Pasted%20image%2020260524143144.png)
+![[Pasted image 20260524143144.png]]
 
 https://community.hpe.com/t5/servers-general/hp-power-manager-password/td-p/3215442
 
-![](Pasted%20image%2020260524144455.png)
+![[Pasted image 20260524144455.png]]
 
 - id admin
 - pw admin
 
-![](Pasted%20image%2020260524144534.png)
+![[Pasted image 20260524144534.png]]
 
 Help tag
 
-![](Pasted%20image%2020260524144931.png)
+![[Pasted image 20260524144931.png]]
 
 https://github.com/z3r0-0t/Buffer-OverFlow/tree/master/HP%20Power%20Manager%204.2%20-Build%207
 
-![](Pasted%20image%2020260524145424.png)
+![[Pasted image 20260524145424.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Kevin]

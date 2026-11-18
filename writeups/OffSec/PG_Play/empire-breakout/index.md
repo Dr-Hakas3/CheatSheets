@@ -69,7 +69,7 @@ Nmap done: 1 IP address (1 host up) scanned in 60.45 seconds
 ## 80
 
 
-![](Pasted%20image%2020260522052645.png)
+![[Pasted image 20260522052645.png]]
 
 ```zsh
 ++++++++++[>+>+++>+++++++>++++++++++<<<<-]>>++++++++++++++++.++++.>>+++++++++++++++++.----.<++++++++++.-----------.>-----------.++++.<<+.>-.--------.++++++++++++++++++++.<------------.>>---------.<<++++++.++++++.
@@ -77,7 +77,7 @@ Nmap done: 1 IP address (1 host up) scanned in 60.45 seconds
 
 ## decode
 
-![](Pasted%20image%2020260522055131.png)
+![[Pasted image 20260522055131.png]]
 
 ```zsh
 .2uqPEfj3D<P'a-3
@@ -85,9 +85,9 @@ Nmap done: 1 IP address (1 host up) scanned in 60.45 seconds
 
 ## 20000
 
-![](Pasted%20image%2020260522041329.png)
+![[Pasted image 20260522041329.png]]
 
-![](Pasted%20image%2020260523044921.png)
+![[Pasted image 20260523044921.png]]
 
 ```zsh
 

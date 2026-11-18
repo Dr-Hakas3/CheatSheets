@@ -74,9 +74,9 @@ Nmap done: 1 IP address (1 host up) scanned in 233.64 seconds
 
 ### 80
 
-![](Pasted%20image%2020260512003701.png)
+![[Pasted image 20260512003701.png]]
 
-![](Pasted%20image%2020260512003742.png)
+![[Pasted image 20260512003742.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec]
@@ -148,9 +148,9 @@ Requests/sec.: 464.2160
 - web
 - webconfig
 
-![](Pasted%20image%2020260512004241.png)
+![[Pasted image 20260512004241.png]]
 
-![](Pasted%20image%2020260512004547.png)
+![[Pasted image 20260512004547.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Sams]
@@ -158,7 +158,7 @@ Requests/sec.: 464.2160
 http://192.168.201.248 [200 OK] Apache[2.4.48], Bootstrap, Country[RESERVED][ZZ], HTML5, HTTPServer[Apache/2.4.48 (Win64) OpenSSL/1.1.1k PHP/7.3.29], IP[192.168.201.248], JQuery, Lightbox, OpenSSL[1.1.1k], PHP[7.3.29], Script, Title[Sam Elliot | Web Designer]
 ```
 
-![](Pasted%20image%2020260512060310.png)
+![[Pasted image 20260512060310.png]]
 
 ### Changelog
 

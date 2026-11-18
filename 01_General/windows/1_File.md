@@ -16,7 +16,7 @@ type hoge.txt
 ```powershell
 gc nsclient.ini
 ```
-![](../../../assets/images/Pasted%20image%2020260515200136.png)
+![[Pasted image 20261118163814.png]]
 </details>
 
 ---

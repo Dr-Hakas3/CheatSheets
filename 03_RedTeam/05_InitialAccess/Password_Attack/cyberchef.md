@@ -14,7 +14,7 @@ nav_order: 12
 
 ## Render Image
 
-![](Pasted%20image%2020260519032702.png)
+![[Pasted image 20260519032702.png]]
 
 If I could Generate QR Code:
 [https://qreader.online/](https://qreader.online/)

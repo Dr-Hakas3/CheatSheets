@@ -101,11 +101,11 @@ by Ben "epi" Risher 🤓                 ver: 2.13.1
 
 http://192.168.149.35/robots.txt
 
-![](Pasted%20image%2020260517093736.png)
+![[Pasted image 20260517093736.png]]
 
 http://192.168.149.35/sar2HTML/
 
-![](Pasted%20image%2020260517093822.png)
+![[Pasted image 20260517093822.png]]
 sar2html Ver 3.2.1
 
 ```zsh
@@ -123,7 +123,7 @@ Papers: No Results
 
 ## test
 
-![](Pasted%20image%2020260517113552.png)
+![[Pasted image 20260517113552.png]]
 
 ---
 
@@ -132,7 +132,7 @@ Papers: No Results
 ## Upload php-reverse-shell
 
 
-![](Pasted%20image%2020260517153346.png)
+![[Pasted image 20260517153346.png]]
 
 
 ```zsh

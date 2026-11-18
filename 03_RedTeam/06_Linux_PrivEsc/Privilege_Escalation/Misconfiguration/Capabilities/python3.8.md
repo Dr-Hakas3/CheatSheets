@@ -24,7 +24,7 @@ Files with capabilities (limited to 50):
 ```bash
 /usr/bin/python3.8 = cap_setuid,cap_net_bind_service+eip
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260430191840.png)
+![[Pasted image 20260430191840.png]]
 
 ---
 # PE
@@ -41,6 +41,6 @@ Type "help", "copyright", "credits" or "license" for more information.
 root@cap:~# id
 uid=0(root) gid=1001(nathan) groups=1001(nathan)
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260430191848.png)
+![[Pasted image 20260430191848.png]]
 
 ---

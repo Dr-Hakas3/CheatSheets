@@ -64,12 +64,12 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 55.76 seconds
 ```
 
-![](Pasted%20image%2020260513053153.png)
+![[Pasted image 20260513053153.png]]
 
 ```zsh
 
 ```
-![](Pasted%20image%2020260513054617.png)
+![[Pasted image 20260513054617.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Wpwn]
@@ -90,7 +90,7 @@ Nmap done: 1 IP address (1 host up) scanned in 55.76 seconds
 ```
 wordpress
 
-![](Pasted%20image%2020260513055239.png)
+![[Pasted image 20260513055239.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Wpwn]
@@ -211,7 +211,7 @@ Interesting Finding(s):
 worpres version 5.5
 social warfare 3.5.2
 
-![](Pasted%20image%2020260513060403.png)
+![[Pasted image 20260513060403.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Wpwn]
@@ -231,7 +231,7 @@ social warfare 3.5.2
 ┌──(kali㉿kali)-[~/github/Dr-Hakas3/CheatSheets]
 └─$ wpprobe scan -u http://192.168.147.123/wordpress -v
 ```
-![](Pasted%20image%2020260513232712.png)
+![[Pasted image 20260513232712.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Wpwn]
@@ -353,12 +353,12 @@ define( 'DB_CHARSET', 'utf8mb4' );
 /** The Database Collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );
 ```
-![](Pasted%20image%2020260514000501.png)
+![[Pasted image 20260514000501.png]]
 
 ```zsh
 
 ```
-![](Pasted%20image%2020260514000650.png)
+![[Pasted image 20260514000650.png]]
 ```zsh
 ╔══════════╣ Analyzing Wordpress Files (limit 70)
 -rw-rw-rw- 1 www-data www-data 3203 Aug 17  2020 /var/www/html/wordpress/wp-config.php                              
@@ -367,7 +367,7 @@ define( 'DB_USER', 'wp_user' );
 define( 'DB_PASSWORD', 'R3&]vzhHmMn9,:-5' );
 define( 'DB_HOST', 'localhost' );
 ```
-![](Pasted%20image%2020260514000731.png)
+![[Pasted image 20260514000731.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Wpwn]

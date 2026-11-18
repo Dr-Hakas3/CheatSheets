@@ -110,21 +110,21 @@ Nmap done: 1 IP address (1 host up) scanned in 31.77 seconds
 
 http://192.168.129.187/
 
-![](Pasted%20image%2020260609101734.png)
+![[Pasted image 20260609101734.png]]
 
-![](Pasted%20image%2020260609101823.png)
+![[Pasted image 20260609101823.png]]
 
 cmd.aspx upload
 
-![](Pasted%20image%2020260609101920.png)
+![[Pasted image 20260609101920.png]]
 
-![](Pasted%20image%2020260609102001.png)
+![[Pasted image 20260609102001.png]]
 
 *aspxにアクセスしても実行されなかったためphpに変更*
 
-![](Pasted%20image%2020260609102241.png)
+![[Pasted image 20260609102241.png]]
 
-![](Pasted%20image%2020260609102333.png)
+![[Pasted image 20260609102333.png]]
 
 
 
@@ -134,12 +134,12 @@ AddType application/x-httpd-php .evil
 ```
 .evilをphpとして解釈させる
 
-![](../../assets/images/Pasted%20image%2020260609115259.png)
+![[Pasted image 20260609115259.png]]
 
 Upload
-![](Pasted%20image%2020260609120224.png)
+![[Pasted image 20260609120224.png]]
 
-![](Pasted%20image%2020260609120233.png)
+![[Pasted image 20260609120233.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Access]
@@ -150,19 +150,19 @@ Upload
 
 https://www.revshells.com/
 
-![](Pasted%20image%2020260609120249.png)
+![[Pasted image 20260609120249.png]]
 
 ---
 
 # Initial Access
 
-![](Pasted%20image%2020260610023910.png)
+![[Pasted image 20260610023910.png]]
 
-![](Pasted%20image%2020260610024020.png)
+![[Pasted image 20260610024020.png]]
 
 http://192.168.215.187/uploads/revshell.php.evil
 
-![](Pasted%20image%2020260610024113.png)
+![[Pasted image 20260610024113.png]]
 
 # Enum
 

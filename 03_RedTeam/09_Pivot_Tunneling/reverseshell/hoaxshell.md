@@ -25,6 +25,6 @@ Copied to clipboard!
 最初にtest.phpという名前のwebshellを蔵置している
 ## test.php
 
-![](../../../assets/images/Pasted%20image%2020260429085758.png)
+![[Pasted image 20260429085758.png]]
 
-![](../../../assets/images/Pasted%20image%2020260429085751.png)
+![[Pasted image 20260429085751.png]]

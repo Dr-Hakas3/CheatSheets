@@ -47,9 +47,9 @@ Nmap done: 1 IP address (1 host up) scanned in 66.48 seconds
 
 # HTTP
 ## 80
-![](Pasted%20image%2020260516063944.png)
+![[Pasted image 20260516063944.png]]
 
-![](Pasted%20image%2020260516072615.png)
+![[Pasted image 20260516072615.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/ColdBoxEasy]
@@ -76,7 +76,7 @@ http://192.168.201.239 [200 OK] Apache[2.4.18], Country[RESERVED][ZZ], HTML5, HT
 ```
 
 http://192.168.201.239/hidden
-![](Pasted%20image%2020260516070443.png)
+![[Pasted image 20260516070443.png]]
 
 ```zsh
 C0ldd, you changed Hugo's password, when you can send it to him so he can continue uploading his articles. Philip
@@ -122,9 +122,9 @@ valid users
 [+] Performing password attack on Wp Login against 3 user/s
 [SUCCESS] - c0ldd / 9876543210 
 ```
-![](Pasted%20image%2020260516095454.png)
+![[Pasted image 20260516095454.png]]
 
-![](Pasted%20image%2020260516105248.png)
+![[Pasted image 20260516105248.png]]
 
 http://192.168.201.239/wp-content/themes/twentyfifteen/404.php
 ```zsh
@@ -186,14 +186,14 @@ www-data@ColddBox-Easy:/tmp$ ./linpeas.sh
 ```zsh
 
 ```
-![](Pasted%20image%2020260516115542.png)
+![[Pasted image 20260516115542.png]]
 
 ```zsh
 ╔══════════╣ Sudo version (T1548.003,T1068)
 ╚ https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#sudo-version                                                 
 Sudo version 1.8.16
 ```
-![](Pasted%20image%2020260516115019.png)
+![[Pasted image 20260516115019.png]]
 
 ```zsh
 ╔══════════╣ Analyzing Wordpress Files (limit 70)
@@ -203,7 +203,7 @@ define('DB_USER', 'c0ldd');
 define('DB_PASSWORD', 'cybersecurity');
 define('DB_HOST', 'localhost');
 ```
-![](Pasted%20image%2020260516115442.png)
+![[Pasted image 20260516115442.png]]
 
 ```zsh
 Enter password: cybersecurity
@@ -321,7 +321,7 @@ El usuario c0ldd puede ejecutar los siguientes comandos en ColddBox-Easy:
 ```
 /usr/bin/ftp
 
-![](Pasted%20image%2020260516131911.png)
+![[Pasted image 20260516131911.png]]
 
 
 ```bash

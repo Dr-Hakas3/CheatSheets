@@ -259,9 +259,9 @@ binaries with elevated capabilities
 
 If Python
 
-![](../../assets/images/Pasted%20image%2020260520055618.png)
+![[Pasted image 20260520055618.png]]
 
-![](../../assets/images/Pasted%20image%2020260520055728.png)
+![[Pasted image 20260520055728.png]]
 
 ```bash
 /usr/bin/python2.7 -c 'import os; os.setuid(0); os.system("/bin/bash");'
@@ -336,7 +336,7 @@ https://github.com/DominicBreuker/pspy
 ./pspy64
 ```
 ## passphraseが取得可能な例
-![651](../../assets/images/Pasted%20image%2020260430181307.png)
+![[Pasted image 20260430181307.png]]
 
 # サービスフットプリントの検査
 ### 実行中のプロセスの動作を検査
@@ -466,7 +466,7 @@ lsblk
 ```
 
 ## Disk権限
-![](../../assets/images/Pasted%20image%2020260430184908.png)
+![[Pasted image 20260430184908.png]]
 
 ```bash
 df -h
@@ -582,7 +582,7 @@ https://github.com/diego-treitos/linux-smart-enumeration
 python3 -m http.server 80
 ```
 
-![](../../assets/images/Pasted%20image%2020260513224137.png)
+![[Pasted image 20260513224137.png]]
 
 ```bash
 chmod +x lse.sh 

@@ -8,7 +8,7 @@ parent: Green Team
 PS G:\Virtual Machines\GOAD-main> py goad.py -t install -l GOAD-Light -p virtualbox -m vm
 ```
 
-![](../../assets/images/Pasted%20image%2020260529031250.png)
+![[Pasted image 20260529031250.png]]
 
 ```powershell
 PLAY RECAP *******************************************************************************************************************************
@@ -20,7 +20,7 @@ Connection to 192.168.56.3 closed.
 [*] Lab successfully provisioned in 10:37:28
 ```
 
-![](../../assets/images/Pasted%20image%2020260529055618.png)
+![[Pasted image 20260529055618.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/github/Dr-Hakas3/CheatSheets]

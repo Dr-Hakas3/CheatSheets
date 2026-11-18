@@ -18,7 +18,7 @@ Victim
 # 実行中および停止中のサービスを列挙
 Get-CimInstance -ClassName win32_service | Select Name,State,PathName
 ```
-![](assets/images/Pasted%20image%2020250702215007.png)
+![[Pasted image 20250702215007.png]]
 
 #### バイナリパスにスペースや引用符がないサービスのリスト
 ```cmd

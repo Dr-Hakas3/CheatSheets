@@ -20,6 +20,6 @@ https://bcrypt-generator.com/
 [https://www.dcode.fr/brainfuck-language](https://www.dcode.fr/brainfuck-language)
 
 
-![](Pasted%20image%2020260522202907.png)
+![[Pasted image 20260522202907.png]]
 
 

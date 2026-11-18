@@ -89,7 +89,7 @@ Nmap done: 1 IP address (1 host up) scanned in 54.33 seconds
 
 ## 33414
 
-![](Pasted%20image%2020260521004122.png)
+![[Pasted image 20260521004122.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
@@ -97,13 +97,13 @@ Nmap done: 1 IP address (1 host up) scanned in 54.33 seconds
 http://192.168.231.249:33414 [404 Not Found] Country[RESERVED][ZZ], HTML5, HTTPServer[Werkzeug/2.2.3 Python/3.9.13], IP[192.168.231.249], Python[3.9.13], Title[404 Not Found], Werkzeug[2.2.3]
 ```
 
-![](Pasted%20image%2020260521005113.png)
+![[Pasted image 20260521005113.png]]
 
-![](Pasted%20image%2020260521005058.png)
+![[Pasted image 20260521005058.png]]
 
-![](Pasted%20image%2020260521005204.png)
+![[Pasted image 20260521005204.png]]
 
-![](Pasted%20image%2020260521005248.png)
+![[Pasted image 20260521005248.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
@@ -129,7 +129,7 @@ http://192.168.231.249:33414 [404 Not Found] Country[RESERVED][ZZ], HTML5, HTTPS
 
 ## 40080
 
-![](Pasted%20image%2020260521004239.png)
+![[Pasted image 20260521004239.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
@@ -186,7 +186,7 @@ Finished
 {"message":"File successfully uploaded"}
 ```
 
-![](Pasted%20image%2020260521020104.png)
+![[Pasted image 20260521020104.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Amaterasu]
@@ -220,7 +220,7 @@ curl: (26) Failed to open/read local data from file/application
 {"message":"File successfully uploaded"}
 ```
 
-![](Pasted%20image%2020260521020910.png)
+![[Pasted image 20260521020910.png]]
 
 *But I can't access file*
 
@@ -333,7 +333,7 @@ Serving HTTP on 0.0.0.0 port 33414 (http://0.0.0.0:33414/) ...
 192.168.231.249 - - [21/May/2026 02:35:10] "GET /linpeas.sh HTTP/1.1" 200 -
 ```
 
-![](Pasted%20image%2020260521031009.png)
+![[Pasted image 20260521031009.png]]
 
 ```
 -bash-5.1$ cat /usr/local/bin/backup-flask.sh 

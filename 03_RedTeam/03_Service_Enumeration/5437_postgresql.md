@@ -26,7 +26,7 @@ nav_order: 5437
 
 https://github.com/netbiosX/Default-Credentials/blob/master/PostgreSQL-Default-Password-List.md
 
-![](../../assets/images/Pasted%20image%2020260507101928.png)
+![[Pasted image 20260507101928.png]]
 
 ---
 

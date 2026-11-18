@@ -75,24 +75,24 @@ Nmap done: 1 IP address (1 host up) scanned in 34.36 seconds
 
 ```
 
-![](Pasted%20image%2020260615232617.png)
+![[Pasted image 20260615232617.png]]
 *すぐリダイレクトされて下記に遷移*
 
 http://192.168.161.25:8082/Config-Wizard/wizard/SetAdmin.lsp
 
-![](Pasted%20image%2020260615232648.png)
+![[Pasted image 20260615232648.png]]
 
 *Administratorを作成できる*
 
-![](Pasted%20image%2020260615232756.png)
+![[Pasted image 20260615232756.png]]
 
-![](Pasted%20image%2020260615233324.png)
+![[Pasted image 20260615233324.png]]
 
 https://github.com/SanjinDedic/FuguHub-8.4-Authenticated-RCE-CVE-2024-27697
 
 http://192.168.161.25:8082/rtl/protected/admin/customize.lsp
 
-![](Pasted%20image%2020260615233654.png)
+![[Pasted image 20260615233654.png]]
 
 *MachineをリブートしてAdministratorを作成せずにPoCを実行したらうまくいった*
 

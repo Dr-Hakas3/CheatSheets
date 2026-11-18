@@ -117,7 +117,7 @@ ftp> exit
 
 ## 8088
 
-![](Pasted%20image%2020260519201238.png)
+![[Pasted image 20260519201238.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Katana]
@@ -163,15 +163,15 @@ Finished
 
 http://192.168.231.83:8088/docs/admin.html
 
-![](Pasted%20image%2020260520042614.png)
+![[Pasted image 20260520042614.png]]
 http://192.168.231.83:8088/upload.php
 
 
-![](Pasted%20image%2020260519204740.png)
+![[Pasted image 20260519204740.png]]
 
 # 8715
 
-![](Pasted%20image%2020260520041832.png)
+![[Pasted image 20260520041832.png]]
 
 ---
 
@@ -195,9 +195,9 @@ http://192.168.231.83:8715/katana_php-reverse-shell.php
 
 http://192.168.231.83:8088/upload.html
 
-![](Pasted%20image%2020260520041637.png)
+![[Pasted image 20260520041637.png]]
 
-![](Pasted%20image%2020260520042212.png)
+![[Pasted image 20260520042212.png]]
 
 ```zsh
 Moved to other web server: /tmp/phprXya5u ====> /opt/manager/html/katana_php-reverse-shell.php
@@ -358,7 +358,7 @@ INSERT INTO `admin` (`name`, `pass`) VALUES
 
 ```
 
-![](Pasted%20image%2020260520045607.png)
+![[Pasted image 20260520045607.png]]
 
 *This is a rabbit hole*
 
@@ -386,11 +386,11 @@ chmod +x /tmp/linpeas.sh
 www-data@katana:~/html/ebook/database$ /tmp/linpeas.sh
 ```
 
-![](Pasted%20image%2020260520050035.png)
+![[Pasted image 20260520050035.png]]
 
-![](Pasted%20image%2020260520054706.png)
+![[Pasted image 20260520054706.png]]
 
-![](Pasted%20image%2020260520055439.png)
+![[Pasted image 20260520055439.png]]
 
 ```zsh
 ```bash

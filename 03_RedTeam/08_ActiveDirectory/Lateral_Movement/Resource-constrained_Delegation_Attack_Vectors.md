@@ -7,7 +7,7 @@ Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies
 
 [*] Successfully added machine account ATTACK$ with password AttackerPC1!.
 ```
-![](../../../assets/images/Pasted%20image%2020260502094014.png)
+![[Pasted image 20260502094014.png]]
 
 ```zsh
 cat hashes|cut -d : -f 4

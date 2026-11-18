@@ -35,7 +35,7 @@ net user /domain hacker newpassword
 ```bash
 runas /user:Administrator cmd
 ```
-![](../../assets/images/Pasted%20image%2020260426141008.png)
+![[Pasted image 20260426141008.png]]
 
 # 認証情報を記録する
 ```bash

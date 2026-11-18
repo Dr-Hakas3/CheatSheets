@@ -18,7 +18,7 @@ DistinguishedName
 CN=John,OU=HelpDesk,OU=demoUsers,DC=demo,DC=com
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605042701.png)
+![[Pasted image 20260605042701.png]]
 # 2
 
 ```powershell
@@ -26,7 +26,7 @@ PS C:\Windows\system32> (Get-ADComputer -Identity "APPSRV01").SID.Value
 S-1-5-21-2661071818-1767017692-878076344-1103
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605042636.png)
+![[Pasted image 20260605042636.png]]
 
 # 3
 
@@ -42,11 +42,11 @@ john
 The command completed successfully.
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605043007.png)
+![[Pasted image 20260605043007.png]]
 
 # 4
 
-![](../../../assets/images/Pasted%20image%2020260605050314.png)
+![[Pasted image 20260605050314.png]]
 
 ServerHelpDesk
 
@@ -82,7 +82,7 @@ Group Accounts for \\PEN100-DC
 The command completed successfully.
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605051016.png)
+![[Pasted image 20260605051016.png]]
 
 Dooomain Admins
 
@@ -98,7 +98,7 @@ Student
 The command completed successfully.
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605050912.png)
+![[Pasted image 20260605050912.png]]
 
 # 6 Enum LDAP
 
@@ -119,7 +119,7 @@ Morgan
 
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605051837.png)
+![[Pasted image 20260605051837.png]]
 ## Enum Description
 
 ```powershell
@@ -137,7 +137,7 @@ Wilson
 Morgan        Here is your flag: OS{818674cbccb5ea81e4ca5bce7b99ff43}
 ```
 
-![](../../../assets/images/Pasted%20image%2020260605051854.png)
+![[Pasted image 20260605051854.png]]
 
 ## 全属性列挙
 ```powershell

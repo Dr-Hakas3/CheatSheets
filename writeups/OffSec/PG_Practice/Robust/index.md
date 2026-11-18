@@ -66,12 +66,12 @@ Nmap done: 1 IP address (1 host up) scanned in 60.27 seconds
 
 http://192.168.104.200/login.php
 
-![](Pasted%20image%2020260618013953.png)
+![[Pasted image 20260618013953.png]]
 
 ```zsh
 wfuzz -H "X-Forwarded-For: 10.10.10.10"  --sc 302 -u http://192.168.104.200/FUZZ.php -w /usr/share/seclists/Discovery/Web-Content/big.txt
 ```
-![](Pasted%20image%2020260618025549.png)
+![[Pasted image 20260618025549.png]]
 
 ![[Pasted image 20260630224201.png]]
 
@@ -189,7 +189,7 @@ After visiting the page, we see the following message on the screen.
 
 Your IP is not allowed to use this webservice. Only 10.10.10.x is allowed
 ```
-![](Pasted%20image%2020260618015659.png)
+![[Pasted image 20260618015659.png]]
 ```
 IP Not Allowed
 IP Not Allowed
@@ -198,7 +198,7 @@ The web server is restricting us from accessing the web page/web application. Th
 Bypassing Forbidden
 To bypass the access control mechanism, we can use an HTTP request header called X-Forwarded-For. Here, we need to add X-Forwarded-For: 10.10.10.10 header to bypass the restriction and will be subsequently redirected to a Robust Employee Manager login page.
 ```
-![](Pasted%20image%2020260618020624.png)
+![[Pasted image 20260618020624.png]]
 ```
 
 IP Restriction Bypassed
@@ -207,7 +207,7 @@ To bypass this restriction permanently, we need to add this header in the Match 
 ```
 
 
-![](Pasted%20image%2020260618020615.png)
+![[Pasted image 20260618020615.png]]
 ```
 
 X-Forwarded-For Header
@@ -230,12 +230,12 @@ Out of all the files identified by the tool, /home.php seems to be the most inte
 Bypassing Login Page
 Let's try to bypass the login page by removing the Location: login.php header in the response using "Burp Suite". We can do this in the Match And Replace rule in "Options" tab under "Proxy" option in the "Burp Suite" to remove the header from all responses.
 ```
-![](Pasted%20image%2020260618022420.png)
+![[Pasted image 20260618022420.png]]
 ```
 
 We can see that the application redirected to a dashboard page ("Manage Employees" page) after removing the Location header.
 ```
-![](Pasted%20image%2020260618022446.png)
+![[Pasted image 20260618022446.png]]
 ```
 Since the dashboard is used for managing employees, let's try a UNION-based SQL Injection in the employees table. Type the SQL query ' Union select * from employees; in either First Name or Last Name fields to reveal an extra line. Here, we can observe a sequence of characters in the Birth date field for the employee Jeff.
 
@@ -243,7 +243,7 @@ First name	Last name	Birth date
 	Jeff	 Hills	    Mathsisfun123
 
 ```
-![](Pasted%20image%2020260618022506.png)
+![[Pasted image 20260618022506.png]]
 ```
 Jeff's Password
 Looks like the keyword Mathsisfun123 might be the password of the user Jeff. Let's try to connect as Jeff via SSH using the this keyword.

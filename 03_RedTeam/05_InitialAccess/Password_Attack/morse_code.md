@@ -9,4 +9,4 @@ nav_order: 13
 [https://morsecode.world/international/decoder/audio-decoder-adaptive.html](https://morsecode.world/international/decoder/audio-decoder-adaptive.html)
 
 
-![](Pasted%20image%2020260519043530.png)
+![[Pasted image 20260519043530.png]]

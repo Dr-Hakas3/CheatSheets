@@ -152,7 +152,7 @@ INFO: Done in 01M 02S
 INFO: Compressing output into 20260608043833_bloodhound.zip
 ```
 
-![](../../../../assets/images/Pasted%20image%2020260608044640.png)
+![[Pasted image 20260608044640.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/…/HTB/Windows/Hard/Pirate]
@@ -170,9 +170,9 @@ PRE2K       10.129.244.95   389    DC01             [+] Successfully obtained TG
 PRE2K       10.129.244.95   389    DC01             [+] Successfully obtained TGT for 2 pre-created computer accounts. Saved to /home/kali/.nxc/modules/pre2k/ccache
 ```
 
-![](../../../../assets/images/Pasted%20image%2020260608051604.png)
+![[Pasted image 20260608051604.png]]
 
-![](../../../../assets/images/Pasted%20image%2020260608052212.png)
+![[Pasted image 20260608052212.png]]
 
 MS01$ になって LDAP を見る
 

@@ -64,7 +64,7 @@ systeminfo
 ```powershell
 reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductName
 ```
-![](../../assets/images/Pasted%20image%2020260507131310.png)
+![[Pasted image 20260507131310.png]]
 
 ### 🕵 Check: 
 

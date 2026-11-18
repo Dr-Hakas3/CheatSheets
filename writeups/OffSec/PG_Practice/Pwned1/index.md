@@ -64,11 +64,11 @@ Nmap done: 1 IP address (1 host up) scanned in 28.21 seconds
 
 http://192.168.189.95/hidden_text/secret.dic
 
-![](Pasted%20image%2020260524190916.png)
+![[Pasted image 20260524190916.png]]
 
 http://192.168.189.95/robots.txt
 
-![](Pasted%20image%2020260524191045.png)
+![[Pasted image 20260524191045.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Pwned1]
@@ -85,7 +85,7 @@ http://192.168.189.95/robots.txt
 
 ```
 
-![](Pasted%20image%2020260524191321.png)
+![[Pasted image 20260524191321.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice/Pwned1]
@@ -150,7 +150,7 @@ Finished
 
 http://192.168.189.95/pwned.vuln/
 
-![](Pasted%20image%2020260524191505.png)
+![[Pasted image 20260524191505.png]]
 
 view-source:http://192.168.189.95/pwned.vuln/
 
@@ -161,7 +161,7 @@ view-source:http://192.168.189.95/pwned.vuln/
 ftpuser
 B0ss_Pr!ncesS
 
-![](Pasted%20image%2020260524194817.png)
+![[Pasted image 20260524194817.png]]
 
 # FTP
 

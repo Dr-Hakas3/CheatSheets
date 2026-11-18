@@ -1,7 +1,7 @@
 ```zsh
 ./bloodhound-cli install
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260523053009.png)
+![[Pasted image 20260523053009.png]]
 
 # Default Password
 ```zsh
@@ -16,7 +16,7 @@
 echo 'export PATH=$PATH:/opt/bloodhound' >> ~/.zshrc
 source ~/.zshrc
 ```
-![](../../../assets/images/Pasted%20image%2020260502084530.png)
+![[Pasted image 20260502084530.png]]
 
 # Password Reset
 パスワードを紛失した場合は、BloodHound CLI を使用してローカルでリセットできます。

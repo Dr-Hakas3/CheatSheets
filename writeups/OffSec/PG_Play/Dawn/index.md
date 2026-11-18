@@ -123,7 +123,7 @@ Finished
 
 http://192.168.123.11/logs/management.log
 
-![](Pasted%20image%2020260530092759.png)
+![[Pasted image 20260530092759.png]]
 
 # 445
 
@@ -239,7 +239,7 @@ dawn@dawn:~$ find / -type f -perm -04000 -ls 2>/dev/null
 
 ```
 
-![](Pasted%20image%2020260530094618.png)
+![[Pasted image 20260530094618.png]]
 ```zsh
 dawn@dawn:~$ /usr/bin/zsh
 dawn# id

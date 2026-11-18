@@ -25,7 +25,7 @@ xfreerdp3 /u:"steve" /p:'securityIsNotAnOption++++++' /v:192.168.203.220 /dynami
 ```powershell
 Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" | select displayname
 ```
-![](assets/images/Pasted%20image%2020250702123350.png)
+![[Pasted image 20250702123350.png]]
 ```txt
 ※オンラインリソースによると、このFileZilla 3.63.1には[DLLハイジャックの脆弱性](https://filezilla-project.org/)があるようです。アプリケーションを起動すると、インストールディレクトリから**TextShaping.dll** ファイルを読み込もうとします。ここに悪意のあるDLLを配置できれば、誰かがFileZilla FTPクライアントを実行しようとするたびに、そのDLLがユーザーの権限で読み込まれることになります。
 ```

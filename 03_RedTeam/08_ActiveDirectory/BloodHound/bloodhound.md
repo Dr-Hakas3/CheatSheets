@@ -10,7 +10,7 @@ grand_parent: Red Team
 ```zsh
 ./bloodhound-cli install
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260523181224.png)
+![[Pasted image 20260523181224.png]]
 
 # Default Password
 ```zsh
@@ -25,7 +25,7 @@ grand_parent: Red Team
 echo 'export PATH=$PATH:/opt/bloodhound' >> ~/.zshrc
 source ~/.zshrc
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260523181233.png)
+![[Pasted image 20260523181233.png]]
 
 # Password Reset
 パスワードを紛失した場合は、BloodHound CLI を使用してローカルでリセットできます。
@@ -209,7 +209,7 @@ sudo neo4j start
 http://localhost:7474
 - Username neo4j
 - Password neo4j
-![](../../../../../../assets/images/Pasted%20image%2020260523053035.png)
+![[Pasted image 20260523053035.png]]
 - ログイン後にパスワード変更を求められる
 - データベース認証時に必要となるため記録しておく
 - NewPasswordはbloodhound
@@ -245,6 +245,6 @@ WindowsマシンからKali Linuxマシンにzipファイルを転送する必要
 ```zsh
 bloodhound-python -u "hrapp-service" -p 'Untimed$Runny' -d hokkaido-aerospace.com -c all --zip -ns 192.168.186.40
 ```
-![](../../../../../../assets/images/Pasted%20image%2020260523053026.png)
+![[Pasted image 20260523053026.png]]
 
 </details>

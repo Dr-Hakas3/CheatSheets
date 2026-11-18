@@ -169,7 +169,7 @@ $winFunc::CreateThread(0,0,$x,0,0,0);for (;;) { Start-sleep 60 };
 ```
 
 4. VirusTotalでの検出率を確認する
-![](../../../assets/images/Pasted%20image%2020260429060455.png)
+![[Pasted image 20260429060455.png]]
 
 5. 検出ロジック回避
 ```Powershell

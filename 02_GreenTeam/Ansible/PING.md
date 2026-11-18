@@ -40,7 +40,7 @@ ad/OSCP+_AD_Set_v1/ansible/playbooks/site.yml
 PS G:\Virtual_Machines\GOAD-main> py goad.py -t install -l OSCP+_AD_Set_v1 -p virtualbox -m vm
 ```
 
-![](../../assets/images/Pasted%20image%2020260530195055.png)
+![[Pasted image 20260530195055.png]]
 
 ```powershell
 PS G:\Virtual_Machines\GOAD-main> cd G:\Virtual_Machines\GOAD-main\workspace\4776fe-oscp+_ad_set_v1-virtualbox\provider

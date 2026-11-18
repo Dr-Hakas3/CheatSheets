@@ -149,27 +149,27 @@ y
 - password password
 
 
-![](../../assets/images/Pasted%20image%2020260429222612.png)
+![[Pasted image 20260429222612.png]]
 # Agents
-![](../../assets/images/Pasted%20image%2020260429222606.png)
+![[Pasted image 20260429222606.png]]
 
 # Example Listeners
 ## Command Line
 ```zsh
 listener_add --addr 127.0.0.1:4444 --to 127.0.0.1:80 --tcp
 ```
-![](../../assets/images/Pasted%20image%2020260429222558.png)
-![](../../assets/images/Pasted%20image%2020260429222552.png)
+![[Pasted image 20260429222558.png]]
+![[Pasted image 20260429222552.png]]
 
 ## Console
-![](../../assets/images/Pasted%20image%2020260429222544.png)
+![[Pasted image 20260429222544.png]]
 
-![](../../assets/images/Pasted%20image%2020260429222538.png)
-![](../../assets/images/Pasted%20image%2020260429222532.png)
+![[Pasted image 20260429222538.png]]
+![[Pasted image 20260429222532.png]]
 
 # Connection
-![](../../assets/images/Pasted%20image%2020260429222523.png)
-![](../../assets/images/Pasted%20image%2020260429222509.png)
+![[Pasted image 20260429222523.png]]
+![[Pasted image 20260429222509.png]]
 
 ---
 

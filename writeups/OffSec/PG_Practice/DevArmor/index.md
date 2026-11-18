@@ -51,7 +51,7 @@ Nmap done: 1 IP address (1 host up) scanned in 174.13 seconds
 
 # http
 
-![](Pasted%20image%2020260611043246.png)
+![[Pasted image 20260611043246.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Practice]

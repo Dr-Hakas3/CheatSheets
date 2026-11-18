@@ -34,7 +34,7 @@ sudo nmap -Pn -p- -sU 192.168.0.1
 ```zsh
 sudo autorecon 192.168.243.248
 ```
-![](../../assets/images/Pasted%20image%2020260508200423.png)
+![[Pasted image 20260508200423.png]]
 
 ## bash script
 

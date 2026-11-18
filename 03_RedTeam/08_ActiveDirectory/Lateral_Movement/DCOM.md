@@ -82,4 +82,4 @@ corp\jen
 PS C:\Windows\system32> hostname
 FILES04
 ```
-![](../../../assets/images/Pasted%20image%2020260502093658.png)
+![[Pasted image 20260502093658.png]]

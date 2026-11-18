@@ -110,7 +110,7 @@ hydra -L /usr/share/wordlists/dirb/others/names.txt -p "SuperS3cure1337#" rdp://
 - ユーザ名とパスワードを指定するリクエストボディ
 - ログイン失敗時のキャプチャ
 1. Burpまたはブラウザから適当なID:PASSでログインし、そのrequestとresponseから情報を取得
-![](../../../../images/Pasted%20image%2020260429101656.png)
+![[Pasted image 20260429101656.png]]
 
 2. Hydraで攻撃
 ```bash

@@ -106,7 +106,7 @@ HOP RTT      ADDRESS
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 82.19 seconds
 ```
-![](Pasted%20image%2020260516142647.png)
+![[Pasted image 20260516142647.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Lampiao]
@@ -116,10 +116,10 @@ http://192.168.201.48:1898 [200 OK] Apache[2.4.7], Content-Language[en], Country
 
 https://github.com/a2u/CVE-2018-7600/blob/master/exploit.py
 
-![](Pasted%20image%2020260516164013.png)
+![[Pasted image 20260516164013.png]]
 tiago
 
-![](Pasted%20image%2020260516164118.png)
+![[Pasted image 20260516164118.png]]
 eder
 
 ```zsh

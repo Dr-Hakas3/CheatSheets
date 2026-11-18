@@ -17,10 +17,10 @@ nav_order: 5
 	- [[#dnscat2 による DNS トンネリング#Execise|Execise]]
 
 ## 名前解決の流れ
-![](../../assets/images/Pasted%20image%2020260508223311.png)
+![[Pasted image 20260508223311.png]]
 
 ## 演習環境NW図
-![](../../assets/images/Pasted%20image%2020260508223303.png)
+![[Pasted image 20260508223303.png]]
 
 ## 前提条件
 PGDATABASE01までは以下のコマンドで侵害済
@@ -75,7 +75,7 @@ sudo tcpdump -i ens192 udp port 53
 2025/07/29 21:47:00 server: session#1: tun: proxy#R:127.0.0.1:1080=>socks: Listening
 ```
 上記の通信の結果
-![](../../assets/images/Pasted%20image%2020260508223252.png)
+![[Pasted image 20260508223252.png]]
 
 Kali
 ```bash

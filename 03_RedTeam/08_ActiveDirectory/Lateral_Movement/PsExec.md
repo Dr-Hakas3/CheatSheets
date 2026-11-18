@@ -19,4 +19,4 @@ grand_parent: Red Team
 ```powershell
 .\PsExec64.exe -i  \\FILES04 -u corp\jen -p Nexus123! cmd
 ```
-![](../../../assets/images/Pasted%20image%2020260502092934.png)
+![[Pasted image 20260502092934.png]]
