@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "writeups/wifi_challenge_lab/7_SAE/13.md",
+                "file": "03_RedTeam/13_Wireless/Wi-Fi/Evil_Twin.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "13"
+              "title": "Evil_Twin"
             }
           }
         ]
@@ -33,12 +33,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_RedTeam/13_Wireless/Wi-Fi/コマンド/hostapd-mana.md",
+                "file": "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airodump-ng.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "hostapd-mana"
+              "title": "airodump-ng"
             }
           }
         ]
@@ -207,16 +207,25 @@
   },
   "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
+    "writeups/wifi_challenge_lab/6_PSK/08.md",
+    "03_RedTeam/13_Wireless/Wi-Fi/Evil_Twin.md",
+    "06_ReverseEngineering/reverse_engineering.md",
+    "writeups/wifi_challenge_lab/5_Legacy(WEP)/07.md",
+    "writeups/wifi_challenge_lab/4_OPN/06.md",
+    "writeups/wifi_challenge_lab/4_OPN/05.md",
+    "writeups/wifi_challenge_lab/7_SAE/13.md",
+    "assets/images/Pasted image 20261118110014.png",
+    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airodump-ng.md",
+    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airdecap-ng.md",
+    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airmon-ng.md",
+    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/hostapd-mana.md",
+    "writeups/wifi_challenge_lab/1_Setup/2_Lab_Start_Stop.md",
     "writeups/wifi_challenge_lab/6_PSK/12.md",
     "writeups/wifi_challenge_lab/6_PSK/11.md",
     "writeups/wifi_challenge_lab/6_PSK/10.md",
     "writeups/wifi_challenge_lab/6_PSK/09.md",
-    "writeups/wifi_challenge_lab/6_PSK/08.md",
-    "writeups/wifi_challenge_lab/5_Legacy(WEP)/07.md",
     "writeups/wifi_challenge_lab/index.md",
     "index.md",
-    "writeups/wifi_challenge_lab/4_OPN/06.md",
-    "writeups/wifi_challenge_lab/4_OPN/05.md",
     "writeups/wifi_challenge_lab/3_Recon/04.md",
     "writeups/wifi_challenge_lab/7_SAE",
     "writeups/wifi_challenge_lab/6_PSK",
@@ -225,16 +234,13 @@
     "writeups/wifi_challenge_lab/3_Recon/03.md",
     "writeups/wifi_challenge_lab/3_Recon/02.md",
     "writeups/wifi_challenge_lab/3_Recon/01.md",
-    "writeups/wifi_challenge_lab/1_Setup/2_Lab_Start_Stop.md",
     "writeups/wifi_challenge_lab/2_Introduction/00..md",
     "writeups/wifi_challenge_lab/1_Setup/1_Install_Setup.md",
     "writeups/wifi_challenge_lab/2_Introduction",
     "writeups/wifi_challenge_lab/1_Setup/3_トラブルシューティング.md",
     "writeups/wifi_challenge_lab/3_Recon",
     "01_General/windows/Keyboard_Flow.md",
-    "01_General/windows/Always_on_Top.md",
     "writeups/wifi_challenge_lab/1_Setup",
-    "writeups/wifi_challenge_lab/7_SAE/13.md",
     "assets/images/Pasted image 20261117035821.png",
     "assets/images/Pasted image 20261117035220.png",
     "assets/images/Pasted image 20261117035017.png",
@@ -242,15 +248,9 @@
     "assets/images/Pasted image 20261117034822.png",
     "assets/images/Pasted image 20261117034755.png",
     "assets/images/Pasted image 20261117034701.png",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/hostapd-mana.md",
     "hostapd.conf",
     "assets/images/Pasted image 20261117034440.png",
     "assets/images/Pasted image 20261117034418.png",
-    "assets/images/Pasted image 20261117034242.png",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/mdk4.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airdecap-ng.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airodump-ng.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airmon-ng.md",
     "06_ReverseEngineering/Practical_Malware_Analysys/[JP]Practical Malware Analysis.pdf",
     "06_ReverseEngineering/Practical_Malware_Analysys/[EN] Practical Malware Analysis.pdf"
   ]

@@ -25,23 +25,31 @@ Monitor Modeにすると、アクセスポイントに接続しなくても、�
 # 2. 基本的な使い方
 
 ① 無線LANインターフェースの確認
+```
 sudo airmon-ng
+```
 
 
 無線LANインターフェースの一覧を表示します。
 ② Monitor Modeへの切り替え
+```
 sudo airmon-ng start wlan0
+```
 
 
 wlan0 をMonitor Modeに切り替えます。
 
 環境によっては、新しいインターフェース名として wlan0mon が作成されます。
 ③ Monitor Modeの確認
+```
 iw dev
+```
 
 
 または、
+```
 iwconfig
+```
 
 
 Monitor Modeになっているか確認できます。
