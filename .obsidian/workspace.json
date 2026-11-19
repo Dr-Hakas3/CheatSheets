@@ -13,32 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_RedTeam/04_Evasion/AV_Evasion/AV_Evasion_Test.md",
+                "file": "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/8.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "AV_Evasion_Test"
-            }
-          }
-        ]
-      },
-      {
-        "id": "b97f1b6158d2ecbd",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "b84366cf4c045ed8",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "03_RedTeam/13_Wireless/Wi-Fi/コマンド/iw.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "iw"
+              "title": "8"
             }
           }
         ]
@@ -103,7 +83,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "right": {
     "id": "a185417737a324e0",
@@ -207,51 +187,50 @@
   },
   "active": "5f5396435ea0eda5",
   "lastOpenFiles": [
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/9.md",
+    "assets/images/Pasted image 20261119233852.png",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/8.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/6.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/7.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/5.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/4.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/3.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/2.md",
+    "assets/images/Pasted image 20261119231511.png",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/1.md",
+    "assets/images/Pasted image 20261119230849.png",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/strings.txt",
+    "writeups/SANS/Holiday_Hack/2026/SQL_Injection/SQL_Injection.md",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction/challenge_binary",
+    "writeups/SANS/Holiday_Hack/2026/Reversing_Introduction",
+    "assets/images/Pasted image 20261119225425.png",
+    "assets/images/Pasted image 20261119225413.png",
+    "assets/images/Pasted image 20261119225312.png",
+    "assets/images/Pasted image 20261119225244.png",
+    "assets/images/Pasted image 20261119225221.png",
+    "writeups/SANS/Holiday_Hack/2026/DTMF/★/writeup.md",
+    "03_RedTeam/12_WebAttacks/SQLi/01_Basic/Union_Based_SQLi.md",
+    "writeups/SANS/Holiday_Hack/2026/DTMF/★/dtmf2num.py",
+    "writeups/SANS/Holiday_Hack/2026/DTMF/★/dtmf.py",
+    "writeups/SANS/Holiday_Hack/2026/DTMF/★/train_station.wav",
+    "writeups/SANS/Holiday_Hack/2026/DTMF/★",
+    "writeups/SANS/Holiday_Hack/2026/DTMF",
+    "03_RedTeam/12_WebAttacks/SQLi/02_DBMS/MSSQL.md",
+    "03_RedTeam/12_WebAttacks/SQLi/02_DBMS/MySQL.md",
+    "03_RedTeam/12_WebAttacks/SQLi/02_DBMS/NoSQL.md",
+    "03_RedTeam/12_WebAttacks/SQLi/01_Basic/Error_Based_SQLi.md",
+    "03_RedTeam/12_WebAttacks/SQLi/01_Basic/Boolean_Based_SQLi.md",
+    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/iw.md",
+    "assets/images/Pasted image 20261119211942.png",
+    "writeups/SANS/Holiday_Hack/2026/SQL_Injection/r.txt",
+    "writeups/SANS/Holiday_Hack/2026/SQL_Injection",
+    "assets/images/Pasted image 20261119210631.png",
+    "03_RedTeam/04_Evasion/AV_Evasion/AV_Evasion_Test.md",
     "writeups/Seccon_Biginners/2026/Web/footnote.md",
     "writeups/Seccon_Biginners/2026/pwned/rob4.md",
     "writeups/vulnhub/FALL/index.md",
     "writeups/wifi_challenge_lab/7_SAE/14_WPA3.md",
     "05_Programing/Python/Other/convert-path.py.md",
-    "05_Programing/Python/Other/convert-path.py",
-    "01_General/windows/1_File.md",
-    "assets/images/Pasted image 20261118163814.png",
-    "assets/images/Pasted image 20261118163631.png",
-    "assets/images/Pasted image 20261118163538.png",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/iw.md",
-    "assets/images/Pasted image 20261118163427.png",
-    "03_RedTeam/13_Wireless/Wi-Fi/認証.md",
-    "assets/images/Pasted image 20261118163342.png",
-    "assets/images/Pasted image 20261118161813.png",
-    "assets/images/Pasted image 20261118161732.png",
-    "assets/images/Pasted image 20261118161718.png",
-    "assets/images/Pasted image 20261118160736.png",
-    "assets/images/Pasted image 20261118155847.png",
-    "writeups/THM/adventofcyber2024.md",
-    "writeups/wifi_challenge_lab/7_SAE/13.md",
-    "writeups/wifi_challenge_lab/index.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airodump-ng.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/ツール/wacker.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/ツール",
-    "writeups/wifi_challenge_lab/6_PSK/08_Evil-Twin.md",
-    "writeups/wifi_challenge_lab/6_PSK/12.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/Evil_Twin.md",
-    "06_ReverseEngineering/reverse_engineering.md",
-    "writeups/wifi_challenge_lab/5_Legacy(WEP)/07.md",
-    "writeups/wifi_challenge_lab/4_OPN/06.md",
-    "writeups/wifi_challenge_lab/4_OPN/05.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airdecap-ng.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/airmon-ng.md",
-    "03_RedTeam/13_Wireless/Wi-Fi/コマンド/hostapd-mana.md",
-    "writeups/wifi_challenge_lab/1_Setup/2_Lab_Start_Stop.md",
-    "writeups/wifi_challenge_lab/6_PSK/11.md",
-    "writeups/wifi_challenge_lab/6_PSK/10.md",
-    "writeups/wifi_challenge_lab/7_SAE",
-    "writeups/wifi_challenge_lab/6_PSK",
-    "writeups/wifi_challenge_lab/5_Legacy(WEP)",
-    "writeups/wifi_challenge_lab/4_OPN",
-    "writeups/wifi_challenge_lab/2_Introduction",
-    "writeups/wifi_challenge_lab/3_Recon",
-    "writeups/wifi_challenge_lab/1_Setup",
-    "hostapd.conf"
+    "01_General/windows/1_File.md"
   ]
 }
