@@ -66,3 +66,9 @@ git push origin --delete v5
 ```
 
 ![[Pasted image 20261114183832.png]]
+
+---
+
+```zsh
+git add . && git commit -m "Add CheatSheets content" && git push origin main
+```
