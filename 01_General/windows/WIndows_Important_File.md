@@ -1,7 +1,5 @@
 ---
-title: Important_File
-parent: Windows
-grand_parent: General
+title: Important File
 ---
 
 - `C:/Users/Administrator/NTUser.dat`
