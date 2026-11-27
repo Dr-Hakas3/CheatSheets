@@ -1,0 +1,110 @@
+/lib/ld-linux.so.2
+libc.so.6
+_IO_stdin_used
+strcpy
+puts
+stdin
+printf
+fgets
+atoi
+sleep
+__libc_start_main
+GLIBC_2.0
+__gmon_start__
+[^_]
+Scanning for hardware changes...
+Scan complete. No changes detected.
+System Information:
+CPU: Intel Core i7
+RAM: 16GB
+Storage: 512GB SSD
+Enter Blocks to verify:
+Verifying block: %s
+Block verification complete. Block is valid.
+Debug mode activated.
+=========================================
+Available choices:
+1. Information
+2. Block Verification
+0. Exit
+Enter your choice: 
+Exiting debug mode.
+Invalid choice. Exiting debug mode.
+Invalid choice. Terminating.
+Hardware diagnostic program
+2. Scan Hardware Changes
+9*2$"
+GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+crtstuff.c
+deregister_tm_clones
+__do_global_dtors_aux
+completed.7623
+__do_global_dtors_aux_fini_array_entry
+frame_dummy
+__frame_dummy_init_array_entry
+target.c
+__FRAME_END__
+__init_array_end
+_DYNAMIC
+__init_array_start
+__GNU_EH_FRAME_HDR
+_GLOBAL_OFFSET_TABLE_
+__libc_csu_fini
+func_information
+__x86.get_pc_thunk.bx
+printf@@GLIBC_2.0
+func_scan_hw_changes
+__x86.get_pc_thunk.bp
+fgets@@GLIBC_2.0
+_edata
+func_math_operation
+sleep@@GLIBC_2.0
+func_debug
+func_block_verification
+strcpy@@GLIBC_2.0
+__data_start
+puts@@GLIBC_2.0
+__gmon_start__
+__dso_handle
+_IO_stdin_used
+func_choice
+__libc_start_main@@GLIBC_2.0
+__libc_csu_init
+stdin@@GLIBC_2.0
+_dl_relocate_static_pie
+_fp_hw
+__bss_start
+main
+__x86.get_pc_thunk.ax
+atoi@@GLIBC_2.0
+__TMC_END__
+func_trampoline
+.symtab
+.strtab
+.shstrtab
+.interp
+.note.gnu.build-id
+.note.gnu.property
+.note.ABI-tag
+.gnu.hash
+.dynsym
+.dynstr
+.gnu.version
+.gnu.version_r
+.rel.dyn
+.rel.plt
+.init
+.plt.sec
+.text
+.fini
+.rodata
+.eh_frame_hdr
+.eh_frame
+.init_array
+.fini_array
+.dynamic
+.got
+.got.plt
+.data
+.bss
+.comment

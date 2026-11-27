@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="セキュリティや開発に関するチートシート">
+  <title>CheatSheets</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #e6edf7;
+      --muted: #a1aec4;
+      --line: #29374f;
+      --surface: #131e31;
+      --page: #0b1220;
+      --accent: #82b4ff;
+      --accent-soft: #1a2b45;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .hero {
+      padding: 38px 24px 32px;
+      color: #fff;
+      background: linear-gradient(120deg, #080e19, #142844);
+    }
+
+    .hero-inner,
+    .layout,
+    footer {
+      width: min(1200px, calc(100% - 40px));
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: #d0def4;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+      padding-top: 26px;
+      padding-bottom: 48px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .sidebar h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+
+    .tree,
+    .tree ul {
+      margin: 0;
+      padding-left: 16px;
+      list-style: none;
+    }
+
+    .tree {
+      padding-left: 0;
+    }
+
+    .tree li {
+      margin: 2px 0;
+    }
+
+    .tree details {
+      min-width: 0;
+    }
+
+    .tree summary {
+      padding: 3px 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      overflow-wrap: break-word;
+    }
+
+    .tree summary:hover,
+    .tree a:hover {
+      background: var(--accent-soft);
+    }
+
+    .tree a {
+      display: block;
+      padding: 3px 6px 3px 20px;
+      border-radius: 5px;
+      color: var(--accent);
+      text-decoration: none;
+      overflow-wrap: break-word;
+    }
+
+    .tree .empty-folder {
+      color: var(--muted);
+      font-size: .88rem;
+      white-space: nowrap;
+    }
+
+    .content {
+      min-width: 0;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px 0;
+      background: var(--page);
+    }
+
+    #search {
+      width: 100%;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    #search::placeholder {
+      color: var(--muted);
+    }
+
+    #status {
+      color: var(--muted);
+      white-space: nowrap;
+      font-size: .9rem;
+    }
+
+    .category {
+      margin: 26px 0;
+    }
+
+    .category h2 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      display: block;
+      min-width: 0;
+      padding: 15px;
+      color: inherit;
+      text-decoration: none;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      transition: border-color .15s, transform .15s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card strong {
+      display: block;
+      color: var(--accent);
+    }
+
+    .card small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      overflow-wrap: break-word;
+    }
+
+    .message {
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    #sheetFrame {
+      width: 100%;
+      height: calc(100vh - 150px);
+      min-height: 480px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    footer {
+      padding: 18px 0 28px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    @media (max-width: 760px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        max-height: 45vh;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero {
+        padding: 30px 0 26px;
+      }
+
+      .hero-inner,
+      .layout,
+      footer {
+        width: min(100% - 28px, 1200px);
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      #status {
+        white-space: normal;
+      }
+
+      #sheetFrame {
+        height: 70vh;
+        min-height: 400px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>CheatSheets</h1>
+      <p>セキュリティや開発で使うメモ・手順を、ツリーや検索から探せます。</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <h2>目次</h2>
+      <nav id="tree" aria-label="チートシートの目次">
+        <p>フォルダーを読み込み中…</p>
+      </nav>
+    </aside>
+
+    <section class="content" aria-label="チートシート一覧">
+      <div class="toolbar">
+        <input
+          id="search"
+          type="search"
+          placeholder="チートシートを検索…"
+          aria-label="チートシートを検索"
+        >
+        <div id="status" role="status">一覧を読み込み中…</div>
+      </div>
+
+      <div id="list" aria-live="polite"></div>
+
+      <iframe id="sheetFrame" title="チートシート" hidden></iframe>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://github.com/Dr-Hakas3/CheatSheets">GitHubリポジトリ</a>
+  </footer>
+
+  <script>
+    const owner = "Dr-Hakas3";
+    const repo = "CheatSheets";
+    const branch = "main";
+    const apiUrl =
+      `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+
+    const categoryNames = {
+      "01_General": "General",
+      "02_GreenTeam": "Green Team",
+      "03_RedTeam": "Red Team",
+      "04_BlueTeam": "Blue Team",
+      "05_Programing": "Programming",
+      "06_ReverseEngineering": "Reverse Engineering",
+      "writeups": "Writeups",
+      "01_OSINT": "OSINT",
+      "02_Recon": "Recon",
+      "03_InitialAccess": "Initial Access",
+      "04_Evasion": "Evasion",
+      "05_Linux_PrivEsc": "Linux Privilege Escalation",
+      "06_Windows_PrivEsc": "Windows Privilege Escalation",
+      "07_ActiveDirectory": "Active Directory",
+      "08_Pivot_Tunneling": "Pivoting & Tunneling",
+      "09_Weponization": "Weaponization",
+      "10_C2Framework": "C2 Frameworks",
+      "11_WebAttack": "Web Attacks",
+      "12_Cloud": "Cloud",
+      "13_Wireless": "Wireless",
+      "14_AI": "AI",
+      "15_RedTeamOps": "Red Team Operations"
+    };
+
+    const knownFolders = [
+      "01_General",
+      "02_GreenTeam",
+      "03_RedTeam",
+      "03_RedTeam/01_OSINT",
+      "03_RedTeam/02_Recon",
+      "03_RedTeam/03_InitialAccess",
+      "03_RedTeam/04_Evasion",
+      "03_RedTeam/05_Linux_PrivEsc",
+      "03_RedTeam/06_Windows_PrivEsc",
+      "03_RedTeam/07_ActiveDirectory",
+      "03_RedTeam/08_Pivot_Tunneling",
+      "03_RedTeam/09_Weponization",
+      "03_RedTeam/10_C2Framework",
+      "03_RedTeam/11_WebAttack",
+      "03_RedTeam/12_Cloud",
+      "03_RedTeam/13_Wireless",
+      "03_RedTeam/14_AI",
+      "03_RedTeam/15_RedTeamOps",
+      "04_BlueTeam",
+      "05_Programing",
+      "06_ReverseEngineering",
+      "writeups"
+    ];
+
+    const treeElement = document.getElementById("tree");
+    const listElement = document.getElementById("list");
+    const searchElement = document.getElementById("search");
+    const statusElement = document.getElementById("status");
+    const frameElement = document.getElementById("sheetFrame");
+
+    let sheets = [];
+
+    function displayName(name) {
+      return categoryNames[name] ||
+        name.replace(/^\d+_/, "").replace(/[_-]/g, " ");
+    }
+
+    // リンク先には docs/ と .md をそのまま残します。
+    function pageUrl(path) {
+      const encodedPath = path
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/");
+
+      return `/${repo}/${encodedPath}`;
+    }
+
+    function makeFolderNode() {
+      return { folders: new Map(), files: [] };
+    }
+
+    function buildTreeData() {
+      const root = makeFolderNode();
+
+      function ensureFolder(path) {
+        let node = root;
+
+        for (const part of path.split("/").filter(Boolean)) {
+          if (!node.folders.has(part)) {
+            node.folders.set(part, makeFolderNode());
+          }
+          node = node.folders.get(part);
+        }
+      }
+
+      // フォルダー名は docs/ を含まない形式で登録します。
+      for (const folder of knownFolders) {
+        ensureFolder(folder);
+      }
+
+      for (const sheet of sheets) {
+        // 目次の階層判定では docs/ を外します。
+        const relativePath = sheet.path.replace(/^docs\//, "");
+        const parts = relativePath.split("/");
+        const fileName = parts.pop();
+        let node = root;
+
+        for (const part of parts) {
+          if (!node.folders.has(part)) {
+            node.folders.set(part, makeFolderNode());
+          }
+          node = node.folders.get(part);
+        }
+
+        node.files.push({
+          name: fileName.replace(/\.md$/i, ""),
+          path: sheet.path
+        });
+      }
+
+      return root;
+    }
+
+    function renderTreeNode(node) {
+      const ul = document.createElement("ul");
+      ul.className = "tree";
+
+      const folders = [...node.folders.entries()]
+        .sort(([a], [b]) => a.localeCompare(b, "ja", { numeric: true }));
+
+      for (const [folderName, childNode] of folders) {
+        const li = document.createElement("li");
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+
+        // details.open を設定しないため、初期状態では閉じています。
+        summary.textContent = displayName(folderName);
+
+        const hasContent =
+          childNode.folders.size > 0 || childNode.files.length > 0;
+
+        if (hasContent) {
+          details.append(summary, renderTreeNode(childNode));
+        } else {
+          const empty = document.createElement("span");
+          empty.className = "empty-folder";
+          empty.textContent = "（チートシートはまだありません）";
+
+          const childList = document.createElement("ul");
+          childList.className = "tree";
+
+          const childItem = document.createElement("li");
+          childItem.append(empty);
+          childList.append(childItem);
+
+          details.append(summary, childList);
+        }
+
+        li.append(details);
+        ul.append(li);
+      }
+
+      const files = [...node.files]
+        .sort((a, b) => a.name.localeCompare(b.name, "ja"));
+
+      for (const file of files) {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+
+        link.href = pageUrl(file.path);
+        link.textContent = file.name.replace(/[_-]/g, " ");
+
+        li.append(link);
+        ul.append(li);
+      }
+
+      return ul;
+    }
+
+    function renderTree() {
+      treeElement.replaceChildren(renderTreeNode(buildTreeData()));
+    }
+
+    function renderList() {
+      const query = searchElement.value.trim().toLowerCase();
+
+      const filteredSheets = sheets.filter(sheet =>
+        `${sheet.title} ${sheet.path} ${sheet.category}`
+          .toLowerCase()
+          .includes(query)
+      );
+
+      listElement.replaceChildren();
+
+      if (filteredSheets.length === 0) {
+        const message = document.createElement("p");
+        message.className = "message";
+        message.textContent = query
+          ? "該当するチートシートはありません。"
+          : "Markdown形式のチートシートはまだありません。";
+
+        listElement.append(message);
+        return;
+      }
+
+      const groups = new Map();
+
+      for (const sheet of filteredSheets) {
+        if (!groups.has(sheet.category)) {
+          groups.set(sheet.category, []);
+        }
+        groups.get(sheet.category).push(sheet);
+      }
+
+      for (const [category, items] of groups) {
+        const section = document.createElement("section");
+        section.className = "category";
+
+        const heading = document.createElement("h2");
+        heading.textContent = `${category}（${items.length}）`;
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        for (const item of items) {
+          const link = document.createElement("a");
+          link.className = "card";
+          link.href = pageUrl(item.path);
+
+          const title = document.createElement("strong");
+          title.textContent = item.title;
+
+          const path = document.createElement("small");
+          path.textContent = item.path.replace(/^docs\//, "");
+
+          link.append(title, path);
+          grid.append(link);
+        }
+
+        section.append(heading, grid);
+        listElement.append(section);
+      }
+    }
+
+    document.addEventListener("click", event => {
+      const link = event.target.closest("#tree a, #list a.card");
+
+      if (!link) {
+        return;
+      }
+
+      event.preventDefault();
+      frameElement.src = link.href;
+      frameElement.hidden = false;
+      listElement.hidden = true;
+    });
+
+    searchElement.addEventListener("input", () => {
+      frameElement.hidden = true;
+      listElement.hidden = false;
+      renderList();
+    });
+
+    renderTree();
+
+    fetch(apiUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`GitHub API returned ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const files = (data.tree || []).filter(item => {
+          if (
+            item.type !== "blob" ||
+            !item.path.startsWith("docs/") ||
+            !item.path.toLowerCase().endsWith(".md") ||
+            item.path.startsWith("docs/_templates/")
+          ) {
+            return false;
+          }
+
+          const fileName = item.path.split("/").pop();
+          return !/^index\.md$/i.test(fileName);
+        });
+
+        sheets = files.map(item => {
+          const relativePath = item.path.replace(/^docs\//, "");
+          const parts = relativePath.split("/");
+          const fileName = parts.pop().replace(/\.md$/i, "");
+
+          const category = parts.length
+            ? parts.map(displayName).join(" / ")
+            : "General";
+
+          return {
+            path: item.path,
+            title: fileName.replace(/[_-]/g, " "),
+            category
+          };
+        }).sort((a, b) =>
+          a.category.localeCompare(b.category, "ja") ||
+          a.title.localeCompare(b.title, "ja")
+        );
+
+        statusElement.textContent = `${sheets.length}件`;
+        renderTree();
+        renderList();
+      })
+      .catch(error => {
+        console.error(error);
+        statusElement.textContent = "一覧を取得できません";
+        listElement.replaceChildren();
+
+        const message = document.createElement("p");
+        message.className = "message";
+        message.textContent =
+          "チートシート一覧を取得できませんでした。時間をおいて再読み込みしてください。";
+
+        listElement.append(message);
+      });
+  </script>
+</body>
+</html>

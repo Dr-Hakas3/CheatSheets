@@ -1,0 +1,143 @@
+# Copyright (C) 2008, 2009 Michael Trier (mtrier@gmail.com) and contributors
+#
+# This module is part of GitPython and is released under the
+# 3-Clause BSD License: https://opensource.org/license/bsd-3-clause/
+
+import gc
+import os.path as osp
+import sys
+from io import BytesIO
+from unittest import skipIf
+from unittest.mock import patch
+
+import pytest
+
+import git.objects.base as base
+from git import Repo
+from git.objects import Blob, Commit, TagObject, Tree
+from git.objects.util import get_object_type_by_name
+from git.util import hex_to_bin
+from gitdb import OInfo
+from test.lib import TestBase as _TestBase
+from test.lib import with_rw_and_rw_remote_repo, with_rw_repo
+from test.lib.fixtures import fixture_repo, writable_fixture
+
+
+class TestBase(_TestBase):
+    def tearDown(self):
+        gc.collect()
+
+    type_tuples = (
+        ("blob", "HEAD:git/objects/blob.py", "blob.py"),
+        ("tree", "HEAD:git", "directory"),
+        ("commit", "dated", None),
+        ("tag", "annotated", None),
+    )
+
+    def test_base_object(self):
+        # Test interface of base object classes.
+        types = (Blob, Tree, Commit, TagObject)
+        self.assertEqual(len(types), len(self.type_tuples))
+
+        s = set()
+        num_objs = 0
+        num_index_objs = 0
+        for obj_type, (typename, revision, path) in zip(types, self.type_tuples):
+            hexsha = self.rorepo.git.rev_parse(revision)
+            binsha = hex_to_bin(hexsha)
+            item = None
+            if path is None:
+                item = obj_type(self.rorepo, binsha)
+            else:
+                item = obj_type(self.rorepo, binsha, 0, path)
+            # END handle index objects
+            num_objs += 1
+            self.assertEqual(item.hexsha, hexsha)
+            self.assertEqual(item.type, typename)
+            assert item.size
+            self.assertEqual(item, item)
+            self.assertNotEqual(not item, item)
+            self.assertEqual(str(item), item.hexsha)
+            assert repr(item)
+            s.add(item)
+
+            if isinstance(item, base.IndexObject):
+                num_index_objs += 1
+                if hasattr(item, "path"):  # Never runs here.
+                    assert not item.path.startswith("/")  # Must be relative.
+                    assert isinstance(item.mode, int)
+            # END index object check
+
+            # Read from stream.
+            data_stream = item.data_stream
+            data = data_stream.read()
+            assert data
+
+            with writable_fixture("empty.sh") as temporary:
+                with (temporary.path() / "stream").open("w+b") as tmpfile:
+                    self.assertEqual(item, item.stream_data(tmpfile))
+                    tmpfile.seek(0)
+                    self.assertEqual(tmpfile.read(), data)
+
+            for stored_type in (typename, typename.encode("ascii")):
+                with patch.object(self.rorepo.odb, "info", return_value=OInfo(binsha, stored_type, item.size)):
+                    self.assertEqual(obj_type(self.rorepo, binsha).size, item.size)
+                    for wrong_type in types:
+                        if wrong_type is obj_type:
+                            continue
+                        invalid = wrong_type(self.rorepo, binsha)
+                        with self.assertRaisesRegex(ValueError, f"{hexsha}.*{typename}.*{wrong_type.type}"):
+                            invalid.size
+                        self.assertEqual(invalid.data_stream.read(), data)
+                        ostream = BytesIO()
+                        invalid.stream_data(ostream)
+                        self.assertEqual(ostream.getvalue(), data)
+        # END for each object type to create
+
+        # Each has a unique sha.
+        self.assertEqual(len(s), num_objs)
+        self.assertEqual(len(s | s), num_objs)
+        self.assertEqual(num_index_objs, 2)
+
+    def test_get_object_type_by_name(self):
+        for tname in base.Object.TYPES:
+            assert base.Object in get_object_type_by_name(tname).mro()
+        # END for each known type
+
+        self.assertRaises(ValueError, get_object_type_by_name, b"doesntexist")
+
+    def test_object_resolution(self):
+        # Objects must be resolved to shas so they compare equal.
+        self.assertEqual(self.rorepo.head.reference.object, self.rorepo.active_branch.object)
+
+    @with_rw_repo("HEAD", bare=True)
+    def test_with_bare_rw_repo(self, bare_rw_repo: Repo):
+        assert bare_rw_repo.config_reader("repository").getboolean("core", "bare")
+        assert osp.isfile(osp.join(bare_rw_repo.git_dir, "HEAD"))
+        assert osp.isdir(bare_rw_repo.working_dir)
+        assert bare_rw_repo.working_tree_dir is None
+
+    @with_rw_repo("release")
+    def test_with_rw_repo(self, rw_repo: Repo):
+        assert not rw_repo.config_reader("repository").getboolean("core", "bare")
+        assert osp.isdir(rw_repo.working_tree_dir)
+        assert osp.isdir(osp.join(rw_repo.working_tree_dir, "lib"))
+        assert osp.isdir(rw_repo.working_dir)
+
+    @pytest.mark.net
+    @skipIf(sys.platform == "win32", "FIXME: Freezes!  sometimes...")
+    @with_rw_and_rw_remote_repo("release")
+    def test_with_rw_remote_and_rw_repo(self, rw_repo, rw_remote_repo):
+        assert not rw_repo.config_reader("repository").getboolean("core", "bare")
+        assert rw_remote_repo.config_reader("repository").getboolean("core", "bare")
+        assert osp.isdir(osp.join(rw_repo.working_tree_dir, "lib"))
+
+    def test_add_unicode(self):
+        filename = "שלום.txt"
+        with fixture_repo("index.sh", "file", filename, "something", write=True) as repo:
+            file_path = osp.join(repo.working_dir, filename)
+            if sys.platform == "win32":
+                repo.index.add([file_path])
+            else:
+                repo.git.add(repo.working_dir)
+            repo.index.commit("message")

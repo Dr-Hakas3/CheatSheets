@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1
+
+# Use the same Python version as OSS-Fuzz to accidental incompatibilities in test code
+FROM python:3.8-bookworm
+
+LABEL project="GitPython Fuzzing Local Dev Helper"
+
+WORKDIR /src
+
+COPY . .
+
+# Update package managers, install necessary packages, and cleanup unnecessary files in a single RUN to keep the image smaller.
+RUN apt-get update && \
+    apt-get install -y git clang build-essential libssl-dev zlib1g-dev libexpat1-dev libcurl4-openssl-dev && \
+    git clone --depth 1 --branch v2.52.0 -- https://github.com/git/git.git /tmp/git-source && \
+    make -C /tmp/git-source -j2 prefix=/usr/local NO_GETTEXT=YesPlease NO_TCLTK=YesPlease NO_PERL=YesPlease install && \
+    rm -rf /tmp/git-source && \
+    python -m pip install --upgrade pip && \
+    python -m pip install atheris && \
+    python -m pip install -e . && \
+    apt-get clean && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+CMD ["bash"]

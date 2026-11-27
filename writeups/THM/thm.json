@@ -1,0 +1,11 @@
+[
+  {
+    "title": "Attacktive Directory",
+    "description": "Active Directory enumeration",
+    "difficulty": "Easy",
+    "platform": "THM",
+    "os": "Windows",
+    "tags": ["AD", "SMB", "Kerberos", "ASREP Roast", "impacket-secetdump"],
+    "path": "/writeups/thm/AD/Attacktive_Directory/"
+  }
+]

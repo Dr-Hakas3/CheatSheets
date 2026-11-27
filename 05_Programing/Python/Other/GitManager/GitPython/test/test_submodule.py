@@ -1,0 +1,2748 @@
+# This module is part of GitPython and is released under the
+# 3-Clause BSD License: https://opensource.org/license/bsd-3-clause/
+
+import gc
+from io import BytesIO
+import os
+import os.path as osp
+from pathlib import Path
+import shutil
+import sys
+from types import SimpleNamespace
+from unittest import mock, skipUnless
+
+import pytest
+
+import git
+from git.cmd import Git
+from git.config import GitConfigParser, cp
+from git.exc import (
+    GitCommandError,
+    InvalidGitRepositoryError,
+    RepositoryDirtyError,
+    UnsafeOptionError,
+    UnsafeProtocolError,
+)
+from git.objects.submodule.base import Submodule
+from git.objects.submodule.root import RootModule, RootUpdateProgress
+from git.objects.submodule.util import resolve_relative_url
+from git.repo.fun import find_submodule_git_dir, touch
+from git.util import cwd, join_path_native, to_native_path_linux
+
+from test.lib import TestBase, patch_git_config, with_rw_repo, PathLikeMock
+from test.lib.fixtures import fixture_repo, read_only_fixture, writable_fixture
+
+
+@pytest.mark.parametrize("scenario, name", [("ascii-name", "module"), ("byte-name", "module-\udcff")])
+def test_submodule_configuration_preserves_non_utf8_bytes(scenario, name):
+    with fixture_repo("submodule-bytes.sh", scenario) as repo:
+        data = repo.git.config("list", "--null", "--file", ".gitmodules", stdout_as_string=False)
+        assert b".path\npath-\xfe\0" in data
+        assert b".url\nurl-\xfd\0" in data
+        assert b".branch\nrefs/heads/branch-\xfc\0" in data
+        submodule = repo.submodules[0]
+        assert submodule.name == name
+        assert submodule.path == "path-\udcfe"
+        assert submodule.url == "url-\udcfd"
+        assert submodule.branch_path == "refs/heads/branch-\udcfc"
+        submodule._clear_cache()
+        assert (submodule.path, submodule.url, submodule.branch_path) == (
+            "path-\udcfe",
+            "url-\udcfd",
+            "refs/heads/branch-\udcfc",
+        )
+
+
+@pytest.mark.skipif(git._backend.name != "gix", reason="requires the native backend")
+def test_native_submodule_configuration_preserves_non_utf8_values():
+    path = read_only_fixture("submodule-bytes.sh", "ascii-name") / "repo" / ".gitmodules"
+    with mock.patch.object(Git, "execute", side_effect=AssertionError("Git must not run")):
+        native = git._backend.submodule_config(BytesIO(path.read_bytes()))
+    assert native == {"module": {"path": "path-\udcfe", "url": "url-\udcfd", "branch": "refs/heads/branch-\udcfc"}}
+
+
+@pytest.mark.parametrize("state", ["unborn", "untracked", "detached"])
+@pytest.mark.parametrize("remote", [None, ".", "origin"], ids=["working-tree", "local-origin", "origin"])
+@patch_git_config("protocol.file.allow", "always")
+def test_add_relative_submodule_without_tracking_remote(state, remote):
+    # Origins and submodule URLs refer to this private fixture's absolute paths.
+    with writable_fixture("submodule-relative.sh", "add", state, remote, execute=True) as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "parent") as parent, git.Repo(root / (root / "source-path").read_text()) as source:
+            submodule = parent.create_submodule("module", "module", "./source")
+            assert submodule.url == "./source"
+            with submodule.module() as module:
+                assert module.head.commit == source.head.commit
+                assert Path(module.remotes.origin.url).samefile(source.working_tree_dir)
+            parent.index.commit("Add submodule")
+            submodule.remove(configuration=False)
+            submodule.update(init=True)
+            with submodule.module() as module:
+                assert module.head.commit == source.head.commit
+                assert Path(module.remotes.origin.url).samefile(source.working_tree_dir)
+
+
+@pytest.mark.parametrize("url", ["./source", "../source", "./../source"])
+def test_add_preserves_relative_url_on_cygwin(url):
+    with writable_fixture("submodule-relative.sh", "cygwin") as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "parent") as parent, git.Repo(root / "source") as source:
+            with mock.patch.object(Submodule, "_clone_repo", return_value=source):
+                with mock.patch.object(Git, "is_cygwin", return_value=True):
+                    submodule = parent.create_submodule("module", "module", url, no_checkout=True)
+            assert submodule.url == url
+            with submodule.config_reader() as reader:
+                assert reader.get_value("url") == url
+            with parent.config_reader() as reader:
+                assert reader.get_value('submodule "module"', "url") == url
+
+
+@patch_git_config("protocol.file.allow", "always")
+def test_update_resolves_local_relative_remote_once():
+    with writable_fixture("submodule-relative.sh", "local-remote") as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "parent") as parent, git.Repo(root / "repos" / "child.git") as source:
+            submodule = Submodule(
+                parent,
+                source.head.commit.binsha,
+                name="module",
+                path="module",
+                url="../child.git",
+                branch_path="refs/heads/master",
+            )
+            submodule.update(init=True)
+            with submodule.module() as module:
+                assert module.head.commit == source.head.commit
+                assert Path(module.remotes.origin.url).samefile(source.working_tree_dir)
+                module.remotes.origin.fetch()
+
+
+@pytest.mark.parametrize("no_fetch", [False, True])
+@pytest.mark.parametrize("scenario", ["root-anchor", "root-single"])
+@patch_git_config("protocol.file.allow", "always")
+def test_root_update_resolves_relative_remote_url(scenario, no_fetch):
+    # Module origins and .gitmodules URLs contain this private fixture's absolute paths.
+    with writable_fixture("submodule-relative.sh", scenario, execute=True) as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "parent") as parent, git.Repo(
+            root / (root / "replacement-path").read_text()
+        ) as replacement:
+            previous = (root / "previous").read_text().strip()
+            RootModule(parent).update(previous_commit=previous, no_fetch=no_fetch)
+            with parent.submodules[0].module() as module:
+                assert Path(module.remotes.origin.url).samefile(replacement.working_tree_dir)
+                assert module.head.commit == replacement.head.commit
+                module.remotes.origin.fetch()
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_root_update_skips_old_url_resolution_when_remote_matches(dry_run):
+    # The matching remote and .gitmodules URL refer to this private fixture's source.
+    with writable_fixture("submodule-relative.sh", "root-matches", execute=True) as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "parent") as parent, git.Repo(root / "source") as source:
+            previous = (root / "previous").read_text().strip()
+            resolve_url = Submodule._resolved_url
+            with parent.submodules[0].module() as module:
+                original_url = module.remotes.origin.url
+                assert Path(original_url).samefile(source.working_tree_dir)
+
+            def resolve_current_url(sm):
+                assert sm.url != "../source", "Previous URL does not need resolving"
+                return resolve_url(sm)
+
+            with mock.patch.object(Submodule, "_resolved_url", autospec=True, side_effect=resolve_current_url):
+                RootModule(parent).update(previous_commit=previous, no_fetch=True, dry_run=dry_run)
+            with parent.submodules[0].module() as module:
+                assert module.remotes.origin.url == original_url
+                assert Path(module.remotes.origin.url).samefile(source.working_tree_dir)
+                assert module.head.commit == source.head.commit
+
+
+@patch_git_config("protocol.file.allow", "user")
+def test_update_applies_git_transport_policy_to_gitmodules_url(monkeypatch):
+    monkeypatch.setenv("GIT_PROTOCOL_FROM_USER", "1")
+    # The cloned origins and .gitmodules URLs point to this private source.
+    with writable_fixture("submodule-transport.sh", "update", execute=True) as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "source") as source, git.Repo(root / "clone") as clone, git.Repo(
+            root / "baseline"
+        ) as baseline:
+            submodule = clone.submodules[0]
+            with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                baseline.git.submodule("update", "--init")
+            assert not Path(baseline.working_tree_dir, "module", ".git").exists()
+            with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                submodule.update(init=True)
+            assert not submodule.module_exists()
+
+            with patch_git_config("protocol.file.allow", "always"):
+                baseline.git.submodule("update", "--init")
+                submodule.update(init=True)
+            with submodule.module() as module, git.Repo(root / "baseline" / "module") as baseline_module:
+                assert module.head.commit.hexsha == baseline_module.git.rev_parse("HEAD") == source.head.commit.hexsha
+                source.index.commit("Second commit", skip_hooks=True)
+                with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                    baseline.git.submodule("update", "--remote")
+                with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                    submodule.update(to_latest_revision=True)
+                assert module.head.commit.hexsha == baseline_module.git.rev_parse("HEAD") != source.head.commit.hexsha
+
+                with patch_git_config("protocol.file.allow", "always"):
+                    baseline.git.submodule("update", "--remote")
+                submodule.update(to_latest_revision=True, allow_unsafe_protocols=True)
+                assert module.head.commit.hexsha == baseline_module.git.rev_parse("HEAD") == source.head.commit.hexsha
+
+
+@patch_git_config("protocol.file.allow", "user")
+def test_root_update_applies_git_transport_policy_to_changed_url(monkeypatch):
+    monkeypatch.setenv("GIT_PROTOCOL_FROM_USER", "1")
+    # The submodule URLs point to this private source and replacement.
+    with writable_fixture("submodule-transport.sh", "changed-url", execute=True) as fixture:
+        root = fixture.path().resolve()
+        with git.Repo(root / "source") as source, git.Repo(root / "parent") as parent, git.Repo(
+            root / "baseline"
+        ) as baseline, git.Repo(root / "baseline" / "module") as baseline_module:
+            submodule = parent.submodules[0]
+            previous = (root / "previous").read_text().strip()
+            # A rejected fetch preserves the original remote and checked-out commit.
+            with baseline_module.git.custom_environment(GIT_PROTOCOL_FROM_USER="0"):
+                with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                    baseline_module.git.fetch(str(root / "replacement"))
+            assert Path(baseline_module.remotes.origin.url).samefile(source.working_tree_dir)
+            assert baseline_module.git.rev_parse("HEAD") == source.head.commit.hexsha
+            baseline.git.submodule("sync")
+            with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                baseline.git.submodule("update", "--remote")
+
+            with pytest.raises(GitCommandError, match="transport 'file' not allowed"):
+                RootModule(parent).update(previous_commit=previous)
+            with submodule.module() as module:
+                assert Path(module.remotes.origin.url).samefile(source.working_tree_dir)
+                assert module.head.commit.hexsha == baseline_module.git.rev_parse("HEAD") == source.head.commit.hexsha
+
+
+@pytest.mark.parametrize(
+    "scenario,name",
+    [
+        ("plain", "module"),
+        ("dollar", "$GITPYTHON_TEST_SECRET"),
+        ("braced-dollar", "prefix-${GITPYTHON_TEST_SECRET}-suffix"),
+        ("percent", "%GITPYTHON_TEST_SECRET%"),
+    ],
+)
+@patch_git_config("protocol.file.allow", "always")
+def test_submodule_update_preserves_literal_name(monkeypatch, caplog, scenario, name):
+    monkeypatch.setenv("GITPYTHON_TEST_SECRET", "sensitive-value")
+    caplog.set_level("DEBUG", logger="git.cmd")
+    # Cloned origins and submodule URLs refer to this private fixture's absolute paths.
+    with writable_fixture("submodule-special.sh", "literal-name", scenario, execute=True) as fixture:
+        with git.Repo(fixture.path().resolve() / "source") as source, git.Repo(
+            fixture.path().resolve() / "clone"
+        ) as clone:
+            assert clone.git.config("--file", ".gitmodules", f"submodule.{name}.path") == "module"
+            clone.submodule_update(init=True, recursive=True)
+
+            modules_dir = Path(clone.git_dir, "modules")
+            assert {path.name for path in modules_dir.iterdir()} == {name}
+            # Exercise relative gitfile conversion on every platform.
+            with mock.patch.object(Git, "is_cygwin", return_value=True):
+                resolved_git_dir = find_submodule_git_dir(Path(clone.working_tree_dir, "module", ".git"))
+            assert resolved_git_dir is not None
+            assert (modules_dir / name).samefile(resolved_git_dir)
+            with clone.submodules[0].module() as module:
+                assert (modules_dir / name).samefile(module.git_dir)
+                assert module.head.commit == source.head.commit
+
+    assert "sensitive-value" not in caplog.text
+
+
+def test_reconnect_preserves_existing_gitfile(movable_submodule, monkeypatch):
+    """Reconnecting must not rename already-connected metadata onto itself."""
+    sm = movable_submodule
+    metadata = str(Path(sm.repo.git_dir, "modules", sm.name))
+    commit = sm.hexsha
+    moved = Path(sm.abspath).with_name("moved")
+    original = (moved / ".git").read_bytes()
+    execute = Git.execute
+
+    def reject_reinitialization(self, command, *args, **kwargs):
+        if "init" in command:
+            # Git for Windows can reject renaming a nonempty directory onto
+            # itself, even when both paths name the same existing repository.
+            raise GitCommandError(command, 128, "unable to move metadata to itself: Directory not empty")
+        return execute(self, command, *args, **kwargs)
+
+    monkeypatch.setattr(Git, "execute", reject_reinitialization)
+    Submodule._connect_module(moved, metadata)
+    assert (moved / ".git").read_bytes() == original
+    with git.Repo(moved) as reopened:
+        assert Path(reopened.git_dir).samefile(metadata)
+        assert Path(reopened.working_tree_dir).samefile(moved)
+        assert reopened.head.commit.hexsha == commit
+        assert (moved / "file").read_text() == "content"
+
+
+def test_reconnect_validates_connected_metadata(movable_submodule):
+    sm = movable_submodule
+    metadata = Path(sm.repo.git_dir, "modules", sm.name)
+    config = metadata / "config"
+    before = config.read_bytes()
+    with pytest.raises(GitCommandError):
+        Submodule._connect_module(sm.abspath, str(metadata))
+    assert config.read_bytes() == before
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_submodule_cli_lifecycle(monkeypatch, object_format, ref_format):
+    """Git owns submodule storage throughout add, move, reconnect, and removal."""
+    monkeypatch.setenv("GIT_AUTHOR_NAME", "Test")
+    monkeypatch.setenv("GIT_AUTHOR_EMAIL", "test@example.com")
+    monkeypatch.setenv("GIT_COMMITTER_NAME", "Test")
+    monkeypatch.setenv("GIT_COMMITTER_EMAIL", "test@example.com")
+    with writable_fixture("submodule-special.sh", "lifecycle", object_format, ref_format) as fixture:
+        with git.Repo(fixture.path().resolve() / "source") as source, git.Repo(
+            fixture.path().resolve() / "parent"
+        ) as parent:
+            commit = source.head.commit
+            module = parent.create_submodule("logical-name", "module", source.working_tree_dir)
+            with module.module() as child:
+                if child.git.rev_parse("--show-ref-format") != ref_format:
+                    child.git.refs("migrate", "--ref-format=" + ref_format)
+            parent.index.commit("Add submodule", skip_hooks=True)
+            module.move("moved")
+            parent.index.commit("Move submodule", skip_hooks=True)
+            assert module.name == "logical-name"
+            module.deinit(force=True)
+            module.update(init=True, no_fetch=True)
+            with module.module() as child:
+                assert child.head.commit == commit
+                assert not child.is_dirty(untracked_files=True)
+                metadata = Path(child.git_dir)
+            module.remove(force=True)
+            assert not Path(parent.working_tree_dir, "moved").exists()
+            assert metadata.is_dir()
+            assert not parent.submodules
+
+
+@pytest.mark.skipif(os.name == "nt", reason="'*' is not a valid Windows filename")
+@pytest.mark.parametrize("operation", ["remove", "move"])
+def test_submodule_index_update_matches_its_path_literally(operation):
+    with fixture_repo("submodule-special.sh", "glob-path", write=True, subdir="parent") as repo:
+        submodule = repo.submodules[0]
+        assert submodule.path == "*"
+        if operation == "remove":
+            submodule.remove()
+            expected = {".gitmodules", "README"}
+        else:
+            submodule.move("moved", module=False)
+            expected = {".gitmodules", "README", "moved"}
+        assert {entry.path for entry in repo.index.iter_entries()} == expected
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows locks files against directory renames")
+@pytest.mark.parametrize("use_short_path", [False, True])
+def test_submodule_reconnect_with_open_metadata_file(use_short_path):
+    # The gitfile must point to this fixture's final metadata directory.
+    with writable_fixture("submodule-special.sh", "open-metadata", execute=True) as fixture:
+        root = fixture.path().resolve()
+        if use_short_path:
+            import ctypes
+
+            buffer = ctypes.create_unicode_buffer(32768)
+            if not ctypes.windll.kernel32.GetShortPathNameW(str(root), buffer, len(buffer)):
+                raise ctypes.WinError()
+            if buffer.value == str(root):
+                pytest.skip("This filesystem does not provide Windows 8.3 path aliases")
+            root = Path(buffer.value)
+            assert root.samefile(fixture.path())
+
+        checkout = root / "checkout"
+        metadata = fixture.path().resolve() / "metadata"
+        with git.Repo(checkout) as repo:
+            # Like a retained pack mapping, this open file prevents renaming metadata.
+            object_file = metadata / "objects" / "held-open"
+            with object_file.open("rb"):
+                Submodule._connect_module(checkout, metadata)
+
+            assert Path(repo.git.rev_parse("--absolute-git-dir")).samefile(metadata)
+            with git.Repo(checkout) as reopened:
+                assert Path(reopened.working_tree_dir).samefile(checkout)
+                assert Path(reopened.git_dir).samefile(metadata)
+
+
+@pytest.fixture(scope="module")
+def submodule_source():
+    return read_only_fixture("submodule-source.sh") / "source"
+
+
+@pytest.fixture(scope="module")
+def movable_submodule_baseline(submodule_source):
+    def prepare(name):
+        return read_only_fixture("submodule-layout.sh", str(submodule_source), name) / "parent"
+
+    return prepare
+
+
+@pytest.fixture
+def movable_submodule(request, submodule_source):
+    arguments = [str(submodule_source), getattr(request, "param", "logical-name")]
+    if request.node.originalname == "test_reconnect_preserves_existing_gitfile":
+        arguments.extend(["reconnect-moved"])
+    elif request.node.originalname == "test_reconnect_validates_connected_metadata":
+        arguments.extend(["unknown-extension"])
+    elif request.node.originalname == "test_update_closes_checkout_processes_retained_by_logging":
+        arguments.extend(["logging", request.node.callspec.params["operation"]])
+    with fixture_repo(
+        "submodule-layout.sh",
+        *arguments,
+        write=True,
+        subdir="parent",
+    ) as parent:
+        yield parent.submodules[0]
+
+
+@pytest.fixture
+def configured_submodule(request, submodule_source):
+    params = getattr(request.node, "callspec", None)
+    params = {} if params is None else params.params
+    # These scenarios intentionally point symlinks at fixture-local absolute paths.
+    with fixture_repo(
+        "submodule-symlinks.sh",
+        str(submodule_source),
+        getattr(request, "param", "logical-name"),
+        request.node.originalname,
+        params.get("kind", params.get("link_kind", "none")),
+        str(params.get("dangling", False)),
+        params.get("operation", "none"),
+        str(params.get("relative_target", False)),
+        write=True,
+        execute=True,
+        subdir="parent",
+    ) as parent:
+        if params.get("link_kind") == "gitmodules":
+            with git.Repo(submodule_source) as source:
+                yield Submodule(
+                    parent, source.head.commit.binsha, name="logical-name", path="module", url=str(submodule_source)
+                )
+        else:
+            yield parent.submodules[0]
+
+
+def test_movable_submodule_copies_are_isolated(movable_submodule, movable_submodule_baseline):
+    sm = movable_submodule
+    baseline = movable_submodule_baseline(sm.name)
+    for relative in (".git/index", ".git/config", ".git/modules/logical-name/config", "module/file"):
+        copy = Path(sm.repo.working_tree_dir, relative)
+        original = baseline / relative
+        assert copy.read_bytes() == original.read_bytes()
+        assert not copy.samefile(original)
+    Path(sm.abspath, "file").write_text("changed", encoding="utf-8")
+    sm.repo.create_head("copy-only")
+    assert (baseline / "module/file").read_text(encoding="utf-8") == "content"
+    with git.Repo(baseline) as original:
+        assert "copy-only" not in original.heads
+
+
+@pytest.fixture
+def nested_metadata_submodule(submodule_source):
+    with fixture_repo(
+        "submodule-layout.sh", str(submodule_source), "logical-name", "nested", write=True, subdir="parent"
+    ) as parent:
+        yield parent.submodules[0], parent.submodules[1]
+
+
+@pytest.fixture
+def existing_nested_metadata(submodule_source, state):
+    # The separate Git directory is recorded as an absolute path in the checkout.
+    with fixture_repo(
+        "submodule-layout.sh",
+        str(submodule_source),
+        "logical-name",
+        "existing-nested",
+        state,
+        write=True,
+        execute=True,
+        subdir="parent",
+    ) as parent:
+        yield parent.submodules[0]
+
+
+@pytest.fixture
+def separate_metadata_submodule(submodule_source):
+    # The separate Git directory is recorded as an absolute path in the checkout.
+    with fixture_repo(
+        "submodule-layout.sh",
+        str(submodule_source),
+        "logical-name",
+        "separate",
+        write=True,
+        execute=True,
+        subdir="separate",
+    ) as parent:
+        yield parent.submodules[0]
+
+
+@pytest.fixture
+def intermediate_symlink_submodule(submodule_source, target_kind):
+    with fixture_repo(
+        "submodule-layout.sh",
+        str(submodule_source),
+        "logical-name",
+        "intermediate-link",
+        target_kind,
+        write=True,
+        execute=True,
+        subdir="parent",
+    ) as parent:
+        root = Path(parent.working_tree_dir).parent
+        target = root / "parent/target" if target_kind == "internal" else root / "outside"
+        yield parent.submodules[0], target
+
+
+@pytest.fixture
+def leaf_metadata_submodule(submodule_source, metadata_dir):
+    # Linked worktree metadata and its symlink contain fixture-local absolute paths.
+    with fixture_repo(
+        "submodule-layout.sh",
+        str(submodule_source),
+        "logical-name",
+        "leaf-metadata",
+        metadata_dir,
+        write=True,
+        execute=True,
+        subdir="worktree",
+    ) as parent:
+        yield parent.submodules[0]
+
+
+@pytest.fixture
+def retained_metadata_submodule(submodule_source):
+    with fixture_repo(
+        "submodule-layout.sh", str(submodule_source), "logical-name", "retained", write=True, subdir="parent"
+    ) as parent:
+        sm = parent.head.commit.tree["module"]
+        yield Submodule(parent, sm.binsha, name="logical-name", path="module", url=str(submodule_source))
+
+
+def _move_snapshot(submodule):
+    """Capture index, configuration, and path state to detect side effects of rejected moves."""
+    parent = submodule.repo
+    with submodule.module() as module:
+        config = Path(module.git_dir, "config").read_bytes()
+    return (
+        Path(parent.index.path).read_bytes(),
+        Path(parent.working_tree_dir, ".gitmodules").read_bytes(),
+        Path(submodule.abspath, ".git").read_bytes(),
+        config,
+        submodule.path,
+    )
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ".git/child",
+        ".GiT/child",
+        "nested/.git/child",
+        "git~1/child",
+        "GIT~1 . /child",
+        ".git. /child",
+        ".git:stream/child",
+        ".git::$INDEX_ALLOCATION/child",
+        "nested\\.git\\child",
+        "C:relative",
+        "nul\0name",
+    ]
+    + [
+        f".g{chr(codepoint)}it/child"
+        for codepoint in (*range(0x200C, 0x2010), *range(0x202A, 0x202F), *range(0x206A, 0x2070), 0xFEFF)
+    ],
+)
+@pytest.mark.parametrize("operation", ["add", "clone", "update", "move", "move-module", "move-config"])
+def test_submodule_rejects_unsafe_checkout_before_mutation(movable_submodule, path, operation):
+    sm = movable_submodule
+    root = Path(sm.repo.working_tree_dir)
+    before = _move_snapshot(sm)
+    paths = set(root.rglob("*"))
+    # Check the portable metadata aliases against Git's index validation as well.
+    if operation == "clone" and path not in ("C:relative", "nul\0name"):
+        with sm.repo.git.custom_environment(GIT_INDEX_FILE=str(root.parent / "validation-index")):
+            with patch_git_config("core.protectHFS", "true"), patch_git_config("core.protectNTFS", "true"):
+                with pytest.raises(GitCommandError):
+                    sm.repo.git.update_index("--add", "--cacheinfo", f"160000,{sm.hexsha},{path}")
+    with mock.patch.object(git.Repo, "clone_from", side_effect=AssertionError("clone attempted")):
+        with pytest.raises(ValueError):
+            if operation == "add":
+                sm.repo.create_submodule("new", path, sm.url)
+            elif operation == "clone":
+                Submodule._clone_repo(sm.repo, sm.url, path, "new")
+            elif operation == "update":
+                Submodule(sm.repo, sm.binsha, name="new", path=path, url=sm.url).update(init=True)
+            else:
+                sm.move(path, configuration=operation != "move-module", module=operation != "move-config")
+    assert _move_snapshot(sm) == before
+    assert set(root.rglob("*")) == paths
+
+
+def test_add_rejects_metadata_checkout_without_writing_files(movable_submodule):
+    sm = movable_submodule
+    before = _move_snapshot(sm)
+    with pytest.raises(ValueError, match="Git metadata"):
+        sm.repo.create_submodule("new", ".git/new", sm.url)
+    assert not Path(sm.repo.git_dir, "new").exists()
+    assert not Path(sm.repo.git_dir, "modules/new").exists()
+    assert _move_snapshot(sm) == before
+
+
+@pytest.mark.parametrize("absolute_path", [False, True])
+@pytest.mark.parametrize("metadata_name", ["metadata", "MeTaDaTa"])
+@pytest.mark.parametrize("operation", ["add", "clone", "update", "move"])
+def test_submodule_rejects_checkout_in_separate_metadata(
+    separate_metadata_submodule, absolute_path, metadata_name, operation
+):
+    sm = separate_metadata_submodule
+    parent = sm.repo
+    root = Path(parent.working_tree_dir)
+    if not (root / metadata_name).is_dir():
+        pytest.skip("Requires a case-insensitive filesystem")
+    before = _move_snapshot(sm)
+    paths = set(root.rglob("*"))
+    path = root / metadata_name / "new" if absolute_path else f"{metadata_name}/new"
+    with pytest.raises(ValueError, match="Git metadata"):
+        if operation == "add":
+            parent.create_submodule("new", path, sm.url)
+        elif operation == "clone":
+            Submodule._clone_repo(parent, sm.url, path, "new")
+        elif operation == "update":
+            Submodule(parent, sm.binsha, name="new", path=path, url=sm.url).update(init=True)
+        else:
+            sm.move(path)
+    assert _move_snapshot(sm) == before
+    assert set(root.rglob("*")) == paths
+
+
+@pytest.mark.parametrize("operation", ["add", "clone", "update"])
+def test_submodule_rejects_nested_metadata_before_mutation(nested_metadata_submodule, operation):
+    sm, other = nested_metadata_submodule
+    root = Path(sm.repo.working_tree_dir)
+    before = _move_snapshot(sm), _move_snapshot(other)
+    paths = set(root.rglob("*"))
+    name = f"{sm.name}/child"
+    with pytest.raises(ValueError, match="inside.*Git directory"):
+        if operation == "add":
+            sm.repo.create_submodule(name, "new", sm.url)
+        elif operation == "clone":
+            Submodule._clone_repo(sm.repo, sm.url, "new", name)
+        elif operation == "update":
+            Submodule(sm.repo, sm.binsha, name=name, path="new", url=sm.url).update(init=True)
+    assert (_move_snapshot(sm), _move_snapshot(other)) == before
+    assert set(root.rglob("*")) == paths
+
+
+@pytest.mark.parametrize("state", ["retained", "checked-out"])
+def test_update_rejects_existing_nested_metadata(existing_nested_metadata, state):
+    sm = existing_nested_metadata
+    name = f"{sm.name}/child"
+    before = _move_snapshot(sm)
+    paths = set(Path(sm.repo.working_tree_dir).rglob("*"))
+    with pytest.raises(ValueError, match="inside.*Git directory"):
+        Submodule(sm.repo, sm.binsha, name=name, path="new", url=sm.url).update(init=True, no_fetch=True)
+    assert _move_snapshot(sm) == before
+    assert set(Path(sm.repo.working_tree_dir).rglob("*")) == paths
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "CON",
+        "con.txt",
+        "CONIN$",
+        "conout$.txt",
+        "AUX .txt",
+        "PRN",
+        "NUL",
+        "COM9",
+        "LPT1",
+        "name:stream",
+        "space ",
+        "period.",
+        "line\nbreak",
+        "star*",
+        'quote"',
+        "question?",
+        "angle<",
+        "angle>",
+        "pipe|",
+    ],
+)
+def test_submodule_rejects_windows_destination_names_before_mutation(movable_submodule, path):
+    sm = movable_submodule
+    before = _move_snapshot(sm)
+    paths = set(Path(sm.repo.working_tree_dir).rglob("*"))
+    with mock.patch("git.objects.submodule.base.sys", SimpleNamespace(platform="win32")):
+        with mock.patch.object(git.Repo, "clone_from", side_effect=AssertionError("clone attempted")):
+            with pytest.raises(ValueError):
+                sm.repo.create_submodule("new", f"nested/{path}", sm.url)
+            with pytest.raises(ValueError):
+                sm.repo.create_submodule(f"nested/{path}", "new", sm.url)
+    assert _move_snapshot(sm) == before
+    assert set(Path(sm.repo.working_tree_dir).rglob("*")) == paths
+
+
+@pytest.mark.parametrize("path", ["nested/space ", "nested/period."])
+def test_windows_destination_validation_precedes_normalization(path):
+    parent = SimpleNamespace(working_tree_dir=str(read_only_fixture("empty.sh")))
+    # Windows' GetFullPathName removes trailing spaces and periods.
+    with mock.patch("git.objects.submodule.base._to_relative_path", return_value=path.rstrip(" .")):
+        with mock.patch("git.objects.submodule.base.sys", SimpleNamespace(platform="win32")):
+            with pytest.raises(ValueError, match="Invalid submodule path on Windows"):
+                Submodule._to_relative_path(parent, path)
+
+
+def test_submodule_move_keeps_its_own_metadata(movable_submodule):
+    sm = movable_submodule
+    name = sm.name
+    sm.move(f"{name}/child")
+    assert sm.name == name
+    assert Path(sm.abspath, "file").read_text() == "content"
+    with sm.module() as module:
+        assert Path(module.git_dir) == Path(sm.repo.git_dir, "modules", sm.name)
+
+
+def test_clone_disables_metadata_that_becomes_nested(movable_submodule, monkeypatch):
+    sm = movable_submodule
+    clone_from = git.Repo.clone_from
+    ancestor = Path(sm.repo.git_dir, "modules/new")
+    prepared = read_only_fixture("empty.sh", "sha1", "files", "master", "true") / "repo"
+
+    def clone_and_create_ancestor(*args, **kwargs):
+        clone = clone_from(*args, **kwargs)
+        shutil.copytree(prepared, ancestor, dirs_exist_ok=True)
+        return clone
+
+    monkeypatch.setattr(git.Repo, "clone_from", clone_and_create_ancestor)
+    with pytest.raises(ValueError, match="inside.*Git directory"):
+        Submodule._clone_repo(sm.repo, sm.url, "new", "new/child")
+    assert not (ancestor / "child/HEAD").exists()
+    assert (ancestor / "HEAD").is_file()
+
+
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_readd_retained_submodule_without_checkout(submodule_source, ref_format):
+    with fixture_repo(
+        "submodule-layout.sh",
+        str(submodule_source),
+        "logical-name",
+        "readd-retained",
+        ref_format,
+        write=True,
+        subdir="parent",
+    ) as parent:
+        root = Path(parent.working_tree_dir).parent
+        before = (root / "retained-refs").read_text().rstrip("\n")
+        branch = (root / "retained-branch").read_text().strip()
+        commit = (root / "retained-commit").read_text().strip()
+        url = (root / "retained-url").read_text().strip()
+        assert Path(url).samefile(submodule_source)
+        replacement = Submodule.add(parent, "logical-name", "module", url, branch=branch, no_checkout=True)
+        assert not Path(replacement.abspath, "file").exists()
+        with replacement.module() as module:
+            assert module.remotes.origin.url == url
+            assert module.git.for_each_ref("--format=%(refname) %(objectname)") == before
+            assert module.git.rev_parse("--show-ref-format") == ref_format
+            assert module.head.reference.name == branch
+            assert module.head.commit.hexsha == commit
+
+
+@pytest.mark.parametrize("change", ["url", "clone-options", "branch", "depth"])
+def test_readd_retained_submodule_rejects_incompatible_options(retained_metadata_submodule, change):
+    sm = retained_metadata_submodule
+    name, path, url = sm.name, sm.path, sm.url
+    root = Path(sm.repo.working_tree_dir)
+
+    def snapshot():
+        return {str(path.relative_to(root)): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+
+    before = snapshot()
+    options = {"no_checkout": True}
+    if change == "url":
+        url += "-other"
+    elif change == "clone-options":
+        options["clone_multi_options"] = ["--filter=blob:none"]
+    elif change == "branch":
+        options["branch"] = "other"
+    else:
+        options["depth"] = 1
+    with pytest.raises(ValueError):
+        Submodule.add(sm.repo, name, path, url, **options)
+    assert not (root / path).exists()
+    assert snapshot() == before
+
+
+@pytest.mark.parametrize("target_kind", ["relative", "absolute", "internal", "dangling"])
+@pytest.mark.parametrize("configuration,module", [(True, True), (False, True), (True, False)])
+@pytest.mark.parametrize("absolute_path", [False, True])
+def test_move_rejects_intermediate_symlink(
+    intermediate_symlink_submodule, target_kind, configuration, module, absolute_path
+):
+    """Reject intermediate symlinks before changing repository state or their targets.
+
+    Cover relative and absolute destinations in every move mode, including links
+    within the repository and dangling links, which must also be rejected.
+    """
+    submodule, target = intermediate_symlink_submodule
+    parent = submodule.repo
+    root = Path(parent.working_tree_dir)
+    tree = parent.git.write_tree()
+    before = _move_snapshot(submodule)
+    destination = root / "nested/link/new/moved" if absolute_path else "nested/link/new/moved"
+
+    with pytest.raises(ValueError, match="contains a symbolic link"):
+        submodule.move(destination, configuration=configuration, module=module)
+
+    assert _move_snapshot(submodule) == before
+    assert parent.git.write_tree() == tree
+    assert Path(submodule.abspath, "file").read_text(encoding="utf-8") == "content"
+    if target_kind == "dangling":
+        assert not target.exists()
+    else:
+        assert list(target.iterdir()) == []
+
+
+@pytest.mark.parametrize("absolute_path", [False, True])
+def test_move_normal_destination(movable_submodule, absolute_path):
+    """Allow ordinary relative and absolute moves, and make a repeated move a no-op."""
+    submodule = movable_submodule
+    root = Path(submodule.repo.working_tree_dir)
+    destination = root / "nested/moved" if absolute_path else "nested/moved"
+    assert submodule.move(destination) is submodule
+    assert Path(submodule.abspath, "file").read_text(encoding="utf-8") == "content"
+    assert not (root / "module").exists()
+    assert submodule.path == "nested/moved"
+    submodule.repo.git.write_tree()
+    before = _move_snapshot(submodule)
+    assert submodule.move(destination) is submodule
+    assert _move_snapshot(submodule) == before
+
+
+@pytest.mark.parametrize("metadata_dir", ["git_dir", "common_dir"])
+@patch_git_config("protocol.file.allow", "always")
+def test_move_rejects_leaf_symlink_to_metadata(leaf_metadata_submodule, metadata_dir):
+    submodule = leaf_metadata_submodule
+    parent = submodule.repo
+    root = Path(parent.working_tree_dir)
+    assert not osp.samefile(parent.git_dir, parent.common_dir)
+    target = Path(getattr(parent, metadata_dir))
+    destination = root / "destination"
+    before = _move_snapshot(submodule)
+
+    with pytest.raises(ValueError, match="Git metadata"):
+        submodule.move("destination", module=False)
+
+    assert _move_snapshot(submodule) == before
+    assert destination.is_symlink()
+    assert destination.samefile(target)
+    assert Path(submodule.abspath, "file").read_text(encoding="utf-8") == "content"
+
+
+@pytest.mark.parametrize("kind", ["empty", "nonempty", "file", "dangling"])
+def test_move_leaf_symlink_compatibility(configured_submodule, kind):
+    """Preserve leaf-symlink replacement without modifying the external target.
+
+    Moving onto a link to an empty directory replaces the link; nonempty, file,
+    and dangling targets fail without changing repository state. Direct checkout
+    path access must still reject every leaf symlink.
+    """
+    submodule = configured_submodule
+    root = Path(submodule.repo.working_tree_dir)
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    target = tmp_path / "outside"
+    destination = root / "destination"
+    with pytest.raises(ValueError, match="contains a symbolic link"):
+        Submodule(submodule.repo, Submodule.NULL_BIN_SHA, name="unused", path="destination").abspath
+    before = _move_snapshot(submodule)
+    if kind == "empty":
+        assert submodule.move("destination") is submodule
+        assert not destination.is_symlink()
+        assert (destination / "file").is_file()
+        assert list(target.iterdir()) == []
+    else:
+        with pytest.raises(OSError if kind == "dangling" else ValueError):
+            submodule.move("destination")
+        assert _move_snapshot(submodule) == before
+        assert destination.is_symlink()
+        if kind == "nonempty":
+            assert (target / "keep").read_text(encoding="utf-8") == "keep"
+        elif kind == "file":
+            assert target.read_text(encoding="utf-8") == "keep"
+        else:
+            assert not target.exists()
+
+
+@pytest.mark.parametrize("leaf", [False, True])
+@pytest.mark.parametrize("dangling", [False, True])
+@pytest.mark.parametrize("operation", ["add", "clone"])
+@pytest.mark.parametrize("gitfile", [False, True])
+def test_clone_rejects_checkout_symlinks(configured_submodule, leaf, dangling, operation, gitfile):
+    """Reject checkout symlinks before add or clone creates metadata or touches the target.
+
+    Cover leaf and intermediate links, including dangling targets, with both
+    embedded and separate Git directories.
+    """
+    sm = configured_submodule
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    target = tmp_path / "outside"
+    path = "link" if leaf else "link/new/module"
+    before = _move_snapshot(sm)
+    with mock.patch.object(Submodule, "_need_gitfile_submodules", return_value=gitfile):
+        with pytest.raises(ValueError, match="contains a symbolic link"):
+            if operation == "add":
+                Submodule.add(sm.repo, "new", path, sm.url)
+            else:
+                Submodule._clone_repo(sm.repo, sm.url, path, "new")
+    assert _move_snapshot(sm) == before
+    assert not (Path(sm.repo.git_dir) / "modules/new").exists()
+    assert not target.exists() if dangling else list(target.iterdir()) == []
+
+
+@pytest.mark.parametrize("link_kind", ["gitmodules", "checkout"])
+@pytest.mark.parametrize("operation", ["update", "move", "remove"])
+def test_submodule_rejects_checkout_and_gitmodules_symlinks(configured_submodule, link_kind, operation):
+    """Reject operations on symlinked checkouts or .gitmodules without side effects.
+
+    Update, move, and forced removal must preserve the external target,
+    repository configuration, index, checkout, and any existing move destination.
+    """
+    sm = configured_submodule
+    root = Path(sm.repo.working_tree_dir)
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    path = root / (".gitmodules" if link_kind == "gitmodules" else "module")
+    target = tmp_path / "outside"
+    before = (
+        {p.relative_to(target): p.read_bytes() for p in target.rglob("*") if p.is_file()}
+        if target.is_dir()
+        else target.read_bytes()
+    )
+    config = Path(sm.repo.git_dir, "config").read_bytes()
+    index = Path(sm.repo.index.path).read_bytes()
+    gitmodules = (root / ".gitmodules").read_bytes()
+    with pytest.raises(ValueError, match="contains a symbolic link"):
+        if operation == "update":
+            sm.update()
+        elif operation == "move":
+            sm.move("moved")
+        else:
+            sm.remove(force=True)
+    after = (
+        {p.relative_to(target): p.read_bytes() for p in target.rglob("*") if p.is_file()}
+        if target.is_dir()
+        else target.read_bytes()
+    )
+    assert after == before
+    assert Path(sm.repo.git_dir, "config").read_bytes() == config
+    assert Path(sm.repo.index.path).read_bytes() == index
+    assert (root / ".gitmodules").read_bytes() == gitmodules
+    assert (root / "module/file").read_text() == "content"
+    assert path.is_symlink()
+    assert (root / "moved").is_dir()
+
+
+@pytest.mark.parametrize("implementation", ["git", "gitpython"])
+@pytest.mark.parametrize("operation", ["update", "remove"])
+@pytest.mark.parametrize("kind", ["leaf", "intermediate"])
+def test_submodule_writes_use_checked_worktree(configured_submodule, implementation, operation, kind):
+    """A configured worktree must not redirect writes past the checked checkout."""
+    sm = configured_submodule
+    root = Path(sm.repo.working_tree_dir)
+    outside = root.parent / "outside"
+    if kind == "intermediate":
+        outside /= "worktree"
+    before = {path.name: path.read_bytes() for path in outside.iterdir()}
+    if implementation == "git":
+        if operation == "update":
+            sm.repo.git.submodule("update", "--force", "--no-fetch", "--", sm.path)
+        else:
+            sm.repo.git.submodule("deinit", "--force", "--", sm.path)
+    elif operation == "update":
+        sm.update(force=True, no_fetch=True)
+    else:
+        sm.remove(configuration=False)
+
+    assert outside.is_dir()
+    assert {path.name: path.read_bytes() for path in outside.iterdir()} == before
+    assert (root / "redirect").is_symlink()
+    if operation == "update":
+        assert (root / "module/file").read_text() == "updated"
+    else:
+        assert not (root / "module/file").exists()
+
+
+def test_add_closes_checkout_processes(movable_submodule, monkeypatch):
+    """Adding a submodule must not leave a child process holding its checkout open."""
+    # Native reads have no persistent process; keep exercising the CLI fallback.
+    monkeypatch.setattr(git._backend, "object_data", lambda *args, **kwargs: NotImplemented)
+    sm = movable_submodule
+    checkout = Path(sm.repo.working_tree_dir, "new")
+    execute = Git.execute
+    processes = []
+
+    def capture_process(self, command, *args, **kwargs):
+        result = execute(self, command, *args, **kwargs)
+        if (
+            kwargs.get("as_process")
+            and "cat-file" in command
+            and Path(self.working_dir).resolve() == checkout.resolve()
+        ):
+            processes.append(result.proc)
+        return result
+
+    monkeypatch.setattr(Git, "execute", capture_process)
+    try:
+        added = Submodule.add(sm.repo, "new", "new", sm.url)
+        assert processes, "The HEAD read must exercise a persistent cat-file process"
+        assert all(process.poll() is not None for process in processes)
+        added.move("moved")
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.terminate()
+            process.wait()
+
+
+@pytest.mark.parametrize("operation", ["update", "error", "recursive", "keep-going"])
+def test_update_closes_checkout_processes_retained_by_logging(movable_submodule, monkeypatch, caplog, operation):
+    monkeypatch.setattr(git._backend, "object_data", lambda *args, **kwargs: NotImplemented)
+    sm = movable_submodule
+    recursive = operation in ("recursive", "keep-going")
+    if operation in ("error", "keep-going"):
+        sm.binsha = b"\x01" * len(sm.binsha)
+
+    checkout = Path(sm.abspath).resolve()
+    execute = Git.execute
+    processes = []
+
+    def capture_process(self, command, *args, **kwargs):
+        result = execute(self, command, *args, **kwargs)
+        if kwargs.get("as_process") and "cat-file" in command:
+            working_dir = Path(self.working_dir).resolve()
+            if working_dir == checkout or checkout in working_dir.parents:
+                processes.append(result.proc)
+        return result
+
+    monkeypatch.setattr(Git, "execute", capture_process)
+    try:
+        if operation == "error":
+            with pytest.raises(GitCommandError):
+                sm.update(to_latest_revision=True, no_fetch=True)
+        else:
+            sm.update(to_latest_revision=True, no_fetch=True, recursive=recursive, keep_going=operation == "keep-going")
+        # These records retain Head arguments and their internally opened Repos.
+        # Collection cannot release the processes while the records remain alive.
+        records = [record for record in caplog.records if "a tracking branch was not set" in record.msg]
+        assert len(records) == (2 if recursive else 1)
+        assert processes
+        assert all(process.poll() is not None for process in processes)
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.terminate()
+            process.wait()
+
+
+@pytest.fixture
+def windows_directory_symlink_removal(monkeypatch):
+    """Exercise Windows rmdir semantics on POSIX, where rmdir rejects symlinks."""
+    if sys.platform != "win32":
+        original_rmdir = os.rmdir
+
+        def rmdir(path, *args, **kwargs):
+            if osp.islink(path):
+                return os.unlink(path, *args, **kwargs)
+            return original_rmdir(path, *args, **kwargs)
+
+        monkeypatch.setattr(os, "rmdir", rmdir)
+
+
+def test_submodule_allows_symlink_above_worktree(
+    configured_submodule, windows_directory_symlink_removal, metadata_realpath
+):
+    """Allow adding and moving submodules when the parent is opened through a symlink."""
+    sm = configured_submodule
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    alias = tmp_path / "alias"
+    with git.Repo(alias) as parent:
+        added = Submodule.add(parent, "new", "new", sm.url)
+        added.move("moved")
+        assert alias.is_symlink()
+        with added.module() as module:
+            assert Path(module.git.rev_parse("--show-toplevel")).resolve() == Path(added.abspath).resolve()
+        assert Path(added.abspath, "file").read_text() == "content"
+
+
+@pytest.fixture(params=[False, True], ids=["native-realpath", "windows37-realpath"])
+def metadata_realpath(request):
+    """Model Python 3.7 on Windows without altering pathlib's own resolver."""
+    if request.param:
+        paths = SimpleNamespace(**vars(osp))
+        paths.realpath = osp.abspath
+        with mock.patch("git.objects.submodule.base.osp", paths):
+            yield
+    else:
+        yield
+
+
+@pytest.mark.parametrize("operation", ["add", "reconnect"])
+@patch_git_config("protocol.file.allow", "always")
+def test_submodule_allows_metadata_destination_symlinks(configured_submodule, operation, metadata_realpath):
+    """Allow linked metadata destinations while keeping the checkout correctly connected.
+
+    Adding and reconnecting after deinit may store metadata outside the
+    parent repository through a symlink under .git/modules, preserving that link.
+    """
+    sm = configured_submodule
+    root = Path(sm.repo.working_tree_dir)
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    outside = tmp_path / "outside"
+    link = Path(sm.repo.git_dir) / "modules/link"
+    sm = Submodule.add(sm.repo, "link/new", "new", sm.url)
+    if operation == "reconnect":
+        sm.repo.index.commit("Add linked metadata submodule", skip_hooks=True)
+        sm.repo.git.submodule("deinit", "--force", "new")
+        sm.update(init=True)
+    assert link.is_symlink()
+    assert (outside / "new/HEAD").is_file()
+    with sm.module() as module:
+        assert Path(module.git.rev_parse("--show-toplevel")).resolve() == Path(sm.abspath).resolve()
+    assert Path(sm.abspath, "file").read_text() == "content"
+    assert (root / ".gitmodules").is_file()
+
+
+@pytest.mark.parametrize("kind", ["modules", "intermediate", "leaf", "gitfile", "config", "alias"])
+@pytest.mark.parametrize("operation", ["update", "move", "remove"])
+@pytest.mark.parametrize("configured_submodule", ["nested/module"], indirect=True)
+@patch_git_config("protocol.file.allow", "always")
+def test_submodule_allows_existing_metadata_symlinks(
+    configured_submodule, kind, operation, windows_directory_symlink_removal, metadata_realpath
+):
+    """Keep submodule operations compatible with existing symlinks in Git metadata.
+
+    Cover linked metadata directories, gitfiles, configs, and internal aliases.
+    Update and move must retain a usable checkout; forced removal retains the
+    metadata directory for a later reinitialization.
+    """
+    sm = configured_submodule
+    root = Path(sm.repo.working_tree_dir)
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    modules = Path(sm.repo.git_dir) / "modules"
+    paths = {
+        "modules": modules,
+        "intermediate": modules / "nested",
+        "leaf": modules / "nested/module",
+        "gitfile": root / "module/.git",
+        "config": modules / "nested/module/config",
+        "alias": modules / "alias",
+    }
+    link = paths[kind]
+    target = tmp_path / "outside"
+    if kind == "alias":
+        target = modules / "nested"
+    assert sm.module_exists()
+    if operation == "remove":
+        metadata_dir = (modules / "nested/module").resolve()
+        assert metadata_dir.is_dir()
+        url = sm.url
+        sm.remove(force=True)
+        assert not (root / "module").exists()
+        assert metadata_dir.is_dir()
+        if kind in ("modules", "intermediate", "alias"):
+            assert link.is_symlink() and link.is_dir()
+        replacement = Submodule.add(sm.repo, "nested/module", "module", url)
+        if kind == "leaf":
+            assert link.is_symlink() and link.is_dir()
+            assert target.is_dir()
+        with replacement.module() as module:
+            assert Path(module.git.rev_parse("--show-toplevel")).resolve() == (root / "module").resolve()
+        return
+    if operation == "update":
+        sm.update()
+    else:
+        sm.move("moved")
+    if kind == "modules":
+        assert link.is_symlink()
+        assert link.is_dir()
+    with sm.module() as module:
+        assert Path(module.git.rev_parse("--show-toplevel")).resolve() == Path(sm.abspath).resolve()
+    assert Path(sm.abspath, "file").read_text() == "content"
+
+
+@pytest.mark.parametrize("kind", ["modules", "intermediate", "leaf"])
+@pytest.mark.parametrize("configured_submodule", ["nested/module"], indirect=True)
+@patch_git_config("protocol.file.allow", "always")
+def test_remove_linked_metadata_keeps_siblings_and_can_reinitialize(configured_submodule, kind, metadata_realpath):
+    sm = configured_submodule
+    sibling = sm.repo.submodules["nested/sibling"]
+    modules = Path(sm.repo.git_dir) / "modules"
+    link = {"modules": modules, "intermediate": modules / "nested", "leaf": modules / "nested/module"}[kind]
+    sm.remove(force=True, configuration=False)
+
+    assert link.is_symlink()
+    assert link.exists()
+    with sibling.module() as module:
+        assert Path(module.git.rev_parse("--show-toplevel")).resolve() == Path(sibling.abspath).resolve()
+        assert Path(sibling.abspath, "file").read_text() == "content"
+    sm.update(init=True)
+    assert link.is_symlink() and link.is_dir()
+    assert Path(sm.abspath, "file").read_text() == "content"
+    with sm.module() as module:
+        assert Path(module.git.rev_parse("--show-toplevel")).resolve() == Path(sm.abspath).resolve()
+
+
+@pytest.mark.parametrize("relative_target", [False, True], ids=["absolute-target", "relative-target"])
+def test_add_to_dangling_metadata_symlink(configured_submodule, metadata_realpath, relative_target):
+    sm = configured_submodule
+    tmp_path = Path(configured_submodule.repo.working_tree_dir).parent
+    link = Path(sm.repo.git_dir) / "modules/new"
+    target = tmp_path / "missing" / "metadata"
+    assert link.is_symlink() and not link.exists()
+    assert not target.exists()
+    link_target = os.readlink(str(link))
+
+    added = Submodule.add(sm.repo, "new", "new", sm.url)
+
+    assert link.is_symlink() and link.is_dir()
+    assert os.readlink(str(link)) == link_target
+    assert (target / "HEAD").is_file()
+    with added.module() as module:
+        assert Path(module.git_dir).resolve() == target.resolve()
+        assert Path(module.git.rev_parse("--show-toplevel")).resolve() == Path(added.abspath).resolve()
+    assert Path(added.abspath, "file").read_text() == "content"
+
+
+class TestRootProgress(RootUpdateProgress):
+    """Just prints messages, for now without checking the correctness of the states"""
+
+    def update(self, op, cur_count, max_count, message=""):
+        print(op, cur_count, max_count, message)
+
+
+TestRootProgress.__test__ = False
+prog = TestRootProgress()
+
+
+@pytest.mark.parametrize("state", ["index", "worktree", "untracked"])
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_remove_preserves_dirty_submodule(state, dry_run):
+    source = read_only_fixture("sample-repositories.sh") / "smmap"
+    with writable_fixture("submodule-cases.sh", "remove-dirty-" + state, source) as temporary:
+        with git.Repo(temporary.path() / "parent") as repo:
+            submodule = repo.submodules[0]
+            path = Path(submodule.abspath, "untracked" if state == "untracked" else "file")
+            with pytest.raises(InvalidGitRepositoryError):
+                submodule.remove(dry_run=dry_run)
+            assert submodule.exists() and submodule.module_exists()
+            assert path.read_text() == "keep this data\n"
+            assert not repo.is_dirty(working_tree=False)
+
+
+class TestSubmodule(TestBase):
+    def _fixture(self, scenario, *, write=True, execute=False):
+        source = self._small_repo_url()
+        if not write:
+            return read_only_fixture("submodule-cases.sh", scenario, source)
+        temporary = writable_fixture("submodule-cases.sh", scenario, source, execute=execute)
+        self.addCleanup(temporary.close)
+        return temporary.path().resolve()
+
+    def tearDown(self):
+        gc.collect()
+
+    k_subm_current = "submodule-current"
+    k_subm_changed = "submodule-old"
+    k_no_subm_tag = "release"
+
+    def _do_base_tests(self, rwrepo):
+        """Perform all tests in the given repository, it may be bare or nonbare"""
+        # Manual instantiation.
+        smm = Submodule(rwrepo, rwrepo._null_binsha)
+        # Name needs to be set in advance.
+        self.assertRaises(AttributeError, getattr, smm, "name")
+
+        # Iterate - 1 submodule.
+        sms = Submodule.list_items(rwrepo, self.k_subm_current)
+        assert len(sms) == 1
+        sm = sms[0]
+
+        # At a different time, there is None.
+        assert len(Submodule.list_items(rwrepo, self.k_no_subm_tag)) == 0
+
+        assert sm.path == "git/ext/gitdb"
+        assert sm.path != sm.name  # In our case, we have ids there, which don't equal the path.
+        assert sm.url == "../gitdb"
+        assert sm.branch_path == "refs/heads/master"  # the default ...
+        assert sm.branch_name == "master"
+        assert sm.parent_commit == rwrepo.head.commit
+        # Size is always 0.
+        assert sm.size == 0
+        # The module is not checked-out yet.
+        self.assertRaises(InvalidGitRepositoryError, sm.module)
+
+        # ...which is why we can't get the branch either - it points into the module()
+        # repository.
+        self.assertRaises(InvalidGitRepositoryError, getattr, sm, "branch")
+
+        # branch_path works, as it's just a string.
+        assert isinstance(sm.branch_path, str)
+
+        # Some commits earlier we still have a submodule, but it's at a different
+        # commit.
+        smold = next(Submodule.iter_items(rwrepo, self.k_subm_changed))
+        assert smold.binsha != sm.binsha
+        assert smold != sm  # the name changed
+
+        # Force it to reread its information.
+        del smold._url
+        smold.url == sm.url  # noqa: B015  # FIXME: Should this be an assertion?
+
+        # Test config_reader/writer methods.
+        sm.config_reader()
+        new_smclone_path = None  # Keep custom paths for later.
+        new_csmclone_path = None  #
+        if rwrepo.bare:
+            with self.assertRaises(InvalidGitRepositoryError):
+                with sm.config_writer():
+                    pass
+        else:
+            with sm.config_writer() as writer:
+                # For faster checkout, set the url to the local path.
+                new_smclone_path = self._gitdb_repo_url()
+                writer.set_value("url", new_smclone_path)
+                writer.release()
+                assert sm.config_reader().get_value("url") == new_smclone_path
+                assert sm.url == new_smclone_path
+        # END handle bare repo
+        smold.config_reader()
+
+        # Cannot get a writer on historical submodules.
+        if not rwrepo.bare:
+            with self.assertRaises(ValueError):
+                with smold.config_writer():
+                    pass
+        # END handle bare repo
+
+        # Make the old into a new - this doesn't work as the name changed.
+        self.assertRaises(ValueError, smold.set_parent_commit, self.k_subm_current)
+        # the sha is properly updated
+        smold.set_parent_commit(self.k_subm_changed + "~1")
+        assert smold.binsha != sm.binsha
+
+        # Raises if the sm didn't exist in new parent - it keeps its parent_commit
+        # unchanged.
+        self.assertRaises(ValueError, smold.set_parent_commit, self.k_no_subm_tag)
+
+        # TODO: Test that, if a path is in the .gitmodules file, but not in the index,
+        # then it raises.
+
+        # TEST UPDATE
+        ##############
+        # Module retrieval is not always possible.
+        if rwrepo.bare:
+            self.assertRaises(InvalidGitRepositoryError, sm.module)
+            self.assertRaises(InvalidGitRepositoryError, sm.remove)
+            self.assertRaises(InvalidGitRepositoryError, sm.add, rwrepo, "here", "there")
+        else:
+            # It's not checked out in our case.
+            self.assertRaises(InvalidGitRepositoryError, sm.module)
+            assert not sm.module_exists()
+
+            # Currently there is only one submodule.
+            assert len(list(rwrepo.iter_submodules())) == 1
+            assert sm.binsha != "\0" * 20
+
+            # TEST ADD
+            ###########
+            # Preliminary tests.
+            # Adding existing returns exactly the existing.
+            sma = Submodule.add(rwrepo, sm.name, sm.path)
+            assert sma.path == sm.path
+
+            # Adding existing as pathlike
+            sma = Submodule.add(rwrepo, sm.name, PathLikeMock(sm.path))
+            assert sma.path == sm.path
+
+            # No url and no module at path fails.
+            self.assertRaises(ValueError, Submodule.add, rwrepo, "newsubm", "pathtorepo", url=None)
+
+            # CONTINUE UPDATE
+            #################
+
+            # Let's update it - it's a recursive one too.
+            newdir = osp.join(sm.abspath, "dir")
+            os.makedirs(newdir)
+
+            # Update fails if the path already exists non-empty.
+            self.assertRaises(OSError, sm.update)
+            os.rmdir(newdir)
+
+            # Dry-run does nothing.
+            sm.update(dry_run=True, progress=prog)
+            assert not sm.module_exists()
+
+            assert sm.update() is sm
+            sm_repopath = sm.path  # Cache for later.
+            assert sm.module_exists()
+            assert isinstance(sm.module(), git.Repo)
+            assert sm.module().working_tree_dir == sm.abspath
+
+            # INTERLEAVE ADD TEST
+            #####################
+            # url must match the one in the existing repository (if submodule name
+            # suggests a new one) or we raise.
+            self.assertRaises(
+                ValueError,
+                Submodule.add,
+                rwrepo,
+                "newsubm",
+                sm.path,
+                "git://someurl/repo.git",
+            )
+
+            # CONTINUE UPDATE
+            #################
+            # We should have setup a tracking branch, which is also active.
+            assert sm.module().head.ref.tracking_branch() is not None
+
+            # Delete the whole directory and re-initialize.
+            assert len(sm.children()) != 0
+            # shutil.rmtree(sm.abspath)
+            sm.remove(force=True, configuration=False)
+            assert len(sm.children()) == 0
+            # Dry-run does nothing.
+            sm.update(dry_run=True, recursive=False, progress=prog)
+            assert len(sm.children()) == 0
+
+            sm.update(recursive=False)
+            assert len(list(rwrepo.iter_submodules())) == 2
+            assert len(sm.children()) == 1  # It's not checked out yet.
+            csm = sm.children()[0]
+            assert not csm.module_exists()
+            csm_repopath = csm.path
+
+            # Adjust the path of the submodules module to point to the local
+            # destination.
+            new_csmclone_path = self._small_repo_url()
+            with csm.config_writer() as writer:
+                writer.set_value("url", new_csmclone_path)
+            assert csm.url == new_csmclone_path
+
+            # Dry-run does nothing.
+            assert not csm.module_exists()
+            sm.update(recursive=True, dry_run=True, progress=prog)
+            assert not csm.module_exists()
+
+            # Update recursively again.
+            sm.update(recursive=True)
+            assert csm.module_exists()
+
+            # Tracking branch once again.
+            assert csm.module().head.ref.tracking_branch() is not None
+
+            # This flushed in a sub-submodule.
+            assert len(list(rwrepo.iter_submodules())) == 2
+
+            # Reset both heads to the previous version, verify that to_latest_revision
+            # works.
+            smods = (sm.module(), csm.module())
+            for repo in smods:
+                repo.head.reset("HEAD~2", working_tree=1)
+            # END for each repo to reset
+
+            # Dry-run does nothing.
+            self.assertRaises(
+                RepositoryDirtyError,
+                sm.update,
+                recursive=True,
+                dry_run=True,
+                progress=prog,
+            )
+            sm.update(recursive=True, dry_run=True, progress=prog, force=True)
+            for repo in smods:
+                assert repo.head.commit != repo.head.ref.tracking_branch().commit
+            # END for each repo to check
+
+            self.assertRaises(RepositoryDirtyError, sm.update, recursive=True, to_latest_revision=True)
+            sm.update(recursive=True, to_latest_revision=True, force=True)
+            for repo in smods:
+                assert repo.head.commit == repo.head.ref.tracking_branch().commit
+                repo.close()
+            # END for each repo to check
+            del smods
+
+            # If the head is detached, it still works (but warns).
+            smref = sm.module().head.ref
+            sm.module().head.ref = "HEAD~1"
+            sm.module().head.reset(index=True, working_tree=True)
+            # If there is no tracking branch, we get a warning as well.
+            csm_tracking_branch = csm.module().head.ref.tracking_branch()
+            csm.module().head.ref.set_tracking_branch(None)
+            sm.update(recursive=True, to_latest_revision=True)
+
+            # to_latest_revision changes the child submodule's commit, it needs an
+            # update now.
+            csm.set_parent_commit(csm.repo.head.commit)
+
+            # Undo the changes.
+            sm.module().head.ref = smref
+            csm.module().head.ref.set_tracking_branch(csm_tracking_branch)
+
+            # Test removal from an explicitly clean parent and a dirty child.
+            sm.module().head.reset(index=True, working_tree=True)
+            csm.set_parent_commit(csm.repo.head.commit)
+            self.assertRaises(ValueError, csm.remove, module=False, configuration=False)
+            fn = join_path_native(csm.module().working_tree_dir, "newfile")
+            with open(fn, "w") as fd:
+                fd.write("untracked child data")
+            self.assertRaises(InvalidGitRepositoryError, csm.remove)
+            self.assertRaises(InvalidGitRepositoryError, sm.remove)
+            self.assertRaises(InvalidGitRepositoryError, sm.remove, dry_run=True)
+            assert Path(fn).read_text() == "untracked child data"
+
+            assert sm.remove(force=True, dry_run=True) is sm
+            assert sm.module_exists() and csm.module_exists()
+            assert csm.exists()
+            assert Path(fn).read_text() == "untracked child data"
+
+            prev_count = len(sm.children())
+            csm.remove(force=True)
+            assert not csm.exists()
+            assert not csm.module_exists()
+            assert len(sm.children()) == prev_count - 1
+            sm.module().index.reset(working_tree=True)
+
+            # Now delete only the module of the main submodule.
+            assert sm.module_exists()
+            csm.repo.close()
+            sm.remove(configuration=False, force=True)
+            assert sm.exists()
+            assert not sm.module_exists()
+            assert sm.config_reader().get_value("url")
+
+            # Delete the rest.
+            sm_path = sm.path
+            sm.remove()
+            assert not sm.exists()
+            assert not sm.module_exists()
+            self.assertRaises(ValueError, getattr, sm, "path")
+
+            assert len(rwrepo.submodules) == 0
+
+            # ADD NEW SUBMODULE
+            ###################
+            # Add a simple remote repo - trailing slashes are no problem.
+            smid = "newsub"
+            osmid = "othersub"
+            nsm = Submodule.add(
+                rwrepo,
+                smid,
+                sm_repopath,
+                new_smclone_path + "/",
+                None,
+                no_checkout=True,
+            )
+            assert nsm.name == smid
+            assert nsm.module_exists()
+            assert nsm.exists()
+            # It's not checked out.
+            assert not osp.isfile(join_path_native(nsm.module().working_tree_dir, Submodule.k_modules_file))
+            assert len(rwrepo.submodules) == 1
+
+            # Add another submodule, but into the root, not as submodule.
+            osm = Submodule.add(rwrepo, osmid, csm_repopath, new_csmclone_path, Submodule.k_head_default)
+            assert osm != nsm
+            assert osm.module_exists()
+            assert osm.exists()
+            assert osp.isfile(join_path_native(osm.module().working_tree_dir, "setup.py"))
+
+            assert len(rwrepo.submodules) == 2
+
+            # Commit the changes, just to finalize the operation.
+            rwrepo.index.commit("my submod commit", skip_hooks=True)
+            assert len(rwrepo.submodules) == 2
+
+            # Needs update, as the head changed.
+            # It thinks it's in the history of the repo otherwise.
+            nsm.set_parent_commit(rwrepo.head.commit)
+            osm.set_parent_commit(rwrepo.head.commit)
+
+            # MOVE MODULE
+            #############
+            # Invalid input.
+            self.assertRaises(ValueError, nsm.move, "doesntmatter", module=False, configuration=False)
+
+            # Renaming to the same path does nothing.
+            assert nsm.move(sm_path) is nsm
+
+            # Rename a module.
+            nmp = join_path_native("new", "module", "dir") + "/"  # New module path.
+            pmp = nsm.path
+            assert nsm.move(nmp) is nsm
+            nmp = nmp[:-1]  # Cut last /
+            nmpl = to_native_path_linux(nmp)
+            assert nsm.path == nmpl
+            assert rwrepo.submodules[0].path == nmpl
+
+            mpath = "newsubmodule"
+            absmpath = join_path_native(rwrepo.working_tree_dir, mpath)
+            open(absmpath, "w").write("")
+            self.assertRaises(ValueError, nsm.move, mpath)
+            os.remove(absmpath)
+
+            # Now it works, as we just move it back.
+            nsm.move(pmp)
+            assert nsm.path == pmp
+            assert rwrepo.submodules[0].path == pmp
+
+            # REMOVE 'EM ALL
+            ################
+            # If a submodule's repo has no remotes, it can't be added without an
+            # explicit url.
+            osmod = osm.module()
+
+            osm.remove(module=False)
+            for remote in osmod.remotes:
+                remote.remove(osmod, remote.name)
+            assert not osm.exists()
+            self.assertRaises(ValueError, Submodule.add, rwrepo, osmid, csm_repopath, url=None)
+        # END handle bare mode
+
+        # Error if there is no submodule file here.
+        self.assertRaises(
+            IOError,
+            Submodule._config_parser,
+            rwrepo,
+            rwrepo.commit(self.k_no_subm_tag),
+            True,
+        )
+
+    @with_rw_repo(k_subm_current)
+    @patch_git_config("protocol.file.allow", "always")
+    def test_base_rw(self, rwrepo):
+        self._do_base_tests(rwrepo)
+
+    @with_rw_repo(k_subm_current, bare=True)
+    def test_base_bare(self, rwrepo):
+        self._do_base_tests(rwrepo)
+
+    @pytest.mark.xfail(
+        sys.platform == "win32",
+        reason=(
+            '"The process cannot access the file because it is being used by another process"'
+            + " on first call to rm.update"
+        ),
+        raises=PermissionError,
+    )
+    @with_rw_repo(k_subm_current, bare=False)
+    @patch_git_config("protocol.file.allow", "always")
+    def test_root_module(self, rwrepo):
+        # Can query everything without problems.
+        rm = RootModule(rwrepo)
+        assert rm.module() is rwrepo
+
+        # Try attributes.
+        rm.binsha
+        rm.mode
+        rm.path
+        assert rm.name == rm.k_root_name
+        assert rm.parent_commit == rwrepo.head.commit
+        rm.url
+        rm.branch
+
+        assert len(rm.list_items(rm.module())) == 1
+        rm.config_reader()
+        with rm.config_writer():
+            pass
+
+        # Cannot set the parent commit as root module's path didn't exist.
+        self.assertRaises(ValueError, rm.set_parent_commit, "HEAD")
+
+        with mock.patch.object(RootModule, "list_items", side_effect=ValueError("boom")):
+            rm.update(keep_going=True)
+
+        # TEST UPDATE
+        #############
+        # Set up a commit that removes existing, adds new and modifies existing
+        # submodules.
+        rm = RootModule(rwrepo)
+        assert len(rm.children()) == 1
+
+        # Modify path without modifying the index entry.
+        # (Which is what the move method would do properly.)
+        # ==================================================
+        sm = rm.children()[0]
+        pp = "path/prefix"
+        fp = join_path_native(pp, sm.path)
+        prep = sm.path
+        assert not sm.module_exists()  # It was never updated after rwrepo's clone.
+
+        # Ensure we clone from a local source.
+        with sm.config_writer() as writer:
+            writer.set_value("url", self._gitdb_repo_url())
+
+        # Dry-run does nothing.
+        sm.update(recursive=False, dry_run=True, progress=prog)
+        assert not sm.module_exists()
+
+        sm.update(recursive=False)
+        assert sm.module_exists()
+        with sm.config_writer() as writer:
+            # Change path to something with prefix AFTER url change.
+            writer.set_value("path", fp)
+
+        # Update doesn't fail, because list_items ignores the wrong path in such
+        # situations.
+        rm.update(recursive=False)
+
+        # Move it properly - doesn't work as it its path currently points to an
+        # indexentry which doesn't exist (move it to some path, it doesn't matter here).
+        self.assertRaises(InvalidGitRepositoryError, sm.move, pp)
+        # Reset the path(cache) to where it was, now it works.
+        sm.path = prep
+        sm.move(fp, module=False)  # Leave it at the old location.
+
+        assert not sm.module_exists()
+        cpathchange = rwrepo.index.commit("changed sm path", skip_hooks=True)  # Finally we can commit.
+
+        # Update puts the module into place.
+        rm.update(recursive=False, progress=prog)
+        sm.set_parent_commit(cpathchange)
+        assert sm.module_exists()
+
+        # Add submodule.
+        # ==============
+        nsmn = "newsubmodule"
+        nsmp = "submrepo"
+        subrepo_url = self._small_repo_url()
+        nsm = Submodule.add(rwrepo, nsmn, nsmp, url=subrepo_url)
+        csmadded = rwrepo.index.commit(
+            "Added submodule", skip_hooks=True
+        ).hexsha  # Make sure we don't keep the repo reference.
+        nsm.set_parent_commit(csmadded)
+        assert nsm.module_exists()
+        # In our case, the module should not exist, which happens if we update a parent
+        # repo and a new submodule comes into life.
+        nsm.remove(configuration=False, module=True)
+        assert not nsm.module_exists() and nsm.exists()
+
+        # Dry-run does nothing.
+        rm.update(recursive=False, dry_run=True, progress=prog)
+
+        # Otherwise it will work.
+        rm.update(recursive=False, progress=prog)
+        assert nsm.module_exists()
+
+        # Remove submodule - the previous one.
+        # ====================================
+        sm.set_parent_commit(csmadded)
+        smp = sm.abspath
+        assert not sm.remove(module=False).exists()
+        assert osp.isdir(smp)  # Module still exists.
+        csmremoved = rwrepo.index.commit("Removed submodule", skip_hooks=True)
+
+        # An update will remove the module.
+        # Not in dry_run.
+        rm.update(recursive=False, dry_run=True, force_remove=True)
+        assert osp.isdir(smp)
+
+        # When removing submodules, we may get new commits as nested submodules are
+        # auto-committing changes to allow deletions without force, as the index would
+        # be dirty otherwise.
+        # QUESTION: Why does this seem to work in test_git_submodule_compatibility() ?
+        self.assertRaises(InvalidGitRepositoryError, rm.update, recursive=False, force_remove=False)
+        rm.update(recursive=False, force_remove=True)
+        assert not osp.isdir(smp)
+
+        # 'Apply work' to the nested submodule and ensure this is not removed/altered
+        # during updates. We need to commit first, otherwise submodule.update wouldn't
+        # have a reason to change the head.
+        touch(osp.join(nsm.module().working_tree_dir, "new-file"))
+        # We cannot expect is_dirty to even run as we wouldn't reset a head to the same
+        # location.
+        assert nsm.module().head.commit.hexsha == nsm.hexsha
+        nsm.module().index.add([nsm])
+        nsm.module().index.commit("added new file", skip_hooks=True)
+        rm.update(recursive=False, dry_run=True, progress=prog)  # Would not change head, and thus doesn't fail.
+        # Everything we can do from now on will trigger the 'future' check, so no
+        # is_dirty() check will even run. This would only run if our local branch is in
+        # the past and we have uncommitted changes.
+
+        prev_commit = nsm.module().head.commit
+        rm.update(recursive=False, dry_run=False, progress=prog)
+        assert prev_commit == nsm.module().head.commit, "head shouldn't change, as it is in future of remote branch"
+
+        # this kills the new file
+        rm.update(recursive=True, progress=prog, force_reset=True)
+        assert prev_commit != nsm.module().head.commit, "head changed, as the remote url and its commit changed"
+
+        # Change url...
+        # =============
+        # ...to the first repository. This way we have a fast checkout, and a completely
+        # different repository at the different url.
+        nsm.set_parent_commit(csmremoved)
+        nsmurl = self._gitdb_repo_url()
+        with nsm.config_writer() as writer:
+            writer.set_value("url", nsmurl)
+        csmpathchange = rwrepo.index.commit("changed url", skip_hooks=True)
+        nsm.set_parent_commit(csmpathchange)
+
+        # Now nsm head is in the future of the tracked remote branch.
+        prev_commit = nsm.module().head.commit
+        # dry-run does nothing
+        rm.update(recursive=False, dry_run=True, progress=prog)
+        assert nsm.module().remotes.origin.url != nsmurl
+
+        rm.update(recursive=False, progress=prog, force_reset=True)
+        assert nsm.module().remotes.origin.url == nsmurl
+        assert prev_commit != nsm.module().head.commit, "Should now point to gitdb"
+        assert len(rwrepo.submodules) == 1
+        assert not rwrepo.submodules[0].children()[0].module_exists(), "nested submodule should not be checked out"
+
+        # Add the submodule's changed commit to the index, which is what the user would
+        # do. Beforehand, update our instance's binsha with the new one.
+        nsm.binsha = nsm.module().head.commit.binsha
+        rwrepo.index.add([nsm])
+
+        # Change branch.
+        # ==============
+        # We only have one branch, so we switch to a virtual one, and back to the
+        # current one to trigger the difference.
+        cur_branch = nsm.branch
+        nsmm = nsm.module()
+        prev_commit = nsmm.head.commit
+        for branch in ("some_virtual_branch", cur_branch.name):
+            with nsm.config_writer() as writer:
+                writer.set_value(Submodule.k_head_option, git.Head.to_full_path(branch))
+            csmbranchchange = rwrepo.index.commit("changed branch to %s" % branch, skip_hooks=True)
+            nsm.set_parent_commit(csmbranchchange)
+        # END for each branch to change
+
+        # Let's remove our tracking branch to simulate some changes.
+        nsmmh = nsmm.head
+        assert nsmmh.ref.tracking_branch() is None  # Never set it up until now.
+        assert not nsmmh.is_detached
+
+        # Dry-run does nothing.
+        rm.update(recursive=False, dry_run=True, progress=prog)
+        assert nsmmh.ref.tracking_branch() is None
+
+        # The real thing does.
+        rm.update(recursive=False, progress=prog)
+
+        assert nsmmh.ref.tracking_branch() is not None
+        assert not nsmmh.is_detached
+
+        # Recursive update.
+        # =================
+        # Finally we recursively update a module, just to run the code at least once
+        # remove the module so that it has more work.
+        assert len(nsm.children()) >= 1  # Could include smmap.
+        assert nsm.exists() and nsm.module_exists() and len(nsm.children()) >= 1
+        # Ensure we pull locally only.
+        nsmc = nsm.children()[0]
+        with nsmc.config_writer() as writer:
+            writer.set_value("url", subrepo_url)
+        rm.update(recursive=True, progress=prog, dry_run=True)  # Just to run the code.
+        rm.update(recursive=True, progress=prog)
+
+        # gitdb: has either 1 or 2 submodules depending on the version.
+        assert len(nsm.children()) >= 1 and nsmc.module_exists()
+
+    def test_iter_items_from_nonexistent_hash(self):
+        it = Submodule.iter_items(self.rorepo, "b4ecbfaa90c8be6ed6d9fb4e57cc824663ae15b4")
+        with self.assertRaisesRegex(ValueError, r"\bcould not be resolved\b"):
+            next(it)
+
+    def test_iter_items_from_invalid_hash(self):
+        """Check legacy behavaior on BadName (also applies to IOError, i.e. OSError)."""
+        it = Submodule.iter_items(self.rorepo, "xyz")
+        with self.assertRaises(StopIteration) as ctx:
+            next(it)
+        self.assertIsNone(ctx.exception.value)
+
+    def test_deinit_calls_git_submodule(self):
+        rwdir = self._fixture("empty")
+        repo = git.Repo(rwdir / "parent")
+        submodule = Submodule(repo, b"\0" * 20, name="module", path="module")
+
+        with mock.patch.object(Git, "_call_process_safe") as git_submodule:
+            submodule.deinit()
+
+            git_submodule.assert_called_once_with(
+                "submodule", "deinit", "--", submodule.path, env={"GIT_LITERAL_PATHSPECS": "1"}
+            )
+            git_submodule.reset_mock()
+
+            submodule.deinit(force=True)
+
+            git_submodule.assert_called_once_with(
+                "submodule", "deinit", "--force", "--", submodule.path, env={"GIT_LITERAL_PATHSPECS": "1"}
+            )
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_after_deinit(self):
+        rwdir = self._fixture("deinit", execute=True)
+        source_repo = git.Repo(rwdir / "source")
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+        assert not submodule.module_exists()
+        assert osp.isdir(osp.join(parent_repo.git_dir, "modules", submodule.name))
+
+        submodule.update()
+
+        assert submodule.module_exists()
+        assert submodule.module().head.commit == source_repo.head.commit
+        assert osp.isfile(osp.join(submodule.abspath, "file"))
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_to_latest_revision_after_deinit_fetches_remote(self):
+        rwdir = self._fixture("deinit-latest", execute=True)
+        source_repo = git.Repo(rwdir / "source")
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+
+        submodule.update(to_latest_revision=True)
+
+        assert submodule.module().head.commit == source_repo.head.commit
+        assert osp.isfile(osp.join(submodule.abspath, "new-file"))
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_after_deinit_fetches_new_gitlink_commit(self):
+        rwdir = self._fixture("deinit-gitlink", execute=True)
+        source_repo = git.Repo(rwdir / "source")
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+        submodule.update()
+
+        assert submodule.module().head.commit == source_repo.head.commit
+        assert osp.isfile(osp.join(submodule.abspath, "new-file"))
+
+    def test_update_after_deinit_refuses_non_empty_checkout(self):
+        rwdir = self._fixture("deinit-nonempty", execute=True)
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+        checkout_file = osp.join(submodule.abspath, "file")
+
+        with pytest.raises(OSError, match="does already exist and is non-empty"):
+            submodule.update()
+
+        with open(checkout_file) as fp:
+            assert fp.read() == "user content"
+        assert not osp.exists(osp.join(submodule.abspath, ".git"))
+
+    def test_update_after_deinit_without_init_does_not_restore_checkout(self):
+        rwdir = self._fixture("deinit", execute=True)
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+
+        assert submodule.update(init=False) is submodule
+        assert not submodule.module_exists()
+        assert not osp.exists(osp.join(submodule.abspath, ".git"))
+
+    def test_dry_run_update_after_deinit_does_not_restore_checkout(self):
+        rwdir = self._fixture("deinit", execute=True)
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+
+        assert submodule.update(dry_run=True) is submodule
+        assert not submodule.module_exists()
+        assert not osp.exists(osp.join(submodule.abspath, ".git"))
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_after_deinit_restores_nested_checkout(self):
+        rwdir = self._fixture("deinit-nested", execute=True)
+        source_repo = git.Repo(rwdir / "source")
+        parent_repo = git.Repo(rwdir / "parent")
+        submodule = parent_repo.submodules[0]
+
+        submodule.update()
+
+        module_repo = submodule.module()
+        assert module_repo.head.commit == source_repo.head.commit
+        assert osp.isfile(osp.join(submodule.abspath, "file"))
+        assert osp.samefile(module_repo.git_dir, osp.join(parent_repo.git_dir, "modules", submodule.name))
+
+    @with_rw_repo(k_no_subm_tag, bare=False)
+    def test_first_submodule(self, rwrepo):
+        assert len(list(rwrepo.iter_submodules())) == 0
+
+        for sm_name, sm_path in (
+            ("first", "submodules/first"),
+            ("second", osp.join(rwrepo.working_tree_dir, "submodules/second")),
+        ):
+            sm = rwrepo.create_submodule(sm_name, sm_path, rwrepo.git_dir, no_checkout=True)
+            assert sm.exists() and sm.module_exists()
+            rwrepo.index.commit("Added submodule " + sm_name, skip_hooks=True)
+        # END for each submodule path to add
+
+        self.assertRaises(ValueError, rwrepo.create_submodule, "fail", osp.expanduser("~"))
+        self.assertRaises(
+            ValueError,
+            rwrepo.create_submodule,
+            "fail-too",
+            rwrepo.working_tree_dir + osp.sep,
+        )
+
+    def test_add_empty_repo(self):
+        rwdir = self._fixture("add-empty")
+        empty_repo_dir = str(rwdir / "empty-repo")
+        parent = git.Repo(rwdir / "parent")
+
+        for checkout_mode in range(2):
+            name = "empty" + str(checkout_mode)
+            self.assertRaises(
+                ValueError,
+                parent.create_submodule,
+                name,
+                name,
+                url=empty_repo_dir,
+                no_checkout=checkout_mode and True or False,
+            )
+        # END for each checkout mode
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_submodule_with_relative_path(self):
+        rwdir = self._fixture("relative")
+        cloned_repo = git.Repo(rwdir / "cloned_repo")
+
+        cloned_repo.submodule_update(init=True, recursive=True)
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_rejects_parent_component_in_name(self):
+        for existing_metadata in (False, True):
+            scenario = "invalid-name-existing" if existing_metadata else "invalid-name"
+            rwdir = self._fixture(scenario, execute=True)
+            clone = git.Repo(rwdir / "clone")
+            with pytest.raises(ValueError, match="submodule name"):
+                clone.submodules[0].update(init=True)
+            assert (rwdir / "escaped").exists() == existing_metadata
+
+        invalid_names = (
+            "",
+            "nul\0name",
+            "..",
+            "../module",
+            R"..\module",
+            "nested/../module",
+            R"nested\..\module",
+            "/module",
+            R"\module",
+            "C:module",
+            R"C:\module",
+        )
+        for name in invalid_names:
+            with pytest.raises(ValueError, match="submodule name"):
+                Submodule._module_abspath(clone, "module", name)
+
+        with mock.patch.object(Submodule, "_need_gitfile_submodules", return_value=False):
+            with pytest.raises(ValueError, match="submodule name"):
+                Submodule._module_abspath(clone, "module", "../module")
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_root_update_keeps_going_after_invalid_submodule_name(self):
+        rwdir = self._fixture("invalid-and-valid", execute=True)
+        clone = git.Repo(rwdir / "clone")
+        assert [sm.name for sm in clone.submodules] == ["../invalid", "valid"]
+
+        clone.submodule_update(keep_going=True)
+
+        assert os.listdir(osp.join(clone.working_tree_dir, "invalid")) == []
+        assert not clone.submodule("../invalid").module_exists()
+        assert clone.submodule("valid").module_exists()
+
+        clone.submodule("../invalid").update(recursive=True, keep_going=True)
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_list_only_valid_submodules(self):
+        with git.Repo(self._fixture("module", write=False) / "parent") as repo:
+            assert len(repo.submodules) == 1
+        with git.Repo(self._fixture("list-valid", write=False) / "parent") as repo:
+            assert len(repo.submodules) == 0
+
+    @pytest.mark.xfail(
+        sys.platform == "win32",
+        reason=(
+            '"The process cannot access the file because it is being used by another process"'
+            + " on first call to sm.move"
+        ),
+        raises=PermissionError,
+    )
+    @patch_git_config("protocol.file.allow", "always")
+    def test_git_submodules_and_add_sm_with_new_commit(self):
+        rwdir = self._fixture("existing-repository")
+        parent = git.Repo(rwdir / "parent")
+        assert len(parent.submodules) == 1
+        sm = parent.submodules[0]
+
+        assert sm.exists() and sm.module_exists()
+
+        clone = git.Repo(rwdir / "parent/existing-subrepository")
+        sm2 = parent.create_submodule("nongit-file-submodule", clone.working_tree_dir)
+        assert len(parent.submodules) == 2
+
+        for _ in range(2):
+            for init in (False, True):
+                sm.update(init=init)
+                sm2.update(init=init)
+            # END for each init state
+        # END for each iteration
+
+        sm.move(sm.path + "_moved")
+        sm2.move(sm2.path + "_moved")
+
+        parent.index.commit("moved submodules", skip_hooks=True)
+
+        smm = sm.module()
+        with smm.config_writer() as writer:
+            writer.set_value("user", "email", "example@example.com")
+            writer.set_value("user", "name", "me")
+        fp = osp.join(smm.working_tree_dir, "empty-file")
+        with open(fp, "w"):
+            pass
+        smm.git.add(Git.polish_url(fp))
+        smm.git.commit(m="new file added")
+
+        # Submodules are retrieved from the current commit's tree, therefore we can't
+        # really get a new submodule object pointing to the new submodule commit.
+        sm_too = parent.submodules["module"]
+        assert parent.head.commit.tree[sm.path].binsha == sm.binsha
+        assert sm_too.binsha == sm.binsha, "cached submodule should point to the same commit as updated one"
+
+        added_bies = parent.index.add([sm])  # Added base-index-entries.
+        assert len(added_bies) == 1
+        parent.index.commit("add same submodule entry", skip_hooks=True)
+        commit_sm = parent.head.commit.tree[sm.path]
+        assert commit_sm.binsha == added_bies[0].binsha
+        assert commit_sm.binsha == sm.binsha
+
+        sm_too.binsha = sm_too.module().head.commit.binsha
+        added_bies = parent.index.add([sm_too])
+        assert len(added_bies) == 1
+        parent.index.commit("add new submodule entry", skip_hooks=True)
+        commit_sm = parent.head.commit.tree[sm.path]
+        assert commit_sm.binsha == added_bies[0].binsha
+        assert commit_sm.binsha == sm_too.binsha
+        assert sm_too.binsha != sm.binsha
+
+    @pytest.mark.xfail(
+        sys.platform == "win32",
+        reason='"The process cannot access the file because it is being used by another process" on call to sm.move',
+        raises=PermissionError,
+    )
+    @patch_git_config("protocol.file.allow", "always")
+    def test_git_submodule_compatibility(self):
+        rwdir = self._fixture("compatibility")
+        parent = git.Repo(rwdir / "parent")
+        sm_path = join_path_native("submodules", "intermediate", "one")
+        sm = parent.submodules[0]
+
+        def assert_exists(sm, value=True):
+            assert sm.exists() == value
+            assert sm.module_exists() == value
+
+        # END assert_exists
+
+        # As git is backwards compatible itself, it would still recognize what we do
+        # here... unless we really muss it up. That's the only reason why the test is
+        # still here...
+        assert len(parent.git.submodule().splitlines()) == 1
+
+        module_repo_path = osp.join(sm.module().working_tree_dir, ".git")
+        assert module_repo_path.startswith(osp.join(parent.working_tree_dir, sm_path))
+        if not sm._need_gitfile_submodules(parent.git):
+            assert osp.isdir(module_repo_path)
+            assert not sm.module().has_separate_working_tree()
+        else:
+            assert osp.isfile(module_repo_path)
+            assert sm.module().has_separate_working_tree()
+            assert find_submodule_git_dir(module_repo_path) is not None, "module pointed to by .git file must be valid"
+        # END verify submodule 'style'
+
+        # Test move.
+        new_sm_path = join_path_native("submodules", "one")
+        sm.move(new_sm_path)
+        assert_exists(sm)
+
+        # Add additional submodule level.
+        with sm.module() as module:
+            csm = module.create_submodule(
+                "nested-submodule",
+                join_path_native("nested-submodule", "working-tree"),
+                url=self._small_repo_url(),
+            )
+            module.index.commit("added nested submodule", skip_hooks=True)
+            sm_head_commit = module.commit()
+        assert_exists(csm)
+
+        # Fails because there are new commits, compared to the remote we cloned from.
+        self.assertRaises(InvalidGitRepositoryError, sm.remove, dry_run=True)
+        assert_exists(sm)
+        assert sm.module().commit() == sm_head_commit
+        assert_exists(csm)
+
+        # keep_going evaluation.
+        rsm = parent.submodule_update()
+        assert_exists(sm)
+        assert_exists(csm)
+        with csm.config_writer().set_value("url", "bar"):
+            pass
+        csm.repo.index.commit("Have to commit submodule change for algorithm to pick it up", skip_hooks=True)
+        assert csm.url == "bar"
+
+        self.assertRaises(  # noqa: B017
+            Exception,
+            rsm.update,
+            recursive=True,
+            to_latest_revision=True,
+            progress=prog,
+        )
+        assert_exists(csm)
+        rsm.update(recursive=True, to_latest_revision=True, progress=prog, keep_going=True)
+
+        # remove
+        sm_module_path = sm.module().git_dir
+        csm.repo.close()
+
+        for dry_run in (True, False):
+            sm.remove(dry_run=dry_run, force=True)
+            assert_exists(sm, value=dry_run)
+            assert osp.isdir(sm_module_path)
+        # END for each dry-run mode
+
+    def test_ignore_non_submodule_file(self):
+        rwdir = self._fixture("non-submodule", write=False)
+        parent = git.Repo(rwdir / "parent")
+
+        assert len(parent.submodules) == 0
+
+    def test_gitmodules_does_not_merge_includes(self):
+        rwdir = self._fixture("include", write=False)
+        parent = git.Repo(rwdir / "parent")
+
+        parser = Submodule._config_parser(parent, None, read_only=True)
+        self.assertEqual(parser.get_value('submodule "module"', "path"), "module")
+
+    def test_remove_norefs(self):
+        rwdir = self._fixture("remove-norefs")
+        parent = git.Repo(rwdir / "parent")
+        sm = parent.submodules[0]
+        assert sm.repo is parent
+        # A remote without fetched references must not prevent removal.
+        sm.remove()
+        assert not sm.exists()
+
+    def test_move_preserves_logical_name(self):
+        rwdir = self._fixture("logical-name")
+        parent = git.Repo(rwdir / "parent")
+        sm = parent.submodules[0]
+        name = "mymodules/myname"
+        assert sm.move("renamed/myname").name == name
+        assert sm.exists() and sm.module_exists()
+        assert not hasattr(sm, "rename")
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_branch_renames(self):
+        rwdir = self._fixture("branch-renames", execute=True)
+        sm_source_repo = git.Repo(rwdir / "sm-source")
+        parent_repo = git.Repo(rwdir / "parent")
+        sm = parent_repo.submodules[0]
+        assert sm.exists()
+
+        # Create feature branch with one new commit in submodule source.
+        sm_fb = sm_source_repo.create_head("feature")
+        sm_fb.checkout()
+        new_file = touch(osp.join(sm_source_repo.working_tree_dir, "new-file"))
+        sm_source_repo.index.add([new_file])
+        sm.repo.index.commit("added new file", skip_hooks=True)
+
+        # Change designated submodule checkout branch to the new upstream feature
+        # branch.
+        with sm.config_writer() as smcw:
+            smcw.set_value("branch", sm_fb.name)
+        assert sm.repo.is_dirty(index=True, working_tree=False)
+        sm.repo.index.commit("changed submodule branch to '%s'" % sm_fb, skip_hooks=True)
+
+        # Verify submodule update with feature branch that leaves currently checked out
+        # branch in it's past.
+        sm_mod = sm.module()
+        prev_commit = sm_mod.commit()
+        assert sm_mod.head.ref.name == "master"
+        assert parent_repo.submodule_update()
+        assert sm_mod.head.ref.name == sm_fb.name
+        assert sm_mod.commit() == prev_commit, "Without to_latest_revision, we don't change the commit"
+
+        assert parent_repo.submodule_update(to_latest_revision=True)
+        assert sm_mod.head.ref.name == sm_fb.name
+        assert sm_mod.commit() == sm_fb.commit
+
+        # Create new branch which is in our past, and thus seemingly unrelated to the
+        # currently checked out one.
+        # To make it even 'harder', we shall fork and create a new commit.
+        sm_pfb = sm_source_repo.create_head("past-feature", commit="HEAD~20")
+        sm_pfb.checkout()
+        sm_source_repo.index.add([touch(osp.join(sm_source_repo.working_tree_dir, "new-file"))])
+        sm_source_repo.index.commit("new file added, to past of '%r'" % sm_fb, skip_hooks=True)
+
+        # Change designated submodule checkout branch to a new commit in its own past.
+        with sm.config_writer() as smcw:
+            smcw.set_value("branch", sm_pfb.path)
+        sm.repo.index.commit("changed submodule branch to '%s'" % sm_pfb, skip_hooks=True)
+
+        # Test submodule updates - must fail if submodule is dirty.
+        touch(osp.join(sm_mod.working_tree_dir, "unstaged file"))
+        # This doesn't fail as our own submodule binsha didn't change, and the reset is
+        # only triggered if to_latest_revision is True.
+        parent_repo.submodule_update(to_latest_revision=False)
+        assert sm_mod.head.ref.name == sm_pfb.name, "should have been switched to past head"
+        assert sm_mod.commit() == sm_fb.commit, "Head wasn't reset"
+
+        self.assertRaises(RepositoryDirtyError, parent_repo.submodule_update, to_latest_revision=True)
+        parent_repo.submodule_update(to_latest_revision=True, force_reset=True)
+        assert sm_mod.commit() == sm_pfb.commit, "Now head should have been reset"
+        assert sm_mod.head.ref.name == sm_pfb.name
+
+    @skipUnless(sys.platform == "win32", "Specifically for Windows.")
+    def test_to_relative_path_with_super_at_root_drive(self):
+        class Repo:
+            working_tree_dir = "D:\\"
+
+        super_repo = Repo()
+        submodule_path = "D:\\submodule_path"
+        relative_path = Submodule._to_relative_path(super_repo, submodule_path)
+        msg = '_to_relative_path should be "submodule_path" but was "%s"' % relative_path
+        assert relative_path == "submodule_path", msg
+
+    def test_to_relative_path_is_confined_to_parent(self):
+        rwdir = self._fixture("path-confined", write=False)
+
+        class Repo:
+            working_tree_dir = str(rwdir / "parent")
+
+        assert Submodule._to_relative_path(Repo(), osp.join(Repo.working_tree_dir, "nested")) == "nested"
+        assert Submodule._to_relative_path(Repo(), osp.join("nested", "..", "module")) == "module"
+        self.assertRaises(ValueError, Submodule._to_relative_path, Repo(), Repo.working_tree_dir)
+        self.assertRaises(ValueError, Submodule._to_relative_path, Repo(), osp.join("..", "outside"))
+        self.assertRaises(
+            ValueError,
+            Submodule._to_relative_path,
+            Repo(),
+            osp.join(Repo.working_tree_dir + "-other", "module"),
+        )
+
+    def test_update_rejects_checkout_path_outside_parent(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        submodule = Submodule(
+            parent,
+            Submodule.NULL_BIN_SHA,
+            name="module",
+            path=osp.join("..", "outside"),
+            url="unused",
+        )
+
+        with mock.patch.object(Submodule, "_clone_repo", side_effect=AssertionError("clone attempted")):
+            with pytest.raises(ValueError, match="is not in repository"):
+                submodule.update(init=True)
+
+    def test_update_rejects_checkout_path_through_symlink(self):
+        rwdir = self._fixture("checkout-link", execute=True)
+        parent = git.Repo(rwdir / "parent")
+        submodule = Submodule(
+            parent,
+            Submodule.NULL_BIN_SHA,
+            name="module",
+            path=osp.join("link", "module"),
+            url="unused",
+        )
+
+        with mock.patch.object(Submodule, "_clone_repo", side_effect=AssertionError("clone attempted")):
+            with pytest.raises(ValueError, match="contains a symbolic link"):
+                submodule.update(init=True)
+
+    def test_update_rejects_checkout_path_at_parent_root(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        submodule = Submodule(parent, Submodule.NULL_BIN_SHA, name="module", path=".", url="unused")
+
+        with pytest.raises(ValueError, match="must not be the repository root"):
+            submodule.update(init=True)
+
+    @skipUnless(sys.platform == "win32", "Specifically for Windows.")
+    def test_to_relative_path_windows_path_kinds(self):
+        rwdir = self._fixture("empty", write=False)
+
+        class Repo:
+            working_tree_dir = str(rwdir / "parent")
+
+        inside_path = osp.join(Repo.working_tree_dir, "nested", "module")
+        _drive, rooted_inside_path = osp.splitdrive(inside_path)
+
+        assert Submodule._to_relative_path(Repo(), rooted_inside_path) == "nested/module"
+        assert Submodule._to_relative_path(Repo(), rooted_inside_path.replace("\\", "/")) == "nested/module"
+        assert Submodule._to_relative_path(Repo(), PathLikeMock(inside_path)) == "nested/module"
+        self.assertRaises(
+            ValueError,
+            Submodule._to_relative_path,
+            Repo(),
+            f"{osp.splitdrive(Repo.working_tree_dir)[0]}relative",
+        )
+        self.assertRaises(ValueError, Submodule._to_relative_path, Repo(), R"Z:\outside")
+        self.assertRaises(ValueError, Submodule._to_relative_path, Repo(), R"\\server\share\outside")
+        self.assertRaises(ValueError, Submodule._to_relative_path, Repo(), R"\\?\C:\outside")
+
+    @skipUnless(sys.platform == "win32", "Specifically for Windows.")
+    def test_find_submodule_git_dir_with_drive_rooted_gitfile(self):
+        rwdir = self._fixture("rooted-gitfile", write=False)
+        with cwd(rwdir), git.Repo(rwdir / "module") as module:
+            resolved_git_dir = find_submodule_git_dir(rwdir / "gitfile")
+            assert resolved_git_dir is not None
+            assert osp.samefile(resolved_git_dir, module.git_dir)
+
+    @pytest.mark.xfail(
+        reason="for some unknown reason the assertion fails, even though it in fact is working in more common setup",
+        raises=AssertionError,
+    )
+    def test_depth(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        sm_name = "mymodules/myname"
+        sm_depth = 1
+        sm = parent.create_submodule(sm_name, sm_name, url=self._small_repo_url(), depth=sm_depth)
+        self.assertEqual(len(list(sm.module().iter_commits())), sm_depth)
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_clone_multi_options_argument(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        sm_name = "foo"
+        sm_url = self._small_repo_url()
+        sm_branch = "refs/heads/master"
+        sm_hexsha = git.Repo(self._small_repo_url()).head.commit.hexsha
+        sm = Submodule(
+            parent,
+            bytes.fromhex(sm_hexsha),
+            name=sm_name,
+            path=sm_name,
+            url=sm_url,
+            branch_path=sm_branch,
+        )
+
+        # Act
+        sm.update(init=True, clone_multi_options=["--config core.eol=true"], allow_unsafe_options=True)
+
+        # Assert
+        sm_config = GitConfigParser(file_or_files=osp.join(parent.git_dir, "modules", sm_name, "config"))
+        self.assertTrue(sm_config.get_value("core", "eol"))
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_update_no_clone_multi_options_argument(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        sm_name = "foo"
+        sm_url = self._small_repo_url()
+        sm_branch = "refs/heads/master"
+        sm_hexsha = git.Repo(self._small_repo_url()).head.commit.hexsha
+        sm = Submodule(
+            parent,
+            bytes.fromhex(sm_hexsha),
+            name=sm_name,
+            path=sm_name,
+            url=sm_url,
+            branch_path=sm_branch,
+        )
+
+        # Act
+        sm.update(init=True)
+
+        # Assert
+        sm_config = GitConfigParser(file_or_files=osp.join(parent.git_dir, "modules", sm_name, "config"))
+        with self.assertRaises(cp.NoOptionError):
+            sm_config.get_value("core", "eol")
+
+    def test_add_clone_multi_options_argument(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        sm_name = "foo"
+
+        # Act
+        Submodule.add(
+            parent,
+            sm_name,
+            sm_name,
+            url=self._small_repo_url(),
+            clone_multi_options=["--config core.eol=true"],
+            allow_unsafe_options=True,
+        )
+
+        # Assert
+        sm_config = GitConfigParser(file_or_files=osp.join(parent.git_dir, "modules", sm_name, "config"))
+        self.assertTrue(sm_config.get_value("core", "eol"))
+
+    def test_add_no_clone_multi_options_argument(self):
+        rwdir = self._fixture("empty")
+        parent = git.Repo(rwdir / "parent")
+        sm_name = "foo"
+
+        # Act
+        Submodule.add(parent, sm_name, sm_name, url=self._small_repo_url())
+
+        # Assert
+        sm_config = GitConfigParser(file_or_files=osp.join(parent.git_dir, "modules", sm_name, "config"))
+        with self.assertRaises(cp.NoOptionError):
+            sm_config.get_value("core", "eol")
+
+    def test_add_does_not_expand_environment_variables_in_url(self):
+        rwdir = self._fixture("literal-url")
+        parent = git.Repo(rwdir / "parent")
+        url = str(rwdir / "$PATH_repo")
+        sm = Submodule.add(parent, "new", "new", url)
+
+        assert sm.url == Git.polish_url(url)
+
+    @with_rw_repo("HEAD")
+    def test_submodule_add_unsafe_url(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            urls = [
+                f"ext::sh -c touch% {tmp_file}",
+                "fd::/foo",
+            ]
+            for url in urls:
+                with self.assertRaises(UnsafeProtocolError):
+                    Submodule.add(rw_repo, "new", "new", url)
+                assert not tmp_file.exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_add_unsafe_url_allowed(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            urls = [
+                f"ext::sh -c touch% {tmp_file}",
+                "fd::/foo",
+            ]
+            for url in urls:
+                # The URL will be allowed into the command, but the command will fail
+                # since we don't have that protocol enabled in the Git config file.
+                with self.assertRaises(GitCommandError):
+                    Submodule.add(rw_repo, "new", "new", url, allow_unsafe_protocols=True)
+                assert not tmp_file.exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_add_unsafe_options(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            unsafe_options = [
+                f"--upload-pack='touch {tmp_file}'",
+                f"-u 'touch {tmp_file}'",
+                "--config=protocol.ext.allow=always",
+                "-c protocol.ext.allow=always",
+            ]
+            for unsafe_option in unsafe_options:
+                with self.assertRaises(UnsafeOptionError):
+                    Submodule.add(rw_repo, "new", "new", str(tmp_dir), clone_multi_options=[unsafe_option])
+                assert not tmp_file.exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_add_unsafe_options_allowed(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            unsafe_options = [
+                f"--upload-pack='touch {tmp_file}'",
+                f"-u 'touch {tmp_file}'",
+            ]
+            for unsafe_option in unsafe_options:
+                # The options will be allowed, but the command will fail.
+                with self.assertRaises(GitCommandError):
+                    Submodule.add(
+                        rw_repo,
+                        "new",
+                        "new",
+                        str(tmp_dir),
+                        clone_multi_options=[unsafe_option],
+                        allow_unsafe_options=True,
+                    )
+                assert not tmp_file.exists()
+
+            unsafe_options = [
+                "--config=protocol.ext.allow=always",
+                "-c protocol.ext.allow=always",
+            ]
+            for unsafe_option in unsafe_options:
+                with self.assertRaises(GitCommandError):
+                    Submodule.add(
+                        rw_repo,
+                        "new",
+                        "new",
+                        str(tmp_dir),
+                        clone_multi_options=[unsafe_option],
+                        allow_unsafe_options=True,
+                    )
+
+    @with_rw_repo("HEAD")
+    def test_submodule_update_unsafe_url(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            urls = [
+                f"ext::sh -c touch% {tmp_file}",
+                "fd::/foo",
+            ]
+            for url in urls:
+                submodule = Submodule(rw_repo, b"\0" * 20, name="new", path="new", url=url)
+                with self.assertRaises(UnsafeProtocolError):
+                    submodule.update()
+                assert not tmp_file.exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_update_unsafe_url_allowed(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            urls = [
+                f"ext::sh -c touch% {tmp_file}",
+                "fd::/foo",
+            ]
+            for url in urls:
+                submodule = Submodule(rw_repo, b"\0" * 20, name="new", path="new", url=url)
+                # The URL will be allowed into the command, but the command will fail
+                # since we don't have that protocol enabled in the Git config file.
+                with self.assertRaises(GitCommandError):
+                    submodule.update(allow_unsafe_protocols=True)
+                assert not tmp_file.exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_update_unsafe_options(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            unsafe_options = [
+                f"--upload-pack='touch {tmp_file}'",
+                f"-u 'touch {tmp_file}'",
+                "--config=protocol.ext.allow=always",
+                "-c protocol.ext.allow=always",
+            ]
+            submodule = Submodule(rw_repo, b"\0" * 20, name="new", path="new", url=str(tmp_dir))
+            for unsafe_option in unsafe_options:
+                with self.assertRaises(UnsafeOptionError):
+                    submodule.update(clone_multi_options=[unsafe_option])
+                assert not tmp_file.exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_update_unsafe_options_are_checked_after_splitting_multi_options(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            payload = "--single-branch --config protocol.ext.allow=always"
+            submodule = Submodule(rw_repo, b"\0" * 20, name="new", path="new", url=str(tmp_dir))
+
+            with self.assertRaises(UnsafeOptionError):
+                submodule.update(clone_multi_options=[payload])
+            assert not submodule.module_exists()
+
+    @with_rw_repo("HEAD")
+    def test_submodule_update_unsafe_options_allowed(self, rw_repo):
+        with writable_fixture("empty.sh") as fixture:
+            tmp_dir = fixture.path().resolve()
+            tmp_file = tmp_dir / "pwn"
+            unsafe_options = [
+                f"--upload-pack='touch {tmp_file}'",
+                f"-u 'touch {tmp_file}'",
+            ]
+            submodule = Submodule(rw_repo, b"\0" * 20, name="new", path="new", url=str(tmp_dir))
+            for unsafe_option in unsafe_options:
+                # The options will be allowed, but the command will fail.
+                with self.assertRaises(GitCommandError):
+                    submodule.update(clone_multi_options=[unsafe_option], allow_unsafe_options=True)
+                assert not tmp_file.exists()
+
+            unsafe_options = [
+                "--config=protocol.ext.allow=always",
+                "-c protocol.ext.allow=always",
+            ]
+            submodule = Submodule(rw_repo, b"\0" * 20, name="new", path="new", url=str(tmp_dir))
+            for unsafe_option in unsafe_options:
+                with self.assertRaises(GitCommandError):
+                    submodule.update(clone_multi_options=[unsafe_option], allow_unsafe_options=True)
+
+    @patch_git_config("protocol.file.allow", "always")
+    def test_submodule_update_relative_url(self):
+        rwdir = self._fixture("relative")
+        cloned_repo = git.Repo(rwdir / "cloned_repo")
+
+        cloned_repo.submodule_update(init=True, recursive=True)
+
+        has_module = any(sm.name == "module" for sm in cloned_repo.submodules)
+        assert has_module, "Relative submodule was not updated properly"
+
+    def test_resolve_relative_url_like_git(self):
+        # Expected values are what `git submodule init` records for the same pair.
+        cases = [
+            ("ssh://host/org/super.git", "./sub", "ssh://host/org/super.git/sub"),
+            ("ssh://host/org/super.git", "../sub", "ssh://host/org/sub"),
+            ("ssh://host:22/org/super.git", "../sub", "ssh://host:22/org/sub"),
+            ("git@host:org/super.git", "./sub", "git@host:org/super.git/sub"),
+            ("git@host:org/super.git", "../sub", "git@host:org/sub"),
+            ("git@host:org/super.git", "../../sub", "git@host:sub"),
+            ("https://host/org/super.git", "./sub/", "https://host/org/super.git/sub"),
+            ("https://host/org/super.git/", "././sub", "https://host/org/super.git/sub"),
+            ("https://host/org/super.git", ".././sub", "https://host/org/sub"),
+            ("https://host/org/super.git", "../../../sub", "https://sub"),
+            ("file:///srv/git/super.git", "../sub", "file:///srv/git/sub"),
+            ("/srv/git/super", "../sub", "/srv/git/sub"),
+            ("/srv/git/super", "../../../../sub", "sub"),
+            ("//share/super", "../../sub", "//sub"),
+            ("foo/bar", "../sub", "foo/sub"),
+            ("./foo", "../sub", "sub"),
+            ("./super.git", "../", ""),
+            ("ssh://host/org/super.git", "./", "ssh://host/org/super.git/"),
+            ("ssh://host/org/super.git", "../", "ssh://host/org/"),
+            ("../foo/bar", "../sub", "../foo/sub"),
+            ("ssh://host/org/super.git", ".sub", ".sub"),
+            ("ssh://host/org/super.git", "https://other/sub", "https://other/sub"),
+        ]
+        for remote_url, url, expected in cases:
+            assert resolve_relative_url(remote_url, url) == expected, (remote_url, url)
+
+        for remote_url, url in [("foo", "../../sub"), ("git@host:super.git", "../../../sub"), ("../foo", "../../sub")]:
+            with self.assertRaisesRegex(ValueError, "cannot strip one component"):
+                resolve_relative_url(remote_url, url)
+
+    def test_update_resolves_relative_url_against_remote(self):
+        with fixture_repo("submodule-relative.sh", "update-remote", write=True, subdir="parent") as parent:
+            for url, expected in [
+                ("./planted", "ssh://git@host/org/super.git/planted"),
+                ("../planted", "ssh://git@host/org/planted"),
+            ]:
+                submodule = Submodule(parent, Submodule.NULL_BIN_SHA, name="module", path="module", url=url)
+                with mock.patch.object(git.Repo, "clone_from", side_effect=AssertionError("stop")) as clone_from:
+                    with pytest.raises(AssertionError, match="stop"):
+                        submodule.update(init=True)
+                assert clone_from.call_args.args[0] == expected
+
+    def test_clone_repo_resolves_relative_url_against_tracking_remote(self):
+        with fixture_repo("submodule-relative.sh", "tracking-remote", write=True, subdir="parent") as parent:
+            for remote_name in ("upstream", "team/upstream"):
+                parent.create_remote(remote_name, "git@host:org/super.git")
+                with parent.head.reference.config_writer() as writer:
+                    writer.set_value("remote", remote_name)
+                    writer.set_value("merge", "refs/heads/main")
+                for url, expected in [
+                    ("./planted", "git@host:org/super.git/planted"),
+                    ("../planted", "git@host:org/planted"),
+                ]:
+                    with mock.patch.object(git.Repo, "clone_from", side_effect=AssertionError("stop")) as clone_from:
+                        with pytest.raises(AssertionError, match="stop"):
+                            Submodule._clone_repo(parent, url, "module", "module")
+                    assert clone_from.call_args.args[0] == expected

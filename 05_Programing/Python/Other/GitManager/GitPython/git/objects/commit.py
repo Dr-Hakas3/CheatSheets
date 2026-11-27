@@ -1,0 +1,1054 @@
+# Copyright (C) 2008, 2009 Michael Trier (mtrier@gmail.com) and contributors
+#
+# This module is part of GitPython and is released under the
+# 3-Clause BSD License: https://opensource.org/license/bsd-3-clause/
+
+__all__ = ["Commit"]
+
+from collections import defaultdict
+import datetime
+from io import BytesIO
+import logging
+import os
+from subprocess import Popen
+from time import altzone, daylight, localtime, time, timezone
+import tempfile
+
+
+from git import _backend
+from git.cmd import Git
+from git.compat import safe_decode, safe_encode
+from git.exc import BadObject, GitCommandError, UnsafeOptionError
+from git.diff import Diffable, decode_path
+from git.util import Actor, Stats, finalize_process, hex_to_bin
+
+from . import base
+from .tree import Tree
+from .util import (
+    TraversableIterableObj,
+    altz_to_utctz_str,
+    from_timestamp,
+    parse_actor_and_date,
+    parse_date,
+)
+
+# typing ------------------------------------------------------------------
+
+from typing import (
+    Any,
+    Dict,
+    IO,
+    Iterator,
+    List,
+    Literal,
+    Sequence,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+    cast,
+)
+
+from git.types import Files_TD, PathLike
+
+if TYPE_CHECKING:
+    from git.refs import SymbolicReference
+    from git.repo import Repo
+
+# ------------------------------------------------------------------------
+
+_logger = logging.getLogger(__name__)
+
+
+class Commit(base.Object, TraversableIterableObj, Diffable):
+    """Wraps a git commit object.
+
+    See :manpage:`gitglossary(7)` on "commit object":
+    https://git-scm.com/docs/gitglossary#def_commit_object
+
+    :note:
+        This class will act lazily on some of its attributes and will query the value on
+        demand only if it involves calling the git binary.
+    """
+
+    # ENVIRONMENT VARIABLES
+    # Read when creating new commits.
+    env_author_date = "GIT_AUTHOR_DATE"
+    env_committer_date = "GIT_COMMITTER_DATE"
+
+    # CONFIGURATION KEYS
+    conf_encoding = "i18n.commitencoding"
+
+    # INVARIANTS
+    default_encoding = "UTF-8"
+
+    # Options to :manpage:`git-rev-list(1)` that can overwrite files.
+    unsafe_git_rev_options = [
+        "--output",
+        "-o",
+    ]
+
+    type: Literal["commit"] = "commit"
+
+    __slots__ = (
+        "tree",
+        "author",
+        "authored_date",
+        "author_tz_offset",
+        "committer",
+        "committed_date",
+        "committer_tz_offset",
+        "message",
+        "parents",
+        "encoding",
+        "gpgsig",
+    )
+
+    _id_attribute_ = "hexsha"
+
+    parents: Sequence["Commit"]
+
+    def __init__(
+        self,
+        repo: "Repo",
+        binsha: bytes,
+        tree: Union[Tree, None] = None,
+        author: Union[Actor, None] = None,
+        authored_date: Union[int, None] = None,
+        author_tz_offset: Union[None, float] = None,
+        committer: Union[Actor, None] = None,
+        committed_date: Union[int, None] = None,
+        committer_tz_offset: Union[None, float] = None,
+        message: Union[str, bytes, None] = None,
+        parents: Union[Sequence["Commit"], None] = None,
+        encoding: Union[str, None] = None,
+        gpgsig: Union[str, None] = None,
+    ) -> None:
+        """Instantiate a new :class:`Commit`. All keyword arguments taking ``None`` as
+        default will be implicitly set on first query.
+
+        :param binsha:
+            Binary object ID in the repository's object format.
+
+        :param tree:
+            A :class:`~git.objects.tree.Tree` object.
+
+        :param author:
+            The author :class:`~git.util.Actor` object.
+
+        :param authored_date: int_seconds_since_epoch
+            The authored DateTime - use :func:`time.gmtime` to convert it into a
+            different format.
+
+        :param author_tz_offset: int_seconds_west_of_utc
+            The timezone that the `authored_date` is in.
+
+        :param committer:
+            The committer string, as an :class:`~git.util.Actor` object.
+
+        :param committed_date: int_seconds_since_epoch
+            The committed DateTime - use :func:`time.gmtime` to convert it into a
+            different format.
+
+        :param committer_tz_offset: int_seconds_west_of_utc
+            The timezone that the `committed_date` is in.
+
+        :param message: string
+            The commit message.
+
+        :param encoding: string
+            Encoding of the message, defaults to UTF-8.
+
+        :param parents:
+            List or tuple of :class:`Commit` objects which are our parent(s) in the
+            commit dependency graph.
+
+        :return:
+            :class:`Commit`
+
+        :note:
+            Timezone information is in the same format and in the same sign as what
+            :func:`time.altzone` returns. The sign is inverted compared to git's UTC
+            timezone.
+        """
+        super().__init__(repo, binsha)
+        if tree is not None:
+            assert isinstance(tree, Tree), "Tree needs to be a Tree instance, was %s" % type(tree)
+        if tree is not None:
+            self.tree = tree
+        if author is not None:
+            self.author = author
+        if authored_date is not None:
+            self.authored_date = authored_date
+        if author_tz_offset is not None:
+            self.author_tz_offset = author_tz_offset
+        if committer is not None:
+            self.committer = committer
+        if committed_date is not None:
+            self.committed_date = committed_date
+        if committer_tz_offset is not None:
+            self.committer_tz_offset = committer_tz_offset
+        if message is not None:
+            self.message = message
+        if parents is not None:
+            self.parents = parents
+        if encoding is not None:
+            self.encoding = encoding
+        if gpgsig is not None:
+            self.gpgsig = gpgsig
+
+    @classmethod
+    def _get_intermediate_items(cls, commit: "Commit") -> Tuple["Commit", ...]:
+        return tuple(commit.parents)
+
+    @classmethod
+    def _calculate_sha_(cls, repo: "Repo", commit: "Commit") -> bytes:
+        """Calculate the sha of a commit.
+
+        :param repo:
+            :class:`~git.repo.base.Repo` object the commit should be part of.
+
+        :param commit:
+            :class:`Commit` object for which to generate the sha.
+        """
+
+        tree = commit.tree.hexsha
+        Git._check_operand(tree, "tree object ID")
+        args = ["--no-gpg-sign", tree]
+        for parent in commit.parents:
+            Git._check_operand(parent.hexsha, "parent object ID")
+            args.extend(("-p", parent.hexsha))
+        env = {}
+        for role, actor, timestamp, offset in (
+            ("AUTHOR", commit.author, commit.authored_date, commit.author_tz_offset),
+            ("COMMITTER", commit.committer, commit.committed_date, commit.committer_tz_offset),
+        ):
+            for field, value in (("NAME", actor.name), ("EMAIL", actor.email)):
+                value = value or ""
+                if any(character in value for character in "\0\r\n<>"):
+                    raise ValueError("Invalid commit identity")
+                env["GIT_%s_%s" % (role, field)] = value
+            env["GIT_%s_DATE" % role] = "%d %s" % (timestamp, altz_to_utctz_str(offset))
+        message = commit.message.encode(commit.encoding) if isinstance(commit.message, str) else commit.message
+        if b"\0" in message:
+            raise ValueError("Commit messages cannot contain NUL bytes")
+        with tempfile.TemporaryFile() as stream:
+            stream.write(message)
+            stream.seek(0)
+            oid = repo.git._call_process_safe(
+                "commit_tree",
+                *args,
+                istream=stream,
+                env=env,
+                _config=["i18n.commitEncoding=" + commit.encoding],
+            )
+        return bytes.fromhex(oid)
+
+    def replace(self, **kwargs: Any) -> "Commit":
+        """Create new commit object from an existing commit object.
+
+        Any values provided as keyword arguments will replace the corresponding
+        attribute in the new object.
+        """
+
+        if not kwargs:
+            return self.__class__(self.repo, self.binsha)
+        if "gpgsig" in kwargs:
+            raise ValueError("Writing an existing signature is unsupported; Git creates commit objects")
+        attrs = {k: getattr(self, k) for k in self.__slots__ if k != "gpgsig"}
+        attrs["gpgsig"] = ""
+
+        for attrname in kwargs:
+            if attrname not in self.__slots__:
+                raise ValueError("invalid attribute name")
+
+        attrs.update(kwargs)
+        new_commit = self.__class__(self.repo, self.NULL_BIN_SHA, **attrs)
+        new_commit.binsha = self._calculate_sha_(self.repo, new_commit)
+
+        return new_commit
+
+    def _read_commit_text(self, format: str) -> bytes:
+        return self.repo.git._call_process_safe(
+            "show",
+            "--no-patch",
+            "--no-notes",
+            "--no-decorate",
+            "--no-show-signature",
+            "--no-use-mailmap",
+            "--encoding=UTF-8",
+            "--format=" + format,
+            "--end-of-options",
+            self.hexsha,
+            "--",
+            stdout_as_string=False,
+            strip_newline_in_stdout=False,
+        )
+
+    def _set_cache_(self, attr: str) -> None:
+        if attr in Commit.__slots__:
+            data = _backend.object_metadata(self.repo.git, self.hexsha, "commit")
+            if data is NotImplemented:
+                # Git has no formatted query that faithfully exposes every header.
+                try:
+                    raw = self.repo.git._call_process_safe(
+                        "cat_file", "commit", self.hexsha, stdout_as_string=False, strip_newline_in_stdout=False
+                    )
+                except GitCommandError as exc:
+                    raise BadObject(self.binsha) from exc
+                self._deserialize(BytesIO(raw), text_encoding=self.default_encoding)
+                headers = raw.partition(b"\n\n")[0].split(b"\n")
+                if any(line.startswith(b"encoding ") for line in headers):
+                    # Git recodes the complete commit or leaves it unchanged on failure.
+                    fields = (
+                        self._read_commit_text("format:%an%x00%ae%x00%cn%x00%ce%x00%B")
+                        .decode(self.default_encoding, "replace")
+                        .split("\0", 4)
+                    )
+                    self.author = Actor(fields[0], fields[1])
+                    self.committer = Actor(fields[2], fields[3])
+                    self.message = fields[4]
+                    if any(line.startswith(b"gpgsig ") for line in headers):
+                        # Pretty-raw preserves recoded headers; its indented message is unused.
+                        rendered = self._read_commit_text("raw").partition(b"\n")[2]
+                        rendered_headers = rendered.partition(b"\n\n")[0] + b"\n\n"
+                        metadata = type(self)(self.repo, self.binsha)._deserialize(
+                            BytesIO(rendered_headers), text_encoding=self.default_encoding
+                        )
+                        self.gpgsig = metadata.gpgsig
+            else:
+                self.encoding = (data["encoding"] or self.default_encoding.encode()).decode("ascii")
+                self.tree = Tree(self.repo, bytes.fromhex(data["tree"]), Tree.tree_id << 12, "")
+                self.parents = tuple(type(self)(self.repo, bytes.fromhex(oid)) for oid in data["parents"])
+                for role in ("author", "committer"):
+                    signature = data[role]
+                    setattr(
+                        self,
+                        role,
+                        Actor(
+                            signature.name.decode(self.encoding, "replace"),
+                            signature.email.decode(self.encoding, "replace"),
+                        ),
+                    )
+                    setattr(self, "authored_date" if role == "author" else "committed_date", signature.time.seconds)
+                    setattr(self, role + "_tz_offset", -signature.time.offset)
+                self.message = data["message"].decode(self.encoding, "replace")
+                self.gpgsig = next(
+                    (
+                        value.rstrip(b"\n").decode(self.encoding, "ignore")
+                        for key, value in data["extra_headers"]
+                        if key == b"gpgsig"
+                    ),
+                    "",
+                )
+        else:
+            super()._set_cache_(attr)
+        # END handle attrs
+
+    @property
+    def authored_datetime(self) -> datetime.datetime:
+        return from_timestamp(self.authored_date, self.author_tz_offset)
+
+    @property
+    def committed_datetime(self) -> datetime.datetime:
+        return from_timestamp(self.committed_date, self.committer_tz_offset)
+
+    @property
+    def summary(self) -> Union[str, bytes]:
+        """:return: First line of the commit message"""
+        if isinstance(self.message, str):
+            return self.message.split("\n", 1)[0]
+        else:
+            return self.message.split(b"\n", 1)[0]
+
+    def count(
+        self,
+        paths: Union[PathLike, Sequence[PathLike]] = "",
+        allow_unsafe_options: bool = False,
+        **kwargs: Any,
+    ) -> int:
+        """Count the number of commits reachable from this commit.
+
+        :param paths:
+            An optional path or a list of paths restricting the return value to commits
+            actually containing the paths.
+
+        :param allow_unsafe_options:
+            Allow unsafe options, like ``--output``.
+
+        :param kwargs:
+            Additional options to be passed to :manpage:`git-rev-list(1)`. They must not
+            alter the output style of the command, or parsing will yield incorrect
+            results.
+
+        :return:
+            An int defining the number of reachable commits
+        """
+        if not allow_unsafe_options:
+            Git.check_unsafe_options(
+                options=Git._option_candidates([], kwargs), unsafe_options=self.unsafe_git_rev_options
+            )
+
+        # Yes, it makes a difference whether empty paths are given or not in our case as
+        # the empty paths version will ignore merge commits for some reason.
+        native = _backend.history(self.repo.git, self.hexsha, paths, kwargs, count=True)
+        if native is not NotImplemented:
+            return native
+        if paths:
+            return len(self.repo.git._call_process_safe("rev_list", self.hexsha, "--", paths, **kwargs).splitlines())
+        return len(self.repo.git._call_process_safe("rev_list", self.hexsha, **kwargs).splitlines())
+
+    @property
+    def name_rev(self) -> str:
+        """
+        :return:
+            String describing the commits hex sha based on the closest
+            :class:`~git.refs.reference.Reference`.
+
+        :note:
+            Mostly useful for UI purposes.
+        """
+        Git._check_operand(self.hexsha, "commit object ID")
+        return self.repo.git._call_process_safe("name_rev", self.hexsha)
+
+    @classmethod
+    def iter_items(
+        cls,
+        repo: "Repo",
+        rev: Union[str, "Commit", "SymbolicReference"],
+        paths: Union[PathLike, Sequence[PathLike]] = "",
+        allow_unsafe_options: bool = False,
+        **kwargs: Any,
+    ) -> Iterator["Commit"]:
+        R"""Find all commits matching the given criteria.
+
+        :param repo:
+            The :class:`~git.repo.base.Repo`.
+
+        :param rev:
+            Revision specifier. See :manpage:`git-rev-parse(1)` for viable options.
+
+        :param paths:
+            An optional path or list of paths. If set only :class:`Commit`\s that
+            include the path or paths will be considered.
+
+        :param kwargs:
+            Optional keyword arguments to :manpage:`git-rev-list(1)` where:
+
+            * ``max_count`` is the maximum number of commits to fetch.
+            * ``skip`` is the number of commits to skip.
+            * ``since`` selects all commits since some date, e.g. ``"1970-01-01"``.
+
+        :return:
+            Iterator yielding :class:`Commit` items.
+        """
+        if "pretty" in kwargs:
+            raise ValueError("--pretty cannot be used as parsing expects single sha's only")
+        # END handle pretty
+
+        if not allow_unsafe_options:
+            Git.check_unsafe_options(
+                options=Git._option_candidates([rev], kwargs), unsafe_options=cls.unsafe_git_rev_options
+            )
+
+        # Use -- in all cases, to prevent possibility of ambiguous arguments.
+        # See https://github.com/gitpython-developers/GitPython/issues/264.
+
+        args_list: List[PathLike] = ["--"]
+
+        if paths:
+            paths_tup: Tuple[PathLike, ...]
+            if isinstance(paths, (str, os.PathLike)):
+                paths_tup = (paths,)
+            else:
+                paths_tup = tuple(paths)
+
+            args_list.extend(paths_tup)
+        # END if paths
+
+        rev = Git._check_revision(rev)
+        native = _backend.history(repo.git, rev, paths, kwargs)
+        if native is not NotImplemented:
+            return (cls(repo, hex_to_bin(oid)) for oid in native)
+        proc = repo.git._call_process_safe("rev_list", rev, args_list, as_process=True, **kwargs)
+        return cls._iter_from_process_or_stream(repo, proc)
+
+    def iter_parents(self, paths: Union[PathLike, Sequence[PathLike]] = "", **kwargs: Any) -> Iterator["Commit"]:
+        R"""Iterate *all* parents of this commit.
+
+        :param paths:
+            Optional path or list of paths limiting the :class:`Commit`\s to those that
+            contain at least one of the paths.
+
+        :param kwargs:
+            All arguments allowed by :manpage:`git-rev-list(1)`.
+
+        :return:
+            Iterator yielding :class:`Commit` objects which are parents of ``self``
+        """
+        # skip ourselves
+        skip = kwargs.get("skip", 1)
+        if skip == 0:  # skip ourselves
+            skip = 1
+        kwargs["skip"] = skip
+
+        return self.iter_items(self.repo, self, paths, **kwargs)
+
+    @property
+    def stats(self) -> Stats:
+        """Create a git stat from changes between this commit and its first parent
+        or from all changes done if this is the very first commit.
+
+        :note:
+            If this commit is at the boundary of a shallow clone, this will
+            raise :exc:`~git.exc.GitCommandError`, since the parent object
+            was never fetched and only exists as a reference on this commit.
+
+        :return:
+            :class:`Stats`
+        """
+        native = _backend.commit_stats(self)
+        if native is not NotImplemented:
+            return native
+
+        def process_lines(lines: List[str]) -> str:
+            text = ""
+            for file_info, line in zip(lines, lines[len(lines) // 2 :]):
+                if not line:
+                    continue
+                change_type = file_info.split("\t")[0][-1]
+                (insertions, deletions, filename) = line.split("\t")
+                text += "%s\t%s\t%s\t%s\n" % (change_type, insertions, deletions, filename)
+            return text
+
+        if not self.parents:
+            lines = self.repo.git._call_process_safe(
+                "diff_tree", self.hexsha, "--", numstat=True, no_renames=True, root=True, raw=True
+            ).split("\n")[1:]
+            text = process_lines(lines)
+        else:
+            lines = self.repo.git._call_process_safe(
+                "diff", self.parents[0].hexsha, self.hexsha, "--", numstat=True, no_renames=True, raw=True
+            ).split("\n")
+            text = process_lines(lines)
+        stats = Stats._list_from_string(self.repo, text)
+        # Unquote after parsing: filenames themselves may contain tabs and newlines.
+        files: Dict[PathLike, Files_TD] = {
+            safe_decode(cast(bytes, decode_path(safe_encode(os.fspath(path)), has_ab_prefix=False))): values
+            for path, values in stats.files.items()
+        }
+        stats.files = files
+        return stats
+
+    @property
+    def trailers_list(self) -> List[Tuple[str, str]]:
+        """Get the trailers of the message as a list.
+
+        Git messages can contain trailer information that are similar to :rfc:`822`
+        e-mail headers. See :manpage:`git-interpret-trailers(1)`.
+
+        This function calls ``git interpret-trailers --parse`` onto the message to
+        extract the trailer information, returns the raw trailer data as a list.
+
+        Valid message with trailer::
+
+            Subject line
+
+            some body information
+
+            another information
+
+            key1: value1.1
+            key1: value1.2
+            key2 :    value 2 with inner spaces
+
+        Returned list will look like this::
+
+            [
+                ("key1", "value1.1"),
+                ("key1", "value1.2"),
+                ("key2", "value 2 with inner spaces"),
+            ]
+
+        :return:
+            List containing key-value tuples of whitespace stripped trailer information.
+        """
+        trailer = self._interpret_trailers(self.repo, self.message, ["--parse"], encoding=self.encoding).strip()
+
+        if not trailer:
+            return []
+
+        trailer_list = []
+        for t in trailer.split("\n"):
+            key, val = t.split(":", 1)
+            trailer_list.append((key.strip(), val.strip()))
+
+        return trailer_list
+
+    @classmethod
+    def _interpret_trailers(
+        cls,
+        repo: "Repo",
+        message: Union[str, bytes],
+        trailer_args: Sequence[str],
+        encoding: str = default_encoding,
+    ) -> str:
+        message_bytes = message if isinstance(message, bytes) else message.encode(encoding, errors="strict")
+        Git.check_unsafe_options(list(trailer_args), ["--in-place"])
+        if "--parse" not in trailer_args:
+            status, _output, error = repo.git._call_process_safe(
+                "config",
+                "--name-only",
+                "--get-regexp",
+                r"^trailer\..*\.(cmd|command)$",
+                with_extended_output=True,
+                with_exceptions=False,
+            )
+            if status == 0:
+                raise UnsafeOptionError("Configured trailer commands cannot run during commit creation")
+            if status != 1:
+                raise GitCommandError("git config", status, error)
+        with tempfile.TemporaryFile() as stream:
+            stream.write(message_bytes)
+            stream.seek(0)
+            return repo.git._call_process_safe(
+                "interpret_trailers",
+                *trailer_args,
+                istream=stream,
+                stdout_as_string=False,
+                strip_newline_in_stdout=False,
+            ).decode(encoding, errors="strict")
+
+    @property
+    def trailers_dict(self) -> Dict[str, List[str]]:
+        """Get the trailers of the message as a dictionary.
+
+        Git messages can contain trailer information that are similar to :rfc:`822`
+        e-mail headers. See :manpage:`git-interpret-trailers(1)`.
+
+        This function calls ``git interpret-trailers --parse`` onto the message to
+        extract the trailer information. The key value pairs are stripped of leading and
+        trailing whitespaces before they get saved into a dictionary.
+
+        Valid message with trailer::
+
+            Subject line
+
+            some body information
+
+            another information
+
+            key1: value1.1
+            key1: value1.2
+            key2 :    value 2 with inner spaces
+
+        Returned dictionary will look like this::
+
+            {
+                "key1": ["value1.1", "value1.2"],
+                "key2": ["value 2 with inner spaces"],
+            }
+
+
+        :return:
+            Dictionary containing whitespace stripped trailer information, mapping
+            trailer keys to a list of their corresponding values.
+        """
+        d = defaultdict(list)
+        for key, val in self.trailers_list:
+            d[key].append(val)
+        return dict(d)
+
+    @classmethod
+    def _iter_from_process_or_stream(cls, repo: "Repo", proc_or_stream: Union[Popen, IO]) -> Iterator["Commit"]:
+        """Parse out commit information into a list of :class:`Commit` objects.
+
+        We expect one line per commit, and parse the actual commit information directly
+        from our lighting fast object database.
+
+        :param proc:
+            :manpage:`git-rev-list(1)` process instance - one sha per line.
+
+        :return:
+            Iterator supplying :class:`Commit` objects
+        """
+
+        # def is_proc(inp) -> TypeGuard[Popen]:
+        #     return hasattr(proc_or_stream, 'wait') and not hasattr(proc_or_stream, 'readline')
+
+        # def is_stream(inp) -> TypeGuard[IO]:
+        #     return hasattr(proc_or_stream, 'readline')
+
+        if hasattr(proc_or_stream, "wait"):
+            proc_or_stream = cast(Popen, proc_or_stream)
+            stream = proc_or_stream.stdout
+            if stream is None:
+                raise ValueError("Process has no stdout stream")
+        elif hasattr(proc_or_stream, "readline"):
+            proc_or_stream = cast(IO, proc_or_stream)  # type: ignore[redundant-cast]
+            stream = proc_or_stream
+        else:
+            raise TypeError("Expected a process or stream")
+
+        readline = stream.readline
+        while True:
+            line = readline()
+            if not line:
+                break
+            hexsha = line.strip()
+            if len(hexsha) > repo._oid_size * 2:
+                # Split additional information, as returned by bisect for instance.
+                hexsha, _ = line.split(None, 1)
+            # END handle extra info
+
+            if len(hexsha) != repo._oid_size * 2:
+                raise ValueError("Invalid commit object ID returned by Git: %r" % hexsha)
+            yield cls(repo, hex_to_bin(hexsha))
+        # END for each line in stream
+
+        # TODO: Review this - it seems process handling got a bit out of control due to
+        # many developers trying to fix the open file handles issue.
+        if hasattr(proc_or_stream, "wait"):
+            proc_or_stream = cast(Popen, proc_or_stream)
+            finalize_process(proc_or_stream)
+
+    @classmethod
+    def create_from_tree(
+        cls,
+        repo: "Repo",
+        tree: Union[Tree, str],
+        message: str,
+        parent_commits: Union[None, List["Commit"]] = None,
+        head: bool = False,
+        author: Union[None, Actor] = None,
+        committer: Union[None, Actor] = None,
+        author_date: Union[None, str, datetime.datetime] = None,
+        commit_date: Union[None, str, datetime.datetime] = None,
+        trailers: Union[None, Dict[str, str], List[Tuple[str, str]]] = None,
+    ) -> "Commit":
+        """Commit the given tree, creating a :class:`Commit` object.
+
+        :param repo:
+            :class:`~git.repo.base.Repo` object the commit should be part of.
+
+        :param tree:
+            :class:`~git.objects.tree.Tree` object or hex or bin sha.
+            The tree of the new commit.
+
+        :param message:
+            Commit message. It may be an empty string if no message is provided. It will
+            be converted to a string, in any case.
+
+        :param parent_commits:
+            Optional :class:`Commit` objects to use as parents for the new commit. If
+            empty list, the commit will have no parents at all and become a root commit.
+            If ``None``, the current head commit will be the parent of the new commit
+            object.
+
+        :param head:
+            If ``True``, the HEAD will be advanced to the new commit automatically.
+            Otherwise the HEAD will remain pointing on the previous commit. This could
+            lead to undesired results when diffing files.
+
+        :param author:
+            The name of the author, optional.
+            If unset, the repository configuration is used to obtain this value.
+
+        :param committer:
+            The name of the committer, optional.
+            If unset, the repository configuration is used to obtain this value.
+
+        :param author_date:
+            The timestamp for the author field.
+
+        :param commit_date:
+            The timestamp for the committer field.
+
+        :param trailers:
+            Optional trailer key-value pairs to append to the commit message.
+            Can be a dictionary mapping trailer keys to values, or a list of
+            ``(key, value)`` tuples (useful when the same key appears multiple
+            times, e.g. multiple ``Signed-off-by`` trailers). Trailers are
+            appended using ``git interpret-trailers``.
+            See :manpage:`git-interpret-trailers(1)`.
+
+        :return:
+            :class:`Commit` object representing the new commit.
+
+        :raise ValueError:
+            If the name or email of the author or committer contains ``<``, ``>`` or a
+            line feed, as these would change the identity headers of the commit.
+
+        :note:
+            Additional information about the committer and author are taken from the
+            environment or from the git configuration. See :manpage:`git-commit-tree(1)`
+            for more information.
+        """
+        if parent_commits is None:
+            try:
+                parent_commits = [repo.head.commit]
+            except ValueError:
+                # Empty repositories have no head commit.
+                parent_commits = []
+            # END handle parent commits
+        else:
+            for p in parent_commits:
+                if not isinstance(p, cls):
+                    raise ValueError(f"Parent commit '{p!r}' must be of type {cls}")
+            # END check parent commit types
+        # END if parent commits are unset
+
+        # Retrieve all additional information, create a commit object, and serialize it.
+        # Generally:
+        # * Environment variables override configuration values.
+        # * Sensible defaults are set according to the git documentation.
+
+        # COMMITTER AND AUTHOR INFO
+        cr = repo.config_reader()
+        env = os.environ
+
+        committer = committer or Actor.committer(cr)
+        author = author or Actor.author(cr)
+
+        # PARSE THE DATES
+        unix_time = int(time())
+        is_dst = daylight and localtime().tm_isdst > 0
+        offset = altzone if is_dst else timezone
+
+        author_date_str = env.get(cls.env_author_date, "")
+        if author_date:
+            author_time, author_offset = parse_date(author_date)
+        elif author_date_str:
+            author_time, author_offset = parse_date(author_date_str)
+        else:
+            author_time, author_offset = unix_time, offset
+        # END set author time
+
+        committer_date_str = env.get(cls.env_committer_date, "")
+        if commit_date:
+            committer_time, committer_offset = parse_date(commit_date)
+        elif committer_date_str:
+            committer_time, committer_offset = parse_date(committer_date_str)
+        else:
+            committer_time, committer_offset = unix_time, offset
+        # END set committer time
+
+        # Assume UTF-8 encoding.
+        enc_section, enc_option = cls.conf_encoding.split(".")
+        conf_encoding = cr.get_value(enc_section, enc_option, cls.default_encoding)
+        if not isinstance(conf_encoding, str):
+            raise TypeError("conf_encoding could not be coerced to str")
+
+        # If the tree is no object, make sure we create one - otherwise the created
+        # commit object is invalid.
+        if isinstance(tree, str):
+            tree = repo.tree(tree)
+        # END tree conversion
+
+        # APPLY TRAILERS
+        if trailers:
+            trailer_args: List[str] = []
+            if isinstance(trailers, dict):
+                for key, val in trailers.items():
+                    trailer_args.append("--trailer")
+                    trailer_args.append(f"{key}: {val}")
+            else:
+                for key, val in trailers:
+                    trailer_args.append("--trailer")
+                    trailer_args.append(f"{key}: {val}")
+
+            message = cls._interpret_trailers(repo, str(message), trailer_args)
+        # END apply trailers
+
+        # CREATE NEW COMMIT
+        new_commit = cls(
+            repo,
+            cls.NULL_BIN_SHA,
+            tree,
+            author,
+            author_time,
+            author_offset,
+            committer,
+            committer_time,
+            committer_offset,
+            message,
+            parent_commits,
+            conf_encoding,
+        )
+
+        new_commit.binsha = cls._calculate_sha_(repo, new_commit)
+
+        if head:
+            # Need late import here, importing git at the very beginning throws as
+            # well...
+            import git.refs
+
+            try:
+                repo.head.set_commit(new_commit, logmsg=message)
+            except ValueError:
+                # head is not yet set to the ref our HEAD points to.
+                # Happens on first commit.
+                master = git.refs.Head.create(
+                    repo,
+                    repo.head.ref,
+                    new_commit,
+                    logmsg="commit (initial): %s" % message,
+                )
+                repo.head.set_reference(master, logmsg="commit: Switching to %s" % master)
+            # END handle empty repositories
+        # END advance head handling
+
+        return new_commit
+
+    # { Serializable Implementation
+
+    def _serialize(self, stream: BytesIO) -> "Commit":
+        """Copy Git's serialization of an unsigned commit to a stream.
+
+        Existing signature headers cannot be injected through ``commit-tree``.
+        """
+        try:
+            signature = object.__getattribute__(self, "gpgsig")
+        except AttributeError:
+            signature = self.gpgsig if any(self.binsha) else ""
+        if signature:
+            raise ValueError("Writing an existing commit signature is unsupported")
+        oid = self._calculate_sha_(self.repo, self)
+        stream.write(self.repo.odb.stream(oid).read())
+        return self
+
+    def _deserialize(self, stream: BytesIO, *, text_encoding: Union[str, None] = None) -> "Commit":
+        """Decode raw commit metadata, optionally before replacing text with Git's projection."""
+        readline = stream.readline
+        self.tree = Tree(self.repo, hex_to_bin(readline().split()[1]), Tree.tree_id << 12, "")
+
+        self.parents = []
+        next_line = None
+        while True:
+            parent_line = readline()
+            if not parent_line.startswith(b"parent"):
+                next_line = parent_line
+                break
+            # END abort reading parents
+            self.parents.append(type(self)(self.repo, hex_to_bin(parent_line.split()[-1].decode("ascii"))))
+        # END for each parent line
+        self.parents = tuple(self.parents)
+
+        # We don't know actual author encoding before we have parsed it, so keep the
+        # lines around.
+        author_line = next_line
+        committer_line = readline()
+
+        # We might run into one or more mergetag blocks, skip those for now.
+        next_line = readline()
+        while next_line.startswith(b"mergetag "):
+            next_line = readline()
+            while next_line.startswith(b" "):
+                next_line = readline()
+        # END skip mergetags
+
+        # Now we can have the encoding line, or an empty line followed by the optional
+        # message.
+        self.encoding = self.default_encoding
+        gpgsig = b""
+        encoding_seen = False
+
+        # Read headers.
+        enc = next_line
+        buf = enc.rstrip(b"\n")
+        while buf:
+            if buf.startswith(b"encoding "):
+                if not encoding_seen:
+                    encoding_seen = True
+                    raw_encoding = buf[9:]
+                    try:
+                        encoding = raw_encoding.decode("ascii")
+                        # Empty input skips codec lookup; reject non-text codecs too.
+                        b" ".decode(encoding, "replace")
+                    except (LookupError, ValueError):
+                        _logger.error("Ignoring invalid commit encoding %r", raw_encoding)
+                    else:
+                        self.encoding = encoding
+            elif buf[0:7] == b"gpgsig ":
+                sig_lines = [buf[buf.find(b" ") + 1 :] + b"\n"]
+                is_next_header = False
+                while True:
+                    sigbuf = readline()
+                    if not sigbuf:
+                        break
+                    if sigbuf[0:1] != b" ":
+                        buf = sigbuf.rstrip(b"\n")
+                        is_next_header = True
+                        break
+                    sig_lines.append(sigbuf[1:])
+                # END read all signature
+                gpgsig = b"".join(sig_lines).rstrip(b"\n")
+                if is_next_header:
+                    continue
+            buf = readline().rstrip(b"\n")
+
+        text_encoding = text_encoding or self.encoding
+        self.gpgsig = gpgsig.decode(text_encoding, "ignore")
+
+        # Decode the author's name.
+        try:
+            (
+                self.author,
+                self.authored_date,
+                self.author_tz_offset,
+            ) = parse_actor_and_date(author_line.decode(text_encoding, "replace"))
+        except UnicodeDecodeError:
+            _logger.error(
+                "Failed to decode author line '%s' using encoding %s",
+                author_line,
+                self.encoding,
+                exc_info=True,
+            )
+
+        try:
+            (
+                self.committer,
+                self.committed_date,
+                self.committer_tz_offset,
+            ) = parse_actor_and_date(committer_line.decode(text_encoding, "replace"))
+        except UnicodeDecodeError:
+            _logger.error(
+                "Failed to decode committer line '%s' using encoding %s",
+                committer_line,
+                self.encoding,
+                exc_info=True,
+            )
+        # END handle author's encoding
+
+        # A stream from our data simply gives us the plain message.
+        # The end of our message stream is marked with a newline that we strip.
+        self.message = stream.read()
+        try:
+            self.message = self.message.decode(text_encoding, "replace")
+        except UnicodeDecodeError:
+            _logger.error(
+                "Failed to decode message '%s' using encoding %s",
+                self.message,
+                self.encoding,
+                exc_info=True,
+            )
+        # END exception handling
+
+        return self
+
+    # } END serializable implementation
+
+    @property
+    def co_authors(self) -> List[Actor]:
+        """Search the commit message for any co-authors of this commit.
+
+        Details on co-authors:
+        https://github.blog/2018-01-29-commit-together-with-co-authors/
+
+        :return:
+            List of co-authors for this commit (as :class:`~git.util.Actor` objects).
+        """
+        return [
+            Actor.from_string(value)
+            for key, value in self.trailers_list
+            if key.lower() == "co-authored-by" and " <" in value and value.endswith(">")
+        ]

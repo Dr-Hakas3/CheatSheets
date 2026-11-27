@@ -1,0 +1,1428 @@
+# Copyright (C) 2008, 2009 Michael Trier (mtrier@gmail.com) and contributors
+#
+# This module is part of GitPython and is released under the
+# 3-Clause BSD License: https://opensource.org/license/bsd-3-clause/
+
+import contextlib
+import logging
+import os
+import os.path as osp
+import sys
+from itertools import product
+from pathlib import Path
+from stat import S_ISLNK, ST_MODE
+from unittest import mock
+
+import ddt
+import pytest
+
+from git import NULL_TREE, BlobFilter, Diff, Git, IndexFile, Object, Repo, Tree
+from git.diff import NULL_TREE_SHA
+from git.compat import defenc
+from git.exc import (
+    CheckoutError,
+    GitCommandError,
+    HookExecutionError,
+    InvalidGitRepositoryError,
+    UnmergedEntriesError,
+    UnsafeOptionError,
+)
+from git.index.fun import run_commit_hook
+from git.index.typ import BaseIndexEntry, IndexEntry
+from git.index.util import TemporaryFileSwap
+from git.objects import Blob
+from git.util import Actor, cwd, hex_to_bin, rmtree
+from test.lib import PathLikeMock, TestBase, fixture, fixture_path, with_rw_directory, with_rw_repo
+from test.lib.helper import symlinks_supported, xfail_if_raises
+from test.lib.fixtures import ROOT, fixture_repo, writable_fixture
+
+_logger = logging.getLogger(__name__)
+
+
+def test_staged_legacy_filename_and_blob_bytes():
+    with fixture_repo("legacy-index.sh") as repo:
+        (entry,) = repo.index.iter_entries()
+        assert entry.path.encode(defenc, "surrogateescape") == b"fonte-\xf5.pas"
+        assert repo.odb.stream(entry.binsha).read() == b"// vers\xe3o nova\n"
+        (diff,) = repo.index.diff("HEAD")
+        assert (diff.a_rawpath, diff.b_rawpath) == (b"fonte-\xf5.pas", b"fonte-\xf5.pas")
+        assert {blob.data_stream.read() for blob in (diff.a_blob, diff.b_blob)} == {
+            b"// vers\xe3o original\n",
+            b"// vers\xe3o nova\n",
+        }
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows symlink targets are Unicode paths")
+def test_staging_preserves_non_utf8_symlink_targets():
+    if not symlinks_supported():
+        pytest.skip("Symlinks unavailable")
+    # Native fixture copying follows symlinks instead of preserving their targets.
+    with fixture_repo("index-byte-symlink.sh", write=True, execute=True) as repo:
+        (entry,) = repo.index.add(["link"])
+        assert entry.mode == 0o120000
+        assert repo.odb.stream(entry.binsha).read() == b"../target-\xff"
+
+
+@ddt.ddt
+class TestIndex(TestBase):
+    @with_rw_repo("HEAD")
+    def test_checkout_rejects_unsafe_prefix(self, rw_repo):
+        with writable_fixture("empty.sh") as temporary:
+            target = temporary.path()
+            with self.assertRaises(UnsafeOptionError):
+                rw_repo.index.checkout(prefix=f"{target}/")
+
+            rw_repo.index.checkout(prefix=f"{target}/", allow_unsafe_options=True)
+            self.assertTrue(osp.isfile(osp.join(target, "CHANGES")))
+
+    @with_rw_repo("HEAD")
+    def test_remove_rejects_pathspec_from_file(self, rw_repo):
+        with writable_fixture("index.sh", "pathspec-rejected") as temporary:
+            pathspecs = temporary.path() / "pathspecs"
+            for option_name in ("pathspec_from_file", "pathspec_from"):
+                with self.assertRaises(UnsafeOptionError):
+                    rw_repo.index.remove(
+                        [],
+                        pathspec_file_nul=True,
+                        **{option_name: str(pathspecs)},
+                    )
+
+    @with_rw_repo("HEAD")
+    def test_remove_allows_explicit_pathspec_from_file(self, rw_repo):
+        with writable_fixture("index.sh", "pathspec-allowed") as temporary:
+            pathspecs = temporary.path() / "pathspecs"
+            removed = rw_repo.index.remove(
+                [],
+                pathspec_from_file=str(pathspecs),
+                pathspec_file_nul=True,
+                allow_unsafe_options=True,
+            )
+            assert "CHANGES" in removed
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._reset_progress()
+
+    def _assert_fprogress(self, entries):
+        self.assertEqual(len(entries), len(self._fprogress_map))
+        for _path, call_count in self._fprogress_map.items():
+            self.assertEqual(call_count, 2)
+        # END for each item in progress map
+        self._reset_progress()
+
+    def _fprogress(self, path, done, item):
+        self._fprogress_map.setdefault(path, 0)
+        curval = self._fprogress_map[path]
+        if curval == 0:
+            assert not done
+        if curval == 1:
+            assert done
+        self._fprogress_map[path] = curval + 1
+
+    def _fprogress_add(self, path, done, item):
+        """Called as progress func - we keep track of the proper call order."""
+        assert item is not None
+        self._fprogress(path, done, item)
+
+    def _reset_progress(self):
+        # Maps paths to the count of calls.
+        self._fprogress_map = {}
+
+    def _assert_entries(self, entries):
+        for entry in entries:
+            assert isinstance(entry, BaseIndexEntry)
+            assert not osp.isabs(entry.path)
+            assert "\\" not in entry.path
+        # END for each entry
+
+    @with_rw_repo("HEAD")
+    def test_index_file_base(self, rw_repo):
+        # Read from file.
+        index = IndexFile(rw_repo, fixture_path("index"))
+        assert [(e.path, e.stage) for e in index.iter_entries()]
+        assert index.version > 0
+
+        # Test entry.
+        entry = next(iter(index.iter_entries()))
+        for attr in (
+            "path",
+            "mode",
+            "binsha",
+            "hexsha",
+            "stage",
+        ):
+            getattr(entry, attr)
+        # END for each method
+
+        # Test update.
+        assert isinstance(index.update(), IndexFile)
+
+        # Test stage.
+        index_merge = IndexFile(rw_repo, fixture_path("index_merge"))
+        self.assertEqual(len([(e.path, e.stage) for e in index_merge.iter_entries()]), 106)
+        assert len([e for e in index_merge.iter_entries() if e.stage != 0])
+
+        # Write the data - it must match the original.
+        with writable_fixture("empty.sh") as temporary:
+            output = temporary.path() / "index"
+            index_merge.write(output)
+            self.assertEqual(output.read_bytes(), fixture("index_merge"))
+
+    def test_valid_unusual_index_names_round_trip(self):
+        names = ["a b", "--option", "dir/.gitignore", "café"]
+        unsupported = ["a\nb", "a\tb", "name:value"]
+        if os.name != "nt":
+            names.extend([*unsupported, "\udc9f"])
+            unsupported = []
+            if sys.platform == "cygwin":
+                # Cygwin Git applies NTFS protection to backslash separators.
+                unsupported.append("a\\b")
+            else:
+                names.append("a\\b")
+        with fixture_repo("index.sh", "empty", write=True) as repo:
+            index = IndexFile(repo, Path(repo.working_tree_dir, "index"))
+            index.add([IndexEntry((0o100644, b"a" * 20, 0, name)) for name in names])
+            assert sorted(entry.path for entry in index.update().iter_entries()) == sorted(names)
+            before = Path(index.path).read_bytes()
+            for name in unsupported:
+                with pytest.raises(ValueError, match="Git did not retain"):
+                    index.add([IndexEntry((0o100644, b"a" * 20, 0, name))])
+                assert Path(index.path).read_bytes() == before
+                assert not Path(str(index.path) + ".lock").exists()
+
+    def test_index_rejects_silently_ignored_entries_atomically(self):
+        call = Git._call_process_safe
+
+        def ignore_index_updates(git, command, *args, **kwargs):
+            if command == "update_index":
+                return ""
+            return call(git, command, *args, **kwargs)
+
+        with fixture_repo("index.sh", "index-before", write=True) as repo:
+            index = repo.index
+            before = Path(index.path).read_bytes()
+            with mock.patch.object(Git, "_call_process_safe", ignore_index_updates):
+                with pytest.raises(ValueError, match="Git did not retain"):
+                    index.add([IndexEntry((0o100644, b"a" * 20, 0, "after"))])
+            assert Path(index.path).read_bytes() == before
+            assert not Path(str(index.path) + ".lock").exists()
+
+    def _cmp_tree_index(self, tree, index):
+        if isinstance(tree, str):
+            tree = self.rorepo.commit(tree).tree
+        expected = {
+            (blob.path, 0) for blob in tree.traverse(predicate=lambda e, d: e.type == "blob", branch_first=False)
+        }
+        assert {(entry.path, entry.stage) for entry in index.iter_entries()} == expected
+
+    @with_rw_repo("release")
+    def test_index_lock_handling(self, rw_repo):
+        index = rw_repo.index
+        index_path = Path(index.path)
+        lock_path = Path(str(index_path) + ".lock")
+        before = index_path.read_bytes()
+        # Deferred bytes keep the copy failure injection at locked publication.
+        index.add([Blob(rw_repo, b"f" * 20, 0o100644, "foo")], write=False)
+
+        def fail_copy(source, stream):
+            assert lock_path.exists()
+            stream.write(b"partial index")
+            raise OSError("simulated index write failure")
+
+        with mock.patch("git.index.base.shutil.copyfileobj", side_effect=fail_copy):
+            for _ in range(2):
+                with pytest.raises(OSError, match="simulated index write failure"):
+                    index.write()
+                assert not lock_path.exists()
+                assert index_path.read_bytes() == before
+
+        index.write()
+        assert not lock_path.exists()
+        assert rw_repo.index.entry(*("foo", 0)).mode == 0o100644
+
+    @with_rw_repo("release")
+    def test_read_tree_methods_reject_index_output(self, rw_repo):
+        output_path = (Path(rw_repo.working_tree_dir) / "alternate-index").as_posix()
+        unsafe_option = f"--index-output={output_path}"
+
+        with pytest.raises(UnsafeOptionError):
+            IndexFile.from_tree(rw_repo, unsafe_option)
+        with pytest.raises(UnsafeOptionError):
+            IndexFile.from_tree(rw_repo, "HEAD", index_output=output_path)
+        with pytest.raises(UnsafeOptionError):
+            rw_repo.index.reset(unsafe_option)
+        with pytest.raises(UnsafeOptionError):
+            rw_repo.index.merge_tree(unsafe_option)
+        with pytest.raises(UnsafeOptionError):
+            rw_repo.index.merge_tree("HEAD", base=unsafe_option)
+
+    @with_rw_repo("release")
+    def test_index_file_from_tree(self, rw_repo):
+        common_ancestor_sha = "base"
+        cur_sha = "conflict-ours"
+        other_sha = "conflict-theirs"
+
+        # Simple index from tree.
+        base_index = IndexFile.from_tree(rw_repo, common_ancestor_sha)
+        assert [(e.path, e.stage) for e in base_index.iter_entries()]
+        self._cmp_tree_index(common_ancestor_sha, base_index)
+
+        # Merge two trees - it's like a fast-forward.
+        two_way_index = IndexFile.from_tree(rw_repo, common_ancestor_sha, cur_sha)
+        assert [(e.path, e.stage) for e in two_way_index.iter_entries()]
+        self._cmp_tree_index(cur_sha, two_way_index)
+
+        # Merge three trees - here we have a merge conflict.
+        three_way_index = IndexFile.from_tree(rw_repo, common_ancestor_sha, cur_sha, other_sha)
+        assert len([e for e in three_way_index.iter_entries() if e.stage != 0])
+
+        # ITERATE BLOBS
+
+        def merge_required(t):
+            return t[0] != 0
+
+        merge_blobs = list(three_way_index.iter_blobs(merge_required))
+        assert merge_blobs
+        assert merge_blobs[0][0] in (1, 2, 3)
+        assert isinstance(merge_blobs[0][1], Blob)
+
+        # Test BlobFilter.
+        prefix = "lib/git"
+        for _stage, blob in base_index.iter_blobs(BlobFilter([prefix])):
+            assert blob.path.startswith(prefix)
+
+        # Writing a tree should fail with an unmerged index.
+        self.assertRaises(UnmergedEntriesError, three_way_index.write_tree)
+
+        # Removed unmerged entries.
+        unmerged_blob_map = three_way_index.unmerged_blobs()
+        assert unmerged_blob_map
+
+        # Pick the first blob at the first stage we find and use it as resolved version.
+        three_way_index.resolve_blobs(line[0][1] for line in unmerged_blob_map.values())
+        tree = three_way_index.write_tree()
+        assert isinstance(tree, Tree)
+        num_blobs = 0
+        for blob in tree.traverse(predicate=lambda item, d: item.type == "blob"):
+            assert (blob.path, 0) in [(e.path, e.stage) for e in three_way_index.iter_entries()]
+            num_blobs += 1
+        # END for each blob
+        self.assertEqual(num_blobs, len([(e.path, e.stage) for e in three_way_index.iter_entries()]))
+
+    @with_rw_repo("release")
+    def test_index_merge_tree(self, rw_repo):
+        # A bit out of place, but we need a different repo for this:
+        self.assertNotEqual(self.rorepo, rw_repo)
+        self.assertEqual(len({self.rorepo, self.rorepo, rw_repo, rw_repo}), 2)
+
+        # SINGLE TREE MERGE
+        # Current index is at the (virtual) cur_commit.
+        next_commit = "manifest-update"
+        parent_commit = rw_repo.head.commit.parents[0]
+        manifest_key = IndexFile.entry_key("MANIFEST.in", 0)
+        manifest_entry = rw_repo.index.entry(*manifest_key)
+        rw_repo.index.merge_tree(next_commit)
+        # Only one change should be recorded.
+        assert manifest_entry.binsha != rw_repo.index.entry(*manifest_key).binsha
+
+        rw_repo.index.reset(rw_repo.head)
+        self.assertEqual(rw_repo.index.entry(*manifest_key).binsha, manifest_entry.binsha)
+
+        # FAKE MERGE
+        #############
+        # Add a change with a NULL sha that should conflict with next_commit. We pretend
+        # there was a change, but we do not even bother adding a proper sha for it
+        # (which makes things faster of course).
+        manifest_fake_entry = BaseIndexEntry((manifest_entry[0], b"\0" * 20, 0, manifest_entry[3]))
+        # Try write flag.
+        self._assert_entries(rw_repo.index.add([manifest_fake_entry], write=False))
+        # Add actually resolves the null-hex-sha for us as a feature, but we can edit
+        # the index manually.
+        assert rw_repo.index.entry(*manifest_key).binsha != Object.NULL_BIN_SHA
+        # We must operate on the same index for this! It's a bit problematic as it might
+        # confuse people.
+        index = rw_repo.index
+        index.add([IndexEntry((manifest_entry.mode, b"f" * 20, 0, manifest_entry.path))], write=False)
+        index.write()
+        self.assertEqual(rw_repo.index.entry(*manifest_key).binsha, b"f" * 20)
+
+        # Write an unchanged index (just for the fun of it).
+        rw_repo.index.write()
+
+        # A three way merge would result in a conflict and fails as the command will not
+        # overwrite any entries in our index and hence leave them unmerged. This is
+        # mainly a protection feature as the current index is not yet in a tree.
+        self.assertRaises(GitCommandError, index.merge_tree, next_commit, base=parent_commit)
+
+        # The only way to get the merged entries is to safe the current index away into
+        # a tree, which is like a temporary commit for us. This fails as well as the
+        # NULL sha does not have a corresponding object.
+        # NOTE: missing_ok is not a kwarg anymore, missing_ok is always true.
+        # self.assertRaises(GitCommandError, index.write_tree)
+
+        # If missing objects are okay, this would work though (they are always okay
+        # now). As we can't read back the tree with NULL_SHA, we rather set it to
+        # something else.
+        index.add([IndexEntry(manifest_entry[:1] + (hex_to_bin("f" * 40),) + manifest_entry[2:])], write=False)
+        tree = index.write_tree()
+
+        # Now make a proper three way merge with unmerged entries.
+        unmerged_tree = IndexFile.from_tree(rw_repo, parent_commit, tree, next_commit)
+        unmerged_blobs = unmerged_tree.unmerged_blobs()
+        self.assertEqual(len(unmerged_blobs), 1)
+        self.assertEqual(list(unmerged_blobs.keys())[0], manifest_key[0])
+
+    @with_rw_repo("release")
+    def test_index_file_diffing(self, rw_repo):
+        # Default IndexFile instance points to our index.
+        index = IndexFile(rw_repo)
+        assert index.path is not None
+        assert len([(e.path, e.stage) for e in index.iter_entries()])
+
+        # Write the file back.
+        index.write()
+
+        # Could sha it, or check stats.
+
+        # Test diff.
+        # Resetting the head will leave the index in a different state, and the diff
+        # will yield a few changes.
+        cur_head_commit = rw_repo.head.reference.commit
+        rw_repo.head.reset("HEAD~2", index=True, working_tree=False)
+
+        # Diff against same index is 0.
+        diff = index.diff()
+        self.assertEqual(len(diff), 0)
+
+        # Against HEAD as string, must be the same as it matches index.
+        diff = index.diff("HEAD")
+        self.assertEqual(len(diff), 0)
+
+        # Against previous head, there must be a difference.
+        diff = index.diff(cur_head_commit)
+        assert len(diff)
+
+        # We reverse the result.
+        adiff = index.diff(str(cur_head_commit), R=True)
+        odiff = index.diff(cur_head_commit, R=False)  # Now its not reversed anymore.
+        assert adiff != odiff
+        self.assertEqual(odiff, diff)  # Both unreversed diffs against HEAD.
+
+        # Against working copy - it's still at cur_commit.
+        wdiff = index.diff(None)
+        assert wdiff != adiff
+        assert wdiff != odiff
+
+        # Against something unusual.
+        self.assertRaises(ValueError, index.diff, int)
+
+        # Adjust the index to match an old revision.
+        cur_branch = rw_repo.active_branch
+        cur_commit = cur_branch.commit
+        rev_head_parent = "HEAD~1"
+        assert index.reset(rev_head_parent) is index
+
+        self.assertEqual(cur_branch, rw_repo.active_branch)
+        self.assertEqual(cur_commit, rw_repo.head.commit)
+
+        # There must be differences towards the working tree which is in the 'future'.
+        assert index.diff(None)
+
+        # Reset the working copy as well to current head, to pull 'back' as well.
+        new_data = b"will be reverted"
+        file_path = osp.join(rw_repo.working_tree_dir, "CHANGES")
+        with open(file_path, "wb") as fp:
+            fp.write(new_data)
+        index.reset(rev_head_parent, working_tree=True)
+        assert not index.diff(None)
+        self.assertEqual(cur_branch, rw_repo.active_branch)
+        self.assertEqual(cur_commit, rw_repo.head.commit)
+        with open(file_path, "rb") as fp:
+            assert fp.read() != new_data
+
+        # Test full checkout.
+        test_file = osp.join(rw_repo.working_tree_dir, "CHANGES")
+        with open(test_file, "ab") as fd:
+            fd.write(b"some data")
+        rval = index.checkout(None, force=True, fprogress=self._fprogress)
+        assert "CHANGES" in list(rval)
+        self._assert_fprogress([None])
+        assert osp.isfile(test_file)
+
+        os.remove(test_file)
+        rval = index.checkout(None, force=False, fprogress=self._fprogress)
+        assert "CHANGES" in list(rval)
+        self._assert_fprogress([None])
+        assert osp.isfile(test_file)
+
+        # Individual file.
+        os.remove(test_file)
+        rval = index.checkout(test_file, fprogress=self._fprogress)
+        self.assertEqual(list(rval)[0], "CHANGES")
+        self._assert_fprogress([test_file])
+        assert osp.exists(test_file)
+
+        # Checking out non-existing file throws.
+        self.assertRaises(CheckoutError, index.checkout, "doesnt_exist_ever.txt.that")
+        self.assertRaises(CheckoutError, index.checkout, paths=["doesnt/exist"])
+
+        # Check out file with modifications.
+        append_data = b"hello"
+        with open(test_file, "ab") as fp:
+            fp.write(append_data)
+        try:
+            index.checkout(test_file)
+        except CheckoutError as e:
+            # Detailed exceptions are only possible in older git versions.
+            if rw_repo.git.version_info < (2, 29):
+                self.assertEqual(len(e.failed_files), 1)
+                self.assertEqual(e.failed_files[0], osp.basename(test_file))
+                self.assertEqual(len(e.failed_files), len(e.failed_reasons))
+                self.assertIsInstance(e.failed_reasons[0], str)
+                self.assertEqual(len(e.valid_files), 0)
+                with open(test_file, "rb") as fd:
+                    s = fd.read()
+                self.assertTrue(s.endswith(append_data), s)
+        else:
+            raise AssertionError("Exception CheckoutError not thrown")
+
+        # If we force it, it should work.
+        index.checkout(test_file, force=True)
+        assert not open(test_file, "rb").read().endswith(append_data)
+
+        # Check out directory.
+        rmtree(osp.join(rw_repo.working_tree_dir, "lib"))
+        rval = index.checkout("lib")
+        assert len(list(rval)) > 1
+
+    def test_index_file_diff_null_tree_with_initial_index(self):
+        with fixture_repo("index.sh", "null-tree") as repo:
+            filename = ".gitkeep"
+            index = IndexFile(repo)
+            self.assertEqual(len(index.diff(None)), 0)
+
+            diff = index.diff(NULL_TREE)
+            self.assertEqual(len(diff), 1)
+            self.assertEqual(diff[0].change_type, "A")
+            assert diff[0].new_file
+            self.assertEqual(diff[0].b_path, filename)
+
+            self.assertEqual(len(index.diff(NULL_TREE, paths=filename)), 1)
+            self.assertEqual(len(index.diff(NULL_TREE_SHA, paths=filename)), 1)
+            self.assertEqual(len(index.diff(NULL_TREE, paths="missing")), 0)
+
+            patch = index.diff(NULL_TREE, create_patch=True)
+            self.assertEqual(len(patch), 1)
+            self.assertIn(b"+# Initial file", patch[0].diff)
+
+            with self.assertRaises(GitCommandError) as exc_info:
+                index.diff(NULL_TREE, bogus_option=True)
+            self.assertIn("usage: git diff", exc_info.exception.stderr)
+
+    def _count_existing(self, repo, files):
+        """Return count of files that actually exist in the repository directory."""
+        existing = 0
+        basedir = repo.working_tree_dir
+        for f in files:
+            existing += osp.isfile(osp.join(basedir, f))
+        # END for each deleted file
+        return existing
+
+    # END num existing helper
+
+    @with_rw_repo("release")
+    def test_index_mutation(self, rw_repo):
+        with xfail_if_raises(
+            sys.platform == "win32" and (Git().config("core.symlinks") == "true" or symlinks_supported()),
+            raises=(FileNotFoundError, GitCommandError),
+            reason="Assumes symlinks are not created on Windows and opens a symlink to a nonexistent target.",
+        ):
+            index = rw_repo.index
+            num_entries = len([(e.path, e.stage) for e in index.iter_entries()])
+            cur_head = rw_repo.head
+
+            uname = "Thomas Müller"
+            umail = "sd@company.com"
+            with rw_repo.config_writer() as writer:
+                writer.set_value("user", "name", uname)
+                writer.set_value("user", "email", umail)
+            self.assertEqual(writer.get_value("user", "name"), uname)
+
+            # Remove all of the files, provide a wild mix of paths, BaseIndexEntries,
+            # IndexEntries.
+            def mixed_iterator():
+                count = 0
+                for entry in index.iter_entries():
+                    type_id = count % 5
+                    if type_id == 0:  # path (str)
+                        yield entry.path
+                    elif type_id == 1:  # path (PathLike)
+                        yield Path(entry.path)
+                    elif type_id == 2:  # path mock (PathLike)
+                        yield PathLikeMock(entry.path)
+                    elif type_id == 3:  # path mock in a blob
+                        yield Blob(rw_repo, entry.binsha, entry.mode, entry.path)
+                    elif type_id == 4:  # blob
+                        yield Blob(rw_repo, entry.binsha, entry.mode, entry.path)
+                    elif type_id == 5:  # BaseIndexEntry
+                        yield BaseIndexEntry(entry[:4])
+                    elif type_id == 6:  # IndexEntry
+                        yield entry
+                    else:
+                        raise AssertionError("Invalid Type")
+                    count += 1
+                # END for each entry
+
+            # END mixed iterator
+            deleted_files = index.remove(mixed_iterator(), working_tree=False)
+            assert deleted_files
+            self.assertEqual(self._count_existing(rw_repo, deleted_files), len(deleted_files))
+            self.assertEqual(len([(e.path, e.stage) for e in index.iter_entries()]), 0)
+
+            # Reset the index to undo our changes.
+            index.reset()
+            self.assertEqual(len([(e.path, e.stage) for e in index.iter_entries()]), num_entries)
+
+            # Remove with working copy.
+            deleted_files = index.remove(mixed_iterator(), working_tree=True)
+            assert deleted_files
+            self.assertEqual(self._count_existing(rw_repo, deleted_files), 0)
+
+            # Reset everything.
+            index.reset(working_tree=True)
+            self.assertEqual(self._count_existing(rw_repo, deleted_files), len(deleted_files))
+
+            # Invalid type.
+            self.assertRaises(TypeError, index.remove, [1])
+
+            # Absolute path.
+            deleted_files = index.remove([osp.join(rw_repo.working_tree_dir, "lib")], r=True)
+            assert len(deleted_files) > 1
+            self.assertRaises(ValueError, index.remove, ["/doesnt/exists"])
+
+            # TEST COMMITTING
+            # Commit changed index.
+            cur_commit = cur_head.commit
+            commit_message = "commit default head by Frèderic Çaufl€"
+
+            new_commit = index.commit(commit_message, head=False)
+            assert cur_commit != new_commit
+            self.assertEqual(new_commit.author.name, uname)
+            self.assertEqual(new_commit.author.email, umail)
+            self.assertEqual(new_commit.committer.name, uname)
+            self.assertEqual(new_commit.committer.email, umail)
+            self.assertEqual(new_commit.message, commit_message)
+            self.assertEqual(new_commit.parents[0], cur_commit)
+            self.assertEqual(len(new_commit.parents), 1)
+            self.assertEqual(cur_head.commit, cur_commit)
+
+            # Commit with other actor.
+            cur_commit = cur_head.commit
+
+            my_author = Actor("Frèderic Çaufl€", "author@example.com")
+            my_committer = Actor("Committing Frèderic Çaufl€", "committer@example.com")
+            commit_actor = index.commit(commit_message, author=my_author, committer=my_committer)
+            assert cur_commit != commit_actor
+            self.assertEqual(commit_actor.author.name, "Frèderic Çaufl€")
+            self.assertEqual(commit_actor.author.email, "author@example.com")
+            self.assertEqual(commit_actor.committer.name, "Committing Frèderic Çaufl€")
+            self.assertEqual(commit_actor.committer.email, "committer@example.com")
+            self.assertEqual(commit_actor.message, commit_message)
+            self.assertEqual(commit_actor.parents[0], cur_commit)
+            self.assertEqual(len(new_commit.parents), 1)
+            self.assertEqual(cur_head.commit, commit_actor)
+            self.assertEqual(cur_head.log()[-1].actor, my_committer)
+
+            # Commit with author_date and commit_date.
+            cur_commit = cur_head.commit
+            commit_message = "commit with dates by Avinash Sajjanshetty"
+
+            new_commit = index.commit(
+                commit_message,
+                author_date="2006-04-07T22:13:13 +0000",
+                commit_date="2005-04-07T22:13:13 +0000",
+            )
+            assert cur_commit != new_commit
+            print(new_commit.authored_date, new_commit.committed_date)
+            self.assertEqual(new_commit.message, commit_message)
+            self.assertEqual(new_commit.authored_date, 1144447993)
+            self.assertEqual(new_commit.committed_date, 1112911993)
+
+            # Same index, no parents.
+            commit_message = "index without parents"
+            commit_no_parents = index.commit(commit_message, parent_commits=[], head=True)
+            self.assertEqual(commit_no_parents.message, commit_message)
+            self.assertEqual(len(commit_no_parents.parents), 0)
+            self.assertEqual(cur_head.commit, commit_no_parents)
+
+            # same index, multiple parents.
+            commit_message = "Index with multiple parents\n    commit with another line"
+            commit_multi_parent = index.commit(commit_message, parent_commits=(commit_no_parents, new_commit))
+            self.assertEqual(commit_multi_parent.message, commit_message)
+            self.assertEqual(len(commit_multi_parent.parents), 2)
+            self.assertEqual(commit_multi_parent.parents[0], commit_no_parents)
+            self.assertEqual(commit_multi_parent.parents[1], new_commit)
+            self.assertEqual(cur_head.commit, commit_multi_parent)
+
+            # Re-add all files in lib.
+            # Get the lib folder back on disk, but get an index without it.
+            index.reset(new_commit.parents[0], working_tree=True).reset(new_commit, working_tree=False)
+            lib_file_path = osp.join("lib", "git", "__init__.py")
+            assert (lib_file_path, 0) not in [(e.path, e.stage) for e in index.iter_entries()]
+            assert osp.isfile(osp.join(rw_repo.working_tree_dir, lib_file_path))
+
+            # Directory.
+            entries = index.add(["lib"], fprogress=self._fprogress_add)
+            self._assert_entries(entries)
+            self._assert_fprogress(entries)
+            assert len(entries) > 1
+
+            # Glob.
+            entries = index.reset(new_commit).add([osp.join("lib", "git", "*.py")], fprogress=self._fprogress_add)
+            self._assert_entries(entries)
+            self._assert_fprogress(entries)
+            self.assertEqual({entry.path for entry in entries}, {"lib/git/__init__.py", "lib/git/blob.py"})
+
+            # Same file.
+            entries = index.reset(new_commit).add(
+                [osp.join(rw_repo.working_tree_dir, "lib", "git", "blob.py")] * 2,
+                fprogress=self._fprogress_add,
+            )
+            self._assert_entries(entries)
+            self.assertEqual(entries[0].mode & 0o644, 0o644)
+            # Would fail, test is too primitive to handle this case.
+            # self._assert_fprogress(entries)
+            self._reset_progress()
+            self.assertEqual(len(entries), 2)
+
+            # Missing path.
+            self.assertRaises(OSError, index.reset(new_commit).add, ["doesnt/exist/must/raise"])
+
+            # Blob from older revision overrides current index revision.
+            old_blob = new_commit.parents[0].tree.blobs[0]
+            entries = index.reset(new_commit).add([old_blob], fprogress=self._fprogress_add)
+            self._assert_entries(entries)
+            self._assert_fprogress(entries)
+            self.assertEqual(index.entry(*(old_blob.path, 0)).hexsha, old_blob.hexsha)
+            self.assertEqual(len(entries), 1)
+
+            # Mode 0 not allowed.
+            null_hex_sha = Diff.NULL_HEX_SHA
+            null_bin_sha = b"\0" * 20
+            self.assertRaises(
+                ValueError,
+                index.reset(new_commit).add,
+                [BaseIndexEntry((0, null_bin_sha, 0, "doesntmatter"))],
+            )
+
+            # Add new file.
+            new_file_relapath = "my_new_file"
+            self._make_file(new_file_relapath, "hello world", rw_repo)
+            entries = index.reset(new_commit).add(
+                [BaseIndexEntry((0o100644, null_bin_sha, 0, new_file_relapath))],
+                fprogress=self._fprogress_add,
+            )
+            self._assert_entries(entries)
+            self._assert_fprogress(entries)
+            self.assertEqual(len(entries), 1)
+            self.assertNotEqual(entries[0].hexsha, null_hex_sha)
+
+            # Add symlink.
+            if sys.platform != "win32":
+                for target in ("/etc/nonexisting", "/etc/passwd", "/etc"):
+                    basename = "my_real_symlink"
+
+                    link_file = osp.join(rw_repo.working_tree_dir, basename)
+                    os.symlink(target, link_file)
+                    entries = index.reset(new_commit).add([link_file], fprogress=self._fprogress_add)
+                    self._assert_entries(entries)
+                    self._assert_fprogress(entries)
+                    self.assertEqual(len(entries), 1)
+                    self.assertTrue(S_ISLNK(entries[0].mode))
+                    self.assertTrue(S_ISLNK(index.entry(*index.entry_key("my_real_symlink", 0)).mode))
+
+                    # We expect only the target to be written.
+                    self.assertEqual(
+                        index.repo.odb.stream(entries[0].binsha).read().decode("ascii"),
+                        target,
+                    )
+
+                    os.remove(link_file)
+                # END for each target
+            # END real symlink test
+
+            # Add fake symlink and assure it checks out as a symlink.
+            fake_symlink_relapath = "my_fake_symlink"
+            link_target = "/etc/that"
+            fake_symlink_path = self._make_file(fake_symlink_relapath, link_target, rw_repo)
+            fake_entry = BaseIndexEntry((0o120000, null_bin_sha, 0, fake_symlink_relapath))
+            entries = index.reset(new_commit).add([fake_entry], fprogress=self._fprogress_add)
+            self._assert_entries(entries)
+            self._assert_fprogress(entries)
+            assert entries[0].hexsha != null_hex_sha
+            self.assertEqual(len(entries), 1)
+            self.assertTrue(S_ISLNK(entries[0].mode))
+
+            # Check that this also works with an alternate method.
+            full_index_entry = IndexEntry.from_base(BaseIndexEntry((0o120000, entries[0].binsha, 0, entries[0].path)))
+            entry_key = index.entry_key(full_index_entry)
+            index.reset(new_commit)
+
+            assert entry_key not in [(e.path, e.stage) for e in index.iter_entries()]
+            index.add([full_index_entry], write=False)
+            index.write()
+            index.update()  # Force reread of entries.
+            new_entry = index.entry(*entry_key)
+            assert S_ISLNK(new_entry.mode)
+
+            # A tree created from this should contain the symlink.
+            tree = index.write_tree()
+            assert fake_symlink_relapath in tree
+            index.write()  # Flush our changes for the checkout.
+
+            # Check out the fake link, should be a link then.
+            assert not S_ISLNK(os.stat(fake_symlink_path)[ST_MODE])
+            os.remove(fake_symlink_path)
+            index.checkout(fake_symlink_path)
+
+            # On Windows, we currently assume we will never get symlinks.
+            if sys.platform == "win32":
+                # Symlinks should contain the link as text (which is what a
+                # symlink actually is).
+                with open(fake_symlink_path, "rt") as fd:
+                    self.assertEqual(fd.read(), link_target)
+            else:
+                self.assertTrue(S_ISLNK(os.lstat(fake_symlink_path)[ST_MODE]))
+
+            # TEST RENAMING
+            def assert_mv_rval(rval):
+                for source, dest in rval:
+                    assert not osp.exists(source) and osp.exists(dest)
+                # END for each renamed item
+
+            # END move assertion utility
+
+            self.assertRaises(ValueError, index.move, ["just_one_path"])
+            # Try to move a file onto an existing file.
+            files = ["AUTHORS", "LICENSE"]
+            self.assertRaises(GitCommandError, index.move, files)
+
+            # Again, with force.
+            assert_mv_rval(index.move(files, f=True))
+
+            # Move files into a directory - dry run.
+            paths = ["LICENSE", "VERSION", "doc"]
+            rval = index.move(paths, dry_run=True)
+            self.assertEqual(len(rval), 2)
+            assert osp.exists(paths[0])
+
+            # Again, no dry run.
+            rval = index.move(paths)
+            assert_mv_rval(rval)
+
+            # Move dir into dir.
+            rval = index.move(["doc", "test"])
+            assert_mv_rval(rval)
+
+            # TEST PATH REWRITING
+            ######################
+            count = [0]
+
+            def rewriter(entry):
+                rval = str(count[0])
+                count[0] += 1
+                return rval
+
+            # END rewriter
+
+            def make_paths():
+                """Help out the test by yielding two existing paths and one new path."""
+                yield "CHANGES"
+                yield "setup.py"
+                yield index.entry(*index.entry_key("README.md", 0))
+                yield index.entry(*index.entry_key(".gitignore", 0))
+
+                for fid in range(3):
+                    fname = "newfile%i" % fid
+                    with open(fname, "wb") as fd:
+                        fd.write(b"abcd")
+                    yield Blob(rw_repo, Blob.NULL_BIN_SHA, 0o100644, fname)
+                # END for each new file
+
+            # END path producer
+            paths = list(make_paths())
+            self._assert_entries(index.add(paths, path_rewriter=rewriter))
+
+            for filenum in range(len(paths)):
+                assert index.entry_key(str(filenum), 0) in [(e.path, e.stage) for e in index.iter_entries()]
+
+            # TEST RESET ON PATHS
+            ######################
+            arela = "aa"
+            brela = "bb"
+            afile = self._make_file(arela, "adata", rw_repo)
+            bfile = self._make_file(brela, "bdata", rw_repo)
+            akey = index.entry_key(arela, 0)
+            bkey = index.entry_key(brela, 0)
+            keys = (akey, bkey)
+            absfiles = (afile, bfile)
+            files = (arela, brela)
+
+            for fkey in keys:
+                assert fkey not in [(e.path, e.stage) for e in index.iter_entries()]
+
+            index.add(files, write=True)
+            nc = index.commit("2 files committed", head=False)
+
+            for fkey in keys:
+                assert fkey in [(e.path, e.stage) for e in index.iter_entries()]
+
+            # Just the index.
+            index.reset(paths=(arela, afile))
+            assert akey not in [(e.path, e.stage) for e in index.iter_entries()]
+            assert bkey in [(e.path, e.stage) for e in index.iter_entries()]
+
+            # Now with working tree - files on disk as well as entries must be recreated.
+            rw_repo.head.commit = nc
+            for absfile in absfiles:
+                os.remove(absfile)
+
+            index.reset(working_tree=True, paths=files)
+
+            for fkey in keys:
+                assert fkey in [(e.path, e.stage) for e in index.iter_entries()]
+            for absfile in absfiles:
+                assert osp.isfile(absfile)
+
+    @with_rw_repo("HEAD")
+    def test_compare_write_tree(self, rw_repo):
+        """Test writing all trees, comparing them for equality."""
+        # It's important to have a few submodules in there too.
+        max_count = 25
+        count = 0
+        for commit in rw_repo.head.commit.traverse():
+            if count >= max_count:
+                break
+            count += 1
+            index = rw_repo.index.reset(commit)
+            orig_tree = commit.tree
+            self.assertEqual(index.write_tree(), orig_tree)
+        # END for each commit
+
+    def test_index_single_addremove(self):
+        with fixture_repo("index.sh", "file", "testfile.txt", "content of testfile", write=True) as repo:
+            fp = osp.join(repo.working_dir, "testfile.txt")
+            self._assert_entries(repo.index.add(fp))
+            assert repo.index.remove(fp)
+
+    def test_index_new(self):
+        B = self.rorepo.tree("base")
+        H = self.rorepo.tree("conflict-ours")
+        M = self.rorepo.tree("conflict-theirs")
+
+        for args in ((B.binsha,), (B.hexsha, H), (B, H.binsha, M.hexsha.encode("ascii"))):
+            index = IndexFile.new(self.rorepo, *args)
+            assert isinstance(index, IndexFile)
+        # END for each arg tuple
+
+    @ddt.data("../outside", ".git/hooks/pre-commit", "a/.GIT/config")
+    def test_native_tree_merge_rejects_unsafe_paths(self, path):
+        with fixture_repo("index.sh", "unsafe-tree", path, write=True) as repo:
+            tmp_path = Path(repo.working_tree_dir)
+            tree = bytes.fromhex((tmp_path.parent / "tree-id").read_text().strip())
+            with pytest.raises((ValueError, GitCommandError)):
+                IndexFile.new(repo, tree)
+            assert not (tmp_path / ".git" / "index").exists()
+
+    def test_index_bare_add(self):
+        with fixture_repo("index.sh", "bare-add", write=True) as rw_bare_repo:
+            # Something is wrong after cloning to a bare repo, reading the property
+            # rw_bare_repo.working_tree_dir will return '/tmp' instead of throwing the
+            # Exception we are expecting. This is a quick hack to make this test fail when
+            # expected.
+            assert rw_bare_repo.working_tree_dir is None
+            assert rw_bare_repo.bare
+            filename = "my-imaginary-file"
+            oid = bytes.fromhex((Path(rw_bare_repo.git_dir).parent / "blob-id").read_text().strip())
+            entry = BaseIndexEntry((0o100644, oid, 0, filename))
+            try:
+                rw_bare_repo.index.add([entry])
+            except AssertionError:
+                self.fail("Adding to the index of a bare repo is not allowed.")
+
+            # Adding using a path should still require a non-bare repository.
+            asserted = False
+            path = osp.join("git", "test", "test_index.py")
+            try:
+                rw_bare_repo.index.add([path])
+            except InvalidGitRepositoryError:
+                asserted = True
+            assert asserted, "Adding using a filename is not correctly asserted."
+
+    def test_add_utf8P_path(self):
+        with fixture_repo("index.sh", "file", "ø.txt", "content of ø", write=True) as repo:
+            repo.index.add([osp.join(repo.working_tree_dir, "ø.txt")])
+            repo.index.commit("Added orig and prestable")
+
+    def test_add_a_file_with_wildcard_chars(self):
+        # See issue #407.
+        with fixture_repo("index.sh", "file", "[.exe", "something", write=True) as repo:
+            repo.index.add([osp.join(repo.working_tree_dir, "[.exe")])
+            repo.index.commit("Added [.exe")
+
+    @ddt.data(*product(("path", "glob", "blob", "entry"), (False, True)))
+    @ddt.unpack
+    def test_staging_never_reads_through_a_directory_symlink(self, kind, outside):
+        if not symlinks_supported():
+            pytest.skip("Symlinks unavailable")
+        # Native copies dereference symlinks, so create this layout at its final path.
+        with fixture_repo("index.sh", "directory-symlink", outside, write=True, execute=True) as repo:
+            item = "link/secret"
+            if kind == "glob":
+                item = "link/*"
+            elif kind == "blob":
+                item = Blob(repo, Blob.NULL_BIN_SHA, 0o100644, item)
+            elif kind == "entry":
+                item = BaseIndexEntry((0o100644, Blob.NULL_BIN_SHA, 0, item))
+            with mock.patch.object(repo.odb, "store", wraps=repo.odb.store) as store:
+                with pytest.raises(ValueError, match="symbolic link"):
+                    repo.index.add([item], write=False)
+                store.assert_not_called()
+
+    @ddt.data("blob", "entry", "rewriter")
+    def test_staging_rejects_unsafe_object_paths_even_without_writing(self, kind):
+        with fixture_repo("index.sh", "empty", write=True) as repo:
+            entry = BaseIndexEntry((0o100644, b"a" * 20, 0, "../outside"))
+            item = Blob(repo, entry.binsha, entry.mode, entry.path) if kind == "blob" else entry
+            kwargs = {}
+            if kind == "rewriter":
+                item = BaseIndexEntry((0o100644, b"a" * 20, 0, "safe"))
+                kwargs["path_rewriter"] = lambda entry: "../outside"
+            index = repo.index
+            with pytest.raises(ValueError):
+                index.add([item], write=False, **kwargs)
+            assert not [(e.path, e.stage) for e in index.iter_entries()]
+
+    @ddt.data(*product(("path", "entry", "stored-entry"), (False, True)))
+    @ddt.unpack
+    def test_staging_gitmodules_symlink_check_uses_rewritten_path(self, kind, unsafe_destination):
+        stored = kind.startswith("stored-")
+        if not stored and not symlinks_supported():
+            pytest.skip("Symlinks unavailable")
+        # Symlink layouts need execution; the stored-object variant can be copied.
+        with fixture_repo(
+            "index.sh", "gitmodules-link", kind, unsafe_destination, write=True, execute=not stored
+        ) as repo:
+            source, destination = ("safe-link", ".gitmodules") if unsafe_destination else (".gitmodules", "safe-link")
+            binsha = Blob.NULL_BIN_SHA
+            if stored:
+                binsha = bytes.fromhex((Path(repo.working_tree_dir).parent / "blob-id").read_text().strip())
+            if kind == "path":
+                item = source
+            else:
+                item = BaseIndexEntry((0o120000, binsha, 0, source))
+            index = repo.index
+            rewriter = mock.Mock(return_value=destination)
+            if unsafe_destination:
+                with pytest.raises(ValueError, match="Git did not retain"):
+                    index.add([item], path_rewriter=rewriter, write=False)
+                assert not [(e.path, e.stage) for e in index.iter_entries()]
+                assert not Path(index.path).exists()
+            else:
+                added = index.add([item], path_rewriter=rewriter, write=False)
+                assert [(entry.path, entry.mode) for entry in added] == [(destination, 0o120000)]
+                assert {(e.path, e.stage) for e in index.iter_entries()} == {(destination, 0)}
+                assert index.write_tree()[destination].mode == 0o120000
+            rewriter.assert_called_once()
+            assert rewriter.call_args[0][0].path == source
+
+    @ddt.data(*product(("blob", "entry"), ("../outside", ".git/config")))
+    @ddt.unpack
+    def test_staging_rewriter_cannot_sanitize_unsafe_source_paths(self, kind, path):
+        with fixture_repo("index.sh", "empty", write=True) as repo:
+            item = (
+                Blob(repo, b"a" * 20, 0o120000, path)
+                if kind == "blob"
+                else BaseIndexEntry((0o120000, b"a" * 20, 0, path))
+            )
+            index = repo.index
+            rewriter = mock.Mock(return_value="safe-link")
+            with pytest.raises(ValueError):
+                index.add([item], path_rewriter=rewriter, write=False)
+            rewriter.assert_not_called()
+            assert not [(e.path, e.stage) for e in index.iter_entries()]
+
+    def test_staging_root_preserves_symlinks_and_skips_git_metadata(self):
+        if not symlinks_supported():
+            pytest.skip("Symlinks unavailable")
+        with fixture_repo("index.sh", "root-symlink", write=True, execute=True) as repo:
+            root = Path(repo.working_tree_dir)
+            entries = repo.index.add(["."])
+            assert {entry.path for entry in entries} == {"file", "link"}
+            link = repo.index.entry(*("link", 0))
+            assert link.mode == 0o120000
+            assert repo.odb.stream(link.binsha).read() == os.fsencode(os.readlink(root / "link"))
+
+    def test_staging_symlink_measures_encoded_target_instead_of_stat_size(self):
+        if not symlinks_supported():
+            pytest.skip("Symlinks unavailable")
+        with fixture_repo("index.sh", "unicode-symlink", write=True, execute=True) as repo:
+            link = Path(repo.working_tree_dir, "link")
+            target = os.fsencode(os.readlink(link))
+            original_lstat = os.lstat
+
+            def zero_size_for_symlinks(*args, **kwargs):
+                result = original_lstat(*args, **kwargs)
+                if S_ISLNK(result.st_mode):
+                    fields = list(result)
+                    fields[6] = 0
+                    return os.stat_result(fields)
+                return result
+
+            with mock.patch("os.lstat", side_effect=zero_size_for_symlinks):
+                (entry,) = repo.index.add(["link"])
+            assert entry.mode == 0o120000
+            assert repo.odb.stream(entry.binsha).read() == target
+
+    @pytest.mark.skipif(os.name == "nt", reason="Colons are not valid Windows filenames")
+    def test_staging_nested_colon_directory(self):
+        with fixture_repo("index.sh", "colon", write=True) as repo:
+            assert [entry.path for entry in repo.index.add(["nested"])] == ["nested/a:b/file"]
+            assert repo.index.write_tree()["nested/a:b/file"].data_stream.read() == b"contents"
+
+    @pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFOs unavailable")
+    def test_staging_special_files_fails_before_opening(self):
+        # A FIFO cannot be copied as regular file contents.
+        with fixture_repo("index.sh", "fifo", write=True, execute=True) as repo:
+            with mock.patch("builtins.open", side_effect=AssertionError("must not open a FIFO")):
+                with pytest.raises(ValueError, match="regular file"):
+                    repo.index.add(["fifo"], write=False)
+
+    def test__to_relative_path_at_root(self):
+        root = osp.abspath(os.sep)
+
+        class Mocked:
+            bare = False
+            git_dir = root
+            working_tree_dir = root
+
+        repo = Mocked()
+        path = os.path.join(root, "file")
+        index = IndexFile(repo)
+
+        rel = index._to_relative_path(path)
+        self.assertEqual(rel, os.path.relpath(path, root))
+
+    def test__to_relative_path_absolute_trailing_slash(self):
+        repo_root = os.path.join(osp.abspath(os.sep), "directory1", "repo_root")
+
+        class Mocked:
+            bare = False
+            git_dir = repo_root
+            working_tree_dir = repo_root
+
+        repo = Mocked()
+        path = os.path.join(repo_root, f"directory2{os.sep}")
+        index = IndexFile(repo)
+
+        expected_path = "directory2/"
+        actual_path = index._to_relative_path(path)
+        self.assertEqual(expected_path, actual_path)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Specifically for Windows.")
+    def test__to_relative_path_windows_unc_share_root(self):
+        for repo_root in [R"\\server\share", R"\\?\UNC\server\share"]:
+            with self.subTest(repo_root=repo_root):
+                repo = mock.Mock(bare=False, git_dir=repo_root, working_tree_dir=repo_root)
+                index = IndexFile(repo)
+
+                self.assertEqual(index._to_relative_path(repo_root), ".")
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Specifically for Windows.")
+    @with_rw_directory
+    def test__to_relative_path_windows_path_kinds(self, rw_dir):
+        repo_root = osp.join(rw_dir, "repo")
+        os.makedirs(osp.join(repo_root, "nested"))
+
+        class Mocked:
+            bare = False
+            git_dir = osp.join(repo_root, ".git")
+            working_tree_dir = repo_root
+
+        index = IndexFile(Mocked())
+        inside_path = osp.join(repo_root, "nested", "file")
+        _drive, rooted_inside_path = osp.splitdrive(inside_path)
+
+        self.assertEqual(index._to_relative_path(inside_path), "nested/file")
+        self.assertEqual(index._to_relative_path(rooted_inside_path), "nested/file")
+        self.assertEqual(index._to_relative_path(rooted_inside_path.replace("\\", "/")), "nested/file")
+        self.assertEqual(index._to_relative_path(PathLikeMock(inside_path)), "nested/file")
+        self.assertEqual(index._to_relative_path(inside_path.upper()), "NESTED/FILE")
+        self.assertRaises(ValueError, index._to_relative_path, osp.join(repo_root + "-other", "file"))
+        self.assertRaises(ValueError, index._to_relative_path, osp.join("..", "outside"))
+        self.assertRaises(ValueError, index._to_relative_path, f"{osp.splitdrive(repo_root)[0]}relative")
+        self.assertRaises(ValueError, index._to_relative_path, R"Z:\outside")
+        self.assertRaises(ValueError, index._to_relative_path, R"\\server\share\outside")
+        self.assertRaises(ValueError, index._to_relative_path, R"\\?\C:\outside")
+
+        Mocked.bare = True
+        bare_index = IndexFile(Mocked())
+        self.assertRaises(InvalidGitRepositoryError, bare_index._to_relative_path, rooted_inside_path)
+        self.assertRaises(
+            InvalidGitRepositoryError, bare_index._to_relative_path, f"{osp.splitdrive(repo_root)[0]}relative"
+        )
+
+    def test_run_commit_hook(self):
+        with fixture_repo("index.sh", "hook-run", write=True) as repo:
+            run_commit_hook("pre-commit", repo.index)
+            self.assertEqual(Path(repo.git_dir, "output.txt").read_text(encoding="utf-8"), "ran hook\n")
+
+    @ddt.data((False,), (True,))
+    def test_hook_uses_shell_not_from_cwd(self, case):
+        (chdir_to_repo,) = case
+        # The fake shell is a copied venv interpreter; its paths prevent cached copies.
+        with fixture_repo(
+            "index.sh",
+            "hook-impostor",
+            sys.executable,
+            sys.platform,
+            ROOT / "test/fixtures",
+            write=True,
+            execute=True,
+        ) as repo:
+            root = Path(repo.working_tree_dir)
+            maybe_chdir = cwd(root) if chdir_to_repo else contextlib.nullcontext()
+            with maybe_chdir:
+                run_commit_hook("pre-commit", repo.index)
+            self.assertFalse((root / "payload.txt").exists())
+            self.assertEqual((root / "output.txt").read_text(encoding="utf-8"), "Ran intended hook.\n")
+
+    def test_pre_commit_hook_success(self):
+        with fixture_repo("index.sh", "hook-success", write=True) as repo:
+            repo.index.commit("This should not fail")
+
+    def test_pre_commit_hook_respects_core_hooks_path(self):
+        with fixture_repo("index.sh", "custom-hook", write=True) as repo:
+            repo.index.commit("This should run the custom hook")
+            output = Path(repo.working_dir, "custom-hook-output.txt").read_text(encoding="utf-8")
+            self.assertEqual(output, "ran custom hook\n")
+
+    def test_pre_commit_hook_outside_worktree(self):
+        # The absolute hooksPath must refer to this private fixture's location.
+        with fixture_repo("index.sh", "outside-hook", write=True, execute=True) as repo:
+            repo.index.commit("This should run the hook outside the working tree")
+            output = Path(repo.working_dir, "outside-hook-output.txt").read_text(encoding="utf-8")
+            self.assertEqual(output, "ran outside hook\n")
+
+    def test_pre_commit_hook_not_run_in_repository_git_refuses(self):
+        for layout in ("regular", "bare", "linked", "separate", "configured"):
+            # Linked worktree registrations contain absolute paths.
+            with self.subTest(layout=layout), fixture_repo(
+                "hook-ownership.sh",
+                layout,
+                write=True,
+                execute=layout == "linked",
+                subdir="metadata" if layout == "configured" else "repo",
+            ) as repo:
+                output = Path(repo.working_dir, "output.txt")
+                discovery = repo.git_dir if layout == "configured" else repo.working_dir
+                baseline_output = Path(discovery, "output.txt")
+                baseline = Git(discovery)
+                # Reset any configured exemptions, as in Git's t0033-safe-directory.sh.
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "GIT_TEST_ASSUME_DIFFERENT_OWNER": "1",
+                        "GIT_CONFIG_COUNT": "1",
+                        "GIT_CONFIG_KEY_0": "safe.directory",
+                        "GIT_CONFIG_VALUE_0": "",
+                    },
+                ):
+                    if layout == "regular":
+                        with self.assertRaisesRegex(GitCommandError, "dubious ownership"):
+                            baseline.commit("--allow-empty", "--no-gpg-sign", "-m", "Git refuses this repository")
+                        self.assertFalse(output.exists())
+                        with self.assertRaisesRegex(GitCommandError, "dubious ownership"):
+                            repo.index.commit("Git refuses this repository")
+                        self.assertFalse(output.exists())
+                    with self.assertRaises(GitCommandError):
+                        baseline.hook("run", "pre-commit")
+                    self.assertFalse(baseline_output.exists())
+                    with self.assertRaisesRegex(GitCommandError, "dubious ownership"):
+                        run_commit_hook("pre-commit", repo.index)
+                    self.assertFalse(output.exists())
+
+                    for environment in (
+                        {"GIT_CONFIG_VALUE_0": str(discovery)},
+                        {"GIT_DIR": str(repo.git_dir), "GIT_WORK_TREE": str(repo.working_dir)},
+                    ):
+                        with baseline.custom_environment(**environment), repo.git.custom_environment(**environment):
+                            baseline.hook("run", "pre-commit")
+                            expected = baseline_output.read_text(encoding="utf-8")
+                            baseline_output.unlink()
+                            run_commit_hook("pre-commit", repo.index)
+                            self.assertEqual(output.read_text(encoding="utf-8"), expected)
+                            output.unlink()
+
+    def test_commit_hook_preserves_explicit_repository_selection(self):
+        for selection in ("one-shot", "persistent", "environment", "git-dir-option"):
+            with self.subTest(selection=selection), fixture_repo("hook-ownership.sh", "regular", write=True) as repo:
+                with Repo(repo.git_dir) as metadata:
+                    index = metadata.index
+                    baseline = Git(metadata.working_dir)
+                    metadata.git.version_info
+                    environment = {"GIT_DIR": ".git"} if selection == "environment" else {}
+                    with baseline.custom_environment(**environment), metadata.git.custom_environment(**environment):
+                        for command in (baseline, metadata.git):
+                            if selection == "one-shot":
+                                command(C=".git")
+                            elif selection == "persistent":
+                                command.set_persistent_git_options(C=".git")
+                            elif selection == "git-dir-option":
+                                command(git_dir=".git")
+                        output = Path(repo.git_dir if selection in ("one-shot", "persistent") else repo.working_dir)
+                        output /= "output.txt"
+                        baseline.hook("run", "pre-commit")
+                        expected = output.read_text(encoding="utf-8")
+                        output.unlink()
+                        run_commit_hook("pre-commit", index)
+                        self.assertEqual(output.read_text(encoding="utf-8"), expected)
+
+                    metadata.git.set_persistent_git_options()
+                    metadata.git(C="missing")
+                    with self.assertRaises(GitCommandError):
+                        run_commit_hook("pre-commit", index)
+                    self.assertEqual(metadata.git.rev_parse("--git-dir"), str(metadata.git_dir))
+
+    def test_pre_commit_hook_fail(self):
+        with fixture_repo("index.sh", "hook-fail", write=True) as repo:
+            with self.assertRaises(HookExecutionError) as caught:
+                repo.index.commit("This should fail")
+            self.assertEqual(caught.exception.status, 1)
+            self.assertIn("hook", caught.exception.command)
+            self.assertIn("stdout", caught.exception.stderr)
+            self.assertIn("stderr", caught.exception.stderr)
+
+    def test_commit_msg_hook_success(self):
+        with fixture_repo("index.sh", "msg-success", write=True) as repo:
+            commit_message = "commit default head by Frèderic Çaufl€"
+            new_commit = repo.index.commit(commit_message)
+            self.assertEqual(new_commit.message, commit_message + " from commit-msg")
+
+    def test_commit_msg_hook_fail(self):
+        with fixture_repo("index.sh", "msg-fail", write=True) as repo:
+            with self.assertRaises(HookExecutionError) as caught:
+                repo.index.commit("This should fail")
+            self.assertEqual(caught.exception.status, 1)
+            self.assertIn("hook", caught.exception.command)
+            self.assertIn("stdout", caught.exception.stderr)
+            self.assertIn("stderr", caught.exception.stderr)
+
+    def test_index_add_pathlib(self):
+        with fixture_repo("index.sh", "file", "file.txt", "", write=True) as repo:
+            repo.index.add(Path(repo.working_tree_dir, "file.txt"))
+
+    def test_index_add_pathlike(self):
+        with fixture_repo("index.sh", "file", "file.txt", "", write=True) as repo:
+            repo.index.add(PathLikeMock(str(Path(repo.working_tree_dir, "file.txt"))))
+
+    def test_index_add_non_normalized_path(self):
+        with fixture_repo("index.sh", "file", "file.txt", "", write=True) as repo:
+            non_normalized_path = Path(repo.working_tree_dir, "file.txt").as_posix()
+            if os.name != "nt":
+                non_normalized_path = "/" + non_normalized_path[1:].replace("/", "//")
+            repo.index.add(non_normalized_path)
+
+    @with_rw_repo("HEAD")
+    def test_index_file_v3(self, rw_repo):
+        index = IndexFile(rw_repo, fixture_path("index_extended_flags"))
+        assert [(e.path, e.stage) for e in index.iter_entries()]
+        assert index.version == 3
+        assert len([(e.path, e.stage) for e in index.iter_entries()]) == 4
+        assert index.entry(*("init.t", 0)).skip_worktree
+
+        # Write the data - it must match the original.
+        with writable_fixture("empty.sh") as temporary:
+            output = temporary.path() / "index"
+            index.write(output)
+            assert output.read_bytes() == Path(fixture_path("index_extended_flags")).read_bytes()
+
+    def test_index_file_v3_with_git_command(self):
+        with fixture_repo("index.sh", "extended-index", write=True) as repo:
+            index = repo.index
+            assert len([(e.path, e.stage) for e in index.iter_entries()]) == 1
+            assert index.version == 3
+            entry = list(index.iter_entries())[0]
+            assert entry.path == "file.txt"
+            assert " A file.txt" in repo.git.status(porcelain=True)
+
+            index.add(["file2.txt"])
+            index.write()
+            status_lines = repo.git.status(porcelain=True).splitlines()
+            assert " A file.txt" in status_lines
+            assert "A  file2.txt" in status_lines
+
+
+class TestIndexCheckout:
+    @pytest.mark.parametrize("path_type", [str, Path, PathLikeMock])
+    @pytest.mark.parametrize("absolute", [False, True])
+    @pytest.mark.parametrize("directory", [False, True])
+    @pytest.mark.parametrize("container", ["single", "list", "iterator"])
+    def test_checkout_pathlike(self, path_type, absolute, directory, container):
+        with fixture_repo("index.sh", "checkout", directory, write=True) as repo:
+            root = Path(repo.working_tree_dir)
+            files = {"nested/first": b"first", "nested/second": b"second", "outside": b"outside"}
+            path_name = "nested" if directory else "nested/first"
+            path = path_type(str(root / path_name) if absolute else path_name)
+            paths = path if container == "single" else [path] if container == "list" else iter([path])
+            expected = {"nested/first", "nested/second"} if directory else {"nested/first"}
+            assert set(repo.index.checkout(paths)) == expected
+            for name, data in files.items():
+                assert (root / name).read_bytes() == data
+
+    @pytest.mark.skipif(os.name == "nt", reason="Line feeds and quotes are not valid Windows filenames")
+    def test_checkout_sends_each_path_as_one_record(self):
+        with fixture_repo("index.sh", "checkout-records", write=True) as repo:
+            root = Path(repo.working_tree_dir)
+            checked_out = {"nested/first\noutside", '"quoted"'}
+            assert set(repo.index.checkout(["nested", '"quoted"'], force=True)) == checked_out
+            assert (root / "nested/first\noutside").read_bytes() == b"nested"
+            assert (root / '"quoted"').read_bytes() == b"quoted"
+            # Neither "nested/first" nor "outside" was requested.
+            assert (root / "outside").read_bytes() == b"local"
+
+    @pytest.mark.skipif(os.name == "nt", reason="'*' and ':' are not valid Windows filenames")
+    def test_remove_matches_entry_paths_literally(self):
+        with fixture_repo("index.sh", "remove-literal", write=True) as repo:
+            root = Path(repo.working_tree_dir)
+            index = repo.index
+            entries = [index.entry("*.txt"), index.entry(":(glob)**")]
+            assert index.remove(entries, write=False) == ["*.txt", ":(glob)**"]
+            assert {entry.path for entry in index.iter_entries()} == {"a.txt", "b.txt", "src/app.py"}
+
+            entry = entries[0]
+            blob = Blob(repo, entry.binsha, entry.mode, entry.path)
+            assert repo.index.remove([blob], working_tree=True) == ["*.txt"]
+            assert not (root / "*.txt").exists()
+            assert (root / "a.txt").exists() and (root / "b.txt").exists()
+
+            # Path strings keep their pathspec semantics.
+            assert repo.index.remove(["*.txt"], write=False) == ["a.txt", "b.txt"]
+
+
+class TestIndexUtils:
+    @pytest.mark.parametrize("file_path_type", [str, Path])
+    def test_temporary_file_swap(self, file_path_type):
+        with writable_fixture("index.sh", "file-swap") as temporary:
+            file_path = temporary.path() / "foo"
+            with TemporaryFileSwap(file_path_type(file_path)) as ctx:
+                assert Path(ctx.file_path) == file_path
+                assert not file_path.exists()
+                # Recreate it with new data to observe that they're separate.
+                file_path.write_bytes(b"other data")
+                temp_file_path = Path(ctx.tmp_file_path)
+                assert temp_file_path.parent == file_path.parent
+                assert temp_file_path.name.startswith(file_path.name)
+                assert temp_file_path.read_bytes() == b"some data"
+            assert not temp_file_path.exists()
+            assert file_path.read_bytes() == b"some data"

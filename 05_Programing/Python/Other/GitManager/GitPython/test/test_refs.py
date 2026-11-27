@@ -1,0 +1,1394 @@
+# Copyright (C) 2008, 2009 Michael Trier (mtrier@gmail.com) and contributors
+#
+# This module is part of GitPython and is released under the
+# 3-Clause BSD License: https://opensource.org/license/bsd-3-clause/
+
+import contextlib
+import io
+import os
+import os.path as osp
+import tarfile
+import unittest
+from itertools import chain
+from pathlib import Path, PurePosixPath
+from unittest.mock import Mock, patch
+
+import pytest
+
+from gitdb.exc import BadName
+
+import git.refs as refs
+from git import (
+    Commit,
+    GitCommandError,
+    GitConfigParser,
+    Git,
+    Head,
+    IndexFile,
+    Object,
+    Reference,
+    RefLog,
+    Remote,
+    RemoteProgress,
+    RemoteReference,
+    SymbolicReference,
+    TagReference,
+    _backend,
+)
+from git.compat import safe_encode
+from git.exc import UnsafeOptionError
+from git.objects.tag import TagObject
+from git.util import Actor
+from test.lib import PathLikeMock, TestBase, requires_symlinks, with_rw_repo
+from test.lib.fixtures import fixture_repo, read_only_fixture, writable_fixture
+
+
+@pytest.mark.parametrize(
+    "branch_name", ["--pathspec-from-file=pathspecs", "-f", "--orphan=checkout-target", "-Bcheckout-target"]
+)
+def test_cloned_head_checkout_rejects_option_shaped_branch_names(branch_name):
+    with fixture_repo("refs.sh", "unsafe-branch", "sha1", branch_name, write=True, subdir="clone") as cloned:
+        branch = cloned.active_branch
+        assert branch.name == branch_name
+        commit = cloned.head.commit
+        path = Path(cloned.working_tree_dir) / "file.txt"
+        content = path.read_bytes()
+        status = cloned.git.status("--porcelain")
+        assert status.startswith(" M file.txt")
+        for allow_unsafe_options in (False, True):
+            with patch.object(Git, "execute", autospec=True, side_effect=Git.execute) as run:
+                with pytest.raises(UnsafeOptionError) as error:
+                    branch.checkout(force=False, allow_unsafe_options=allow_unsafe_options)
+                run.assert_not_called()
+            assert "unmatched-private-content" not in str(error.value)
+            assert cloned.active_branch == branch
+            assert cloned.head.commit == commit
+            assert path.read_bytes() == content
+            assert cloned.git.status("--porcelain") == status
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+def test_reference_names_preserve_unicode_line_separators(object_format):
+    names = [
+        before + separator + after
+        for separator in ("\x85", "\u2028", "\u2029")
+        for before, after in (("", "after"), ("before", "after"), ("before", ""))
+    ]
+    with fixture_repo("ref-line-separators.sh", object_format) as repo:
+        expected = {
+            f"{prefix}/{name}" for prefix in ("refs/heads", "refs/tags", "refs/remotes/origin") for name in names
+        } | {"refs/heads/main"}
+        assert set(repo.git.for_each_ref("--format=%(refname)").split("\n")) == expected
+        assert {ref.path for ref in repo.references} == expected
+        assert {head.name for head in repo.heads} == set(names) | {"main"}
+        assert {tag.name for tag in repo.tags} == set(names)
+        assert {ref.remote_head for ref in RemoteReference.iter_items(repo, remote="origin")} == set(names)
+        for ref in repo.references:
+            assert ref.commit == repo.head.commit
+
+
+@pytest.mark.parametrize("separator", ["\x85", "\u2028", "\u2029"])
+@pytest.mark.parametrize("before,after", [("", "after"), ("before", "after"), ("before", "")])
+@pytest.mark.parametrize("as_bytes", [False, True])
+def test_fetch_resolves_unicode_line_separator_names_from_inventory(separator, before, after, as_bytes):
+    name = before + separator + after
+    with fixture_repo("ref-line-separators.sh", "sha1") as repo:
+        progress = RemoteProgress()
+        line = f" * [new branch] {name}     -> origin/{name}"
+        progress.new_message_handler()((line + "\n").encode() if as_bytes else line + "\n")
+        assert progress.other_lines == [line]
+        with patch("git.remote.handle_process_output"):
+            result = Remote(repo, "inventory")._get_fetch_info_from_stderr(Mock(), progress)
+        assert len(result) == 1
+        assert result[0].ref.path == f"refs/remotes/origin/{name}"
+        assert result[0].remote_ref_path == name
+
+
+def test_remote_urls_preserve_unicode_line_separators():
+    with fixture_repo("ref-line-separators.sh", "sha1") as repo:
+        assert list(repo.remote("unicode").urls) == [
+            f"https://example.invalid/before{separator}after" for separator in ("\x85", "\u2028", "\u2029")
+        ]
+        with patch.object(Git, "_call_process_safe", return_value=""):
+            assert list(Remote(repo, "empty").urls) == []
+
+
+def test_stale_refs_preserve_unicode_line_separators():
+    with fixture_repo("ref-line-separators.sh", "sha1") as repo:
+        origin = repo.remote("origin")
+        assert {ref.path for ref in origin.stale_refs} == {ref.path for ref in origin.refs}
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+def test_non_utf8_tag_names_preserve_bytes(object_format):
+    with fixture_repo("legacy-refs.sh", object_format) as repo:
+        tags = repo.tags
+        assert len(tags) == 2
+        assert {safe_encode(tag.path) for tag in tags} == {b"refs/tags/release-\xf5", b"refs/tags/annotated-\xe3"}
+        if _backend.name == "gix":
+            if os.name == "nt":
+                # GIX-32: byte-name lookup cannot reach packed refs on Windows.
+                for tag in tags:
+                    assert _backend.reference_info(repo.git, tag.path) is NotImplemented
+            with patch.object(_backend, "gix", None):
+                assert {tag.path for tag in repo.tags} == {tag.path for tag in tags}
+
+
+@pytest.mark.skipif(
+    os.name == "nt", reason="Windows CLI arguments cannot preserve non-UTF-8 bytes; native lookup has GIX-32"
+)
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+def test_non_utf8_tag_names_resolve(object_format):
+    with fixture_repo("legacy-refs.sh", object_format) as repo:
+        tags = repo.tags
+        native_guard = (
+            patch.object(Git, "execute", side_effect=AssertionError("unexpected reference CLI call"))
+            if _backend.name == "gix"
+            else contextlib.nullcontext()
+        )
+        with native_guard:
+            for tag in tags:
+                assert tag.commit == repo.head.commit
+                assert repo.rev_parse(tag.path).hexsha == tag.object.hexsha
+                assert repo.commit(tag.path) == repo.head.commit
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("message", ["", "release\nmore"])
+def test_tag_without_tagger_initializes_all_metadata(object_format, message):
+    with fixture_repo("refs.sh", "tag-no-tagger", object_format, "message" if message else "empty") as repo:
+        oid = (Path(repo.working_tree_dir).parent / "tag-id").read_text().strip()
+        expected = repo.head.commit
+        tag = TagObject(repo, bytes.fromhex(oid))
+        native_guard = (
+            patch.object(Git, "execute", side_effect=AssertionError("unexpected tag metadata CLI call"))
+            if _backend.name == "gix"
+            else contextlib.nullcontext()
+        )
+        with native_guard:
+            assert tag.object == expected
+            assert tag.tag == "no-tagger"
+            assert tag.tagger == Actor("", None)
+            assert tag.tagged_date == 0
+            assert tag.tagger_tz_offset == 0
+            assert tag.message == message
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+def test_head_rename_retains_literal_prefixed_branch_name(object_format):
+    with fixture_repo("refs.sh", "rename-prefixed", object_format, write=True) as repo:
+        original_topic = repo.heads.topic.commit
+        source = repo.head.reference
+        source_commit = source.commit
+        assert source_commit != original_topic
+        renamed = source.rename("refs/heads/topic")
+        assert renamed is source
+        assert renamed.path == "refs/heads/refs/heads/topic"
+        assert renamed.name == "refs/heads/topic"
+        assert renamed.commit == source_commit
+        assert repo.head.reference == renamed
+        assert repo.head.commit == source_commit
+        assert repo.heads.topic.commit == original_topic
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+@pytest.mark.parametrize("force_cli", [False, True])
+def test_reference_lookup_does_not_guess_missing_names(object_format, ref_format, force_cli):
+    with fixture_repo("exact-refs.sh", object_format, ref_format) as repo:
+        status, _, _ = repo.git.rev_parse(
+            "--verify", "--quiet", "HEAD", with_extended_output=True, with_exceptions=False
+        )
+        assert status == 1
+        with patch.object(_backend, "gix", None) if force_cli else contextlib.nullcontext():
+            for path in (
+                "refs/heads/unborn",
+                "REBASE_HEAD",
+                "ORIG_HEAD",
+                "refs/tags/missing",
+                "refs/remotes/origin/missing",
+            ):
+                tag = TagReference(repo, "refs/tags/" + path)
+                assert tag.commit == repo.commit(tag.path)
+                status, _, _ = repo.git.show_ref(
+                    "--exists", "--", path, with_extended_output=True, with_exceptions=False
+                )
+                assert status == 2
+                with pytest.raises(ValueError, match="does not exist or is invalid"):
+                    SymbolicReference(repo, path).object
+            assert not repo.head.is_valid()
+            with pytest.raises(ValueError):
+                repo.head.commit
+            # Revision APIs deliberately retain Git's name guessing.
+            assert repo.commit("REBASE_HEAD") == repo.tags.REBASE_HEAD.commit
+            assert repo.tags["nested/release"].object.type == "tag"
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+def test_missing_root_reference_does_not_follow_symbolic_lookalike_tag(object_format):
+    with fixture_repo("exact-refs.sh", object_format, "files", "symbolic") as repo:
+        assert repo.tags.REBASE_HEAD.commit == repo.tags["refs/heads/unborn"].commit
+        status, _, _ = repo.git.symbolic_ref(
+            "--quiet", "--no-recurse", "--", "REBASE_HEAD", with_extended_output=True, with_exceptions=False
+        )
+        assert status == 1
+        for force_cli in (False, True):
+            with patch.object(_backend, "gix", None) if force_cli else contextlib.nullcontext():
+                with pytest.raises(ValueError, match="does not exist or is invalid"):
+                    SymbolicReference(repo, "REBASE_HEAD").object
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_initial_commit_does_not_inherit_lookalike_tag_history(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, write=True) as repo:
+        foreign = repo.tags["refs/heads/unborn"].commit
+        initial = repo.index.commit("Local initial commit")
+        assert initial.parents == []
+        assert repo.head.commit == initial
+        assert repo.tags["refs/heads/unborn"].commit == foreign
+        assert repo.git.rev_list("--count", "HEAD") == "1"
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_reference_arguments_do_not_resolve_same_named_tags(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "shadowed", write=True) as repo:
+        local = repo.heads.main.commit
+        foreign = repo.tags.main.commit
+        assert repo.tags["origin/main"].commit == foreign != local
+        # Git's name guessing prefers the tags, as for any short name.
+        assert repo.commit("main") == repo.commit("origin/main") == foreign
+        branches = (repo.heads.main, RemoteReference(repo, "refs/remotes/origin/main"))
+        for index, ref in enumerate(branches):
+            assert repo.commit(ref) == Object.new(repo, ref) == local
+            assert repo.tree(ref) == local.tree
+            assert list(repo.iter_commits(ref)) == [local]
+            assert repo.merge_base(ref, local) == [local]
+            assert not repo.is_ancestor(foreign, ref)
+            assert local.diff(ref) == []
+            assert [commit for commit, _ in repo.blame(ref, "file")] == [local]
+            assert [entry.commit for entry in repo.blame_incremental(ref, "file")] == [local]
+            stream = io.BytesIO()
+            repo.archive(stream, ref)
+            with tarfile.open(fileobj=io.BytesIO(stream.getvalue())) as archive:
+                assert archive.getnames() == ["file"]
+            assert IndexFile.from_tree(repo, ref).write_tree() == local.tree
+            assert repo.create_head(f"copy-{index}", ref).commit == local
+            assert repo.create_tag(f"copy-{index}", ref=ref).commit == local
+            repo.head.reset(ref, index=True)
+            repo.index.reset(ref, head=True)
+            repo.index.merge_tree(ref)
+            assert repo.head.commit == local
+            assert repo.index.write_tree() == local.tree
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_merge_base_preserves_nested_reference_arguments(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "shadowed") as repo:
+        for ref in (repo.heads.main, RemoteReference(repo, "refs/remotes/origin/main")):
+            for left, right in (([ref], ref), (([ref],), ref), (ref, [ref]), ([ref.path], (ref.path,))):
+                assert repo.merge_base(left, right) == [ref.commit]
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+@pytest.mark.parametrize("path_type", [PurePosixPath, PathLikeMock])
+def test_revision_arguments_preserve_pathlike_paths(object_format, ref_format, path_type):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "shadowed") as repo:
+        local = repo.head.commit
+        for name in ("HEAD", "refs/heads/main", "refs/remotes/origin/main"):
+            path = path_type(name)
+            ref = SymbolicReference(repo, path)
+            assert repo.commit(ref) == ref.object == local
+            assert repo.merge_base(ref, local) == [local]
+            assert repo.merge_base(path, local) == [local]
+            assert repo.merge_base(([path],), [local]) == [local]
+
+
+@pytest.mark.parametrize("revision", ["HEAD", "--all", "HEAD\0", "HEAD\r", "HEAD\n"])
+@pytest.mark.parametrize("as_bytes", [False, True])
+def test_check_revision_normalizes_pathlike_before_validation(revision, as_bytes):
+    path = Mock(spec=os.PathLike, __fspath__=Mock(return_value=os.fsencode(revision) if as_bytes else revision))
+    if revision == "HEAD":
+        assert Git._check_revision(path) == revision
+    else:
+        with pytest.raises(UnsafeOptionError, match="Invalid revision"):
+            Git._check_revision(path)
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_revision_arguments_validate_missing_references(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format) as repo:
+        for path in ("refs/heads/unborn", "REBASE_HEAD"):
+            ref = SymbolicReference(repo, path)
+            foreign = repo.tags[path].commit
+            assert repo.git.rev_parse("--verify", path) == foreign.hexsha
+            with pytest.raises(ValueError, match="does not exist or is invalid"):
+                repo.commit(ref)
+            with pytest.raises(ValueError, match="does not exist or is invalid"):
+                repo.merge_base([ref], foreign)
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_reflog_walk_preserves_reference_names(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "reflog") as repo:
+        for ref in (repo.heads.main, RemoteReference(repo, "refs/remotes/origin/main"), repo.head):
+            expected = repo.git.rev_list("--walk-reflogs", ref.path, "--").splitlines()
+            assert len(expected) >= 2
+            for options in ({"walk_reflogs": True}, {"walk-reflogs": True}):
+                assert [commit.hexsha for commit in repo.iter_commits(ref, **options)] == expected
+                assert [commit.hexsha for commit in Commit.iter_items(repo, ref, max_count=1, **options)] == expected[
+                    :1
+                ]
+        with pytest.raises(ValueError, match="does not exist or is invalid"):
+            list(repo.iter_commits(SymbolicReference(repo, "REBASE_HEAD"), walk_reflogs=True))
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_fork_point_preserves_upstream_reference_name(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "reflog") as repo:
+        topic = repo.heads.topic
+        old_tip = topic.commit.parents[0]
+        for upstream in (repo.heads.main, RemoteReference(repo, "refs/remotes/origin/main")):
+            assert repo.merge_base(upstream, topic) == [upstream.commit]
+            assert repo.git.merge_base("--fork-point", upstream.path, topic.path) == old_tip.hexsha
+            for options in ({"fork_point": True}, {"fork_p": True}):
+                assert repo.merge_base(upstream, topic, **options) == [old_tip]
+        with pytest.raises(ValueError, match="does not exist or is invalid"):
+            repo.merge_base(SymbolicReference(repo, "REBASE_HEAD"), topic, fork_point=True)
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_remote_archive_preserves_reference_name(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "shadowed") as repo:
+        for ref in (repo.heads.main, RemoteReference(repo, "refs/remotes/origin/main"), repo.head):
+            expected = io.BytesIO()
+            repo.git.archive("--remote=" + repo.git_dir, ref.path, output_stream=expected)
+            stream = io.BytesIO()
+            repo.archive(stream, ref, remote=repo.git_dir)
+            assert stream.getvalue() == expected.getvalue()
+            with tarfile.open(fileobj=io.BytesIO(stream.getvalue())) as archive:
+                assert archive.getnames() == ["file"]
+        with pytest.raises(ValueError, match="does not exist or is invalid"):
+            repo.archive(io.BytesIO(), SymbolicReference(repo, "REBASE_HEAD"), remote=repo.git_dir)
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_rebase_detection_ignores_tag_named_rebase_head(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, write=True) as repo:
+        assert repo.currently_rebasing_on() is None
+        replayed = repo.tags.REBASE_HEAD.commit
+        repo.git.update_ref("REBASE_HEAD", replayed.hexsha)
+        assert repo.currently_rebasing_on() == replayed
+        repo.git.update_ref("-d", "REBASE_HEAD")
+        assert repo.currently_rebasing_on() is None
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_rebase_detection_peels_nested_annotated_tags(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "nested", write=True) as repo:
+        tag = repo.tags["nested/outer"].object
+        assert tag.object.type == "tag"
+        repo.git.update_ref("REBASE_HEAD", tag.hexsha)
+        expected = repo.tags.REBASE_HEAD.commit
+        assert repo.git.rev_parse("REBASE_HEAD^{commit}") == expected.hexsha
+        assert repo.currently_rebasing_on() == expected
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("ref_format", ["files", "reftable"])
+def test_exact_reference_reads_preserve_existing_targets(object_format, ref_format):
+    with fixture_repo("exact-refs.sh", object_format, ref_format, "existing", write=True) as repo:
+        commit = repo.tags.REBASE_HEAD.commit
+        paths = [
+            "HEAD",
+            "refs/heads/unborn",
+            "FETCH_HEAD",
+            "refs/tags/nested/release",
+            "refs/stash",
+            "ORIG_HEAD",
+            "MERGE_HEAD",
+            "REBASE_HEAD",
+        ]
+        repo.git.pack_refs("--all")
+        for path in paths:
+            expected = repo.git.rev_parse("--verify", path)
+            assert SymbolicReference(repo, path).object.hexsha == expected
+        repo.git.update_ref("--no-deref", "HEAD", commit.hexsha)
+        assert repo.head.is_detached
+        assert repo.head.commit == commit
+
+
+class TestRefs(TestBase):
+    def test_from_path(self):
+        # Should be able to create any reference directly.
+        for ref_type in (Reference, Head, TagReference, RemoteReference):
+            for name in ("rela_name", "path/rela_name"):
+                full_path = ref_type.to_full_path(name)
+                instance = ref_type.from_path(self.rorepo, full_path)
+                assert isinstance(instance, ref_type)
+            # END for each name
+        # END for each type
+
+        # Invalid path.
+        self.assertRaises(ValueError, TagReference, self.rorepo, "refs/invalid/tag")
+        # Works without path check.
+        TagReference(self.rorepo, "refs/invalid/tag", check_path=False)
+        # Check remoteness
+        assert Reference(self.rorepo, "refs/remotes/origin").is_remote()
+
+    @with_rw_repo("HEAD")
+    def test_tag_create_rejects_unsafe_file_options(self, rw_repo):
+        message = str(read_only_fixture("refs-input.sh") / "message")
+        for index, option in enumerate(({"F": message}, {"file": message})):
+            with self.assertRaises(UnsafeOptionError):
+                TagReference.create(rw_repo, f"unsafe-{index}", **option)
+
+        for args in (
+            ("unsafe-reference", f"--file={message}"),
+            (f"--file={message}", "HEAD"),
+            (f"-eF{message}", "HEAD"),
+            (f"-iF{message}", "HEAD"),
+        ):
+            with self.assertRaises(UnsafeOptionError):
+                TagReference.create(rw_repo, *args)
+
+        with self.assertRaises(UnsafeOptionError):
+            TagReference.create(rw_repo, "unsafe-ref-kwarg", ref=f"--file={message}")
+
+        tag = TagReference.create(rw_repo, "legacy-ref", ref="HEAD", allow_unsafe_options=True)
+        self.assertEqual(tag.commit, rw_repo.head.commit)
+
+        tag = TagReference.create(rw_repo, "allowed-file", F=message, allow_unsafe_options=True)
+        self.assertEqual(tag.tag.message, "private tag message")
+
+    def test_from_pathlike(self):
+        # Should be able to create any reference directly.
+        for ref_type in (Reference, Head, TagReference, RemoteReference):
+            for name in ("rela_name", "path/rela_name"):
+                full_path = ref_type.to_full_path(PathLikeMock(name))
+                instance = ref_type.from_path(self.rorepo, PathLikeMock(full_path))
+                assert isinstance(instance, ref_type)
+            # END for each name
+        # END for each type
+
+        # Invalid path.
+        self.assertRaises(ValueError, TagReference, self.rorepo, "refs/invalid/tag")
+        # Works without path check.
+        TagReference(self.rorepo, PathLikeMock("refs/invalid/tag"), check_path=False)
+        # Check remoteness
+        assert Reference(self.rorepo, PathLikeMock("refs/remotes/origin")).is_remote()
+
+    def test_tag_base(self):
+        tag_object_refs = []
+        for tag in self.rorepo.tags:
+            assert "refs/tags" in tag.path
+            assert tag.name
+            assert isinstance(tag.commit, Commit)
+            if tag.tag is not None:
+                tag_object_refs.append(tag)
+                tagobj = tag.tag
+                # Have no dict.
+                self.assertRaises(AttributeError, setattr, tagobj, "someattr", 1)
+                assert isinstance(tagobj, TagObject)
+                assert tagobj.tag == tag.name
+                assert isinstance(tagobj.tagger, Actor)
+                assert isinstance(tagobj.tagged_date, int)
+                assert isinstance(tagobj.tagger_tz_offset, int)
+                assert tagobj.message
+                assert tag.object == tagobj
+                # Can't assign the object.
+                self.assertRaises(AttributeError, setattr, tag, "object", tagobj)
+            # END if we have a tag object
+        # END for tag in repo-tags
+        assert tag_object_refs
+        assert isinstance(self.rorepo.tags["base"], TagReference)
+
+    def test_tags_author(self):
+        tag = self.rorepo.tags[0]
+        tagobj = tag.tag
+        assert isinstance(tagobj.tagger, Actor)
+        tagger_name = tagobj.tagger.name
+        assert tagger_name == "Fixture Author"
+
+    def test_tag_headers_split_at_line_feeds_only(self):
+        with fixture_repo("refs.sh", "tag-headers") as repo:
+            oid = (Path(repo.working_tree_dir).parent / "tag-id").read_text().strip()
+            tagobj = TagObject(repo, bytes.fromhex(oid))
+            assert tagobj.tag == "v1\u2028tagger Linus Torvalds <torvalds@linux-foundation.org> 1700000000 +0000"
+            assert tagobj.tagger.name == "Mallory"
+            assert tagobj.tagger.email == "m@evil.example"
+            assert tagobj.message == "release"
+
+    def test_tags(self):
+        # Tag refs can point to tag objects or to commits.
+        s = set()
+        ref_count = 0
+        for ref in chain(self.rorepo.tags, self.rorepo.heads):
+            ref_count += 1
+            assert isinstance(ref, refs.Reference)
+            assert str(ref) == ref.name
+            assert repr(ref)
+            assert ref == ref
+            assert not ref != ref
+            s.add(ref)
+        # END for each ref
+        assert len(s) == ref_count
+        assert len(s | s) == ref_count
+
+    @with_rw_repo("HEAD", bare=False)
+    def test_heads(self, rwrepo):
+        for head in rwrepo.heads:
+            assert head.name
+            assert head.path
+            assert "refs/heads" in head.path
+            prev_object = head.object
+            cur_object = head.object
+            assert prev_object == cur_object  # Represent the same git object...
+            assert prev_object is not cur_object  # ...but are different instances.
+
+            with head.config_writer() as writer:
+                tv = "testopt"
+                writer.set_value(tv, 1)
+                assert writer.get_value(tv) == 1
+            assert head.config_reader().get_value(tv) == 1
+            with head.config_writer() as writer:
+                writer.remove_option(tv)
+
+            # After the clone, we might still have a tracking branch setup.
+            head.set_tracking_branch(None)
+            assert head.tracking_branch() is None
+            remote_ref = rwrepo.remotes[0].refs[0]
+            assert head.set_tracking_branch(remote_ref) is head
+            assert head.tracking_branch() == remote_ref
+            head.set_tracking_branch(None)
+            assert head.tracking_branch() is None
+
+            special_name = "feature#123"
+            special_name_remote_ref = SymbolicReference.create(rwrepo, "refs/remotes/origin/%s" % special_name)
+            gp_tracking_branch = rwrepo.create_head("gp_tracking#123")
+            special_name_remote_ref = rwrepo.remotes[0].refs[special_name]  # Get correct type.
+            gp_tracking_branch.set_tracking_branch(special_name_remote_ref)
+            TBranch = gp_tracking_branch.tracking_branch()
+            if TBranch is not None:
+                assert TBranch.path == special_name_remote_ref.path
+
+            git_tracking_branch = rwrepo.create_head("git_tracking#123")
+            rwrepo.git.branch("-u", special_name_remote_ref.name, git_tracking_branch.name)
+            TBranch = gp_tracking_branch.tracking_branch()
+            if TBranch is not None:
+                assert TBranch.name == special_name_remote_ref.name
+        # END for each head
+
+        # Verify REFLOG gets altered.
+        head = rwrepo.head
+        cur_head = head.ref
+        cur_commit = cur_head.commit
+        pcommit = cur_head.commit.parents[0].parents[0]
+        hlog_len = len(head.log())
+        blog_len = len(cur_head.log())
+        assert head.set_reference(pcommit, "detached head") is head
+        # One new log-entry.
+        thlog = head.log()
+        assert len(thlog) == hlog_len + 1
+        assert not hasattr(thlog[-1], "oldhexsha")
+        assert thlog[-1].newhexsha == pcommit.hexsha
+
+        # The ref didn't change though.
+        assert len(cur_head.log()) == blog_len
+
+        # head changes once again, cur_head doesn't change.
+        head.set_reference(cur_head, "reattach head")
+        assert len(head.log()) == hlog_len + 2
+        assert len(cur_head.log()) == blog_len
+
+        # Adjusting the head-ref also adjust the head, so both reflogs are altered.
+        cur_head.set_commit(pcommit, "changing commit")
+        assert len(cur_head.log()) == blog_len + 1
+        assert len(head.log()) == hlog_len + 3
+
+        # With automatic dereferencing.
+        assert head.set_commit(cur_commit, "change commit once again") is head
+        assert len(head.log()) == hlog_len + 4
+        assert len(cur_head.log()) == blog_len + 2
+
+        # A new branch has just a single entry.
+        other_head = Head.create(rwrepo, "mynewhead", pcommit, logmsg="new head created")
+        log = other_head.log()
+        assert len(log) == 1
+        assert not hasattr(log[0], "oldhexsha")
+        assert log[0].newhexsha == pcommit.hexsha
+
+    @with_rw_repo("HEAD", bare=False)
+    def test_set_tracking_branch_with_import(self, rwrepo):
+        # Prepare included config file.
+        included_config = osp.join(rwrepo.git_dir, "config.include")
+        with GitConfigParser(included_config, read_only=False) as writer:
+            writer.set_value("test", "value", "test")
+        assert osp.exists(included_config)
+
+        with rwrepo.config_writer() as writer:
+            writer.set_value("include", "path", included_config)
+
+        for head in rwrepo.heads:
+            head.set_tracking_branch(None)
+            assert head.tracking_branch() is None
+            remote_ref = rwrepo.remotes[0].refs[0]
+            assert head.set_tracking_branch(remote_ref) is head
+            assert head.tracking_branch() == remote_ref
+            head.set_tracking_branch(None)
+            assert head.tracking_branch() is None
+
+    def test_refs(self):
+        types_found = set()
+        for ref in self.rorepo.refs:
+            types_found.add(type(ref))
+        assert len(types_found) >= 3
+
+    def test_is_valid(self):
+        assert not Reference(self.rorepo, "refs/doesnt/exist").is_valid()
+        assert self.rorepo.head.is_valid()
+        assert self.rorepo.head.reference.is_valid()
+        assert not SymbolicReference(self.rorepo, "hellothere").is_valid()
+
+    def test_orig_head(self):
+        assert type(self.rorepo.head.orig_head()) is SymbolicReference
+
+    @with_rw_repo("release")
+    def test_head_checkout_detached_head(self, rw_repo):
+        res = rw_repo.remotes.origin.refs.HEAD.reference.checkout()
+        assert isinstance(res, SymbolicReference)
+        assert res.name == "HEAD"
+
+    @with_rw_repo("HEAD")
+    def test_head_checkout_rejects_pathspec_from_file(self, rw_repo):
+        pathspecs = read_only_fixture("refs-input.sh") / "pathspecs"
+        for option_name in ("pathspec_from_file", "pathspec_from"):
+            with self.assertRaises(UnsafeOptionError):
+                rw_repo.active_branch.checkout(
+                    pathspec_file_nul=True,
+                    **{option_name: str(pathspecs)},
+                )
+        for option_name in ("--pathspec-from-file", "--pathspec-from"):
+            branch = Head(rw_repo, f"refs/heads/{option_name}={pathspecs}")
+            with self.assertRaises(UnsafeOptionError):
+                branch.checkout()
+
+    @with_rw_repo("HEAD")
+    def test_head_reset_rejects_pathspec_from_file(self, rw_repo):
+        pathspecs = read_only_fixture("refs-input.sh") / "pathspecs"
+        for option_name in ("pathspec_from_file", "pathspec_from"):
+            with self.assertRaises(UnsafeOptionError):
+                rw_repo.head.reset(
+                    pathspec_file_nul=True,
+                    **{option_name: str(pathspecs)},
+                )
+        for option_name in ("--pathspec-from-file", "--pathspec-from"):
+            with self.assertRaises(UnsafeOptionError):
+                rw_repo.head.reset(
+                    f"{option_name}={pathspecs}",
+                    pathspec_file_nul=True,
+                )
+
+    @with_rw_repo("HEAD")
+    def test_head_commands_allow_explicit_pathspec_from_file(self, rw_repo):
+        pathspecs = read_only_fixture("refs-input.sh") / "pathspecs-nul"
+        options = {
+            "pathspec_from_file": str(pathspecs),
+            "pathspec_file_nul": True,
+            "allow_unsafe_options": True,
+        }
+        head = rw_repo.head
+        branch = rw_repo.active_branch
+        assert head.reset(**options) is head
+        assert branch.checkout(**options) == branch
+
+    @with_rw_repo("release")
+    def test_head_reset(self, rw_repo):
+        cur_head = rw_repo.head
+        old_head_commit = cur_head.commit
+        new_head_commit = cur_head.ref.commit.parents[0]
+        cur_head.reset(new_head_commit, index=True)  # index only
+        assert cur_head.reference.commit == new_head_commit
+
+        self.assertRaises(ValueError, cur_head.reset, new_head_commit, index=False, working_tree=True)
+        new_head_commit = new_head_commit.parents[0]
+        cur_head.reset(new_head_commit, index=True, working_tree=True)  # index + wt
+        assert cur_head.reference.commit == new_head_commit
+
+        # Paths - make sure we have something to do.
+        rw_repo.index.reset(old_head_commit.parents[0])
+        cur_head.reset(cur_head, paths="test")
+        cur_head.reset(new_head_commit, paths="lib")
+        # Hard resets with paths don't work; it's all or nothing.
+        self.assertRaises(
+            GitCommandError,
+            cur_head.reset,
+            new_head_commit,
+            working_tree=True,
+            paths="lib",
+        )
+
+        # We can do a mixed reset, and then checkout from the index though.
+        cur_head.reset(new_head_commit)
+        rw_repo.index.checkout(["lib"], force=True)
+
+        # Now that we have a write write repo, change the HEAD reference - it's like
+        # "git-reset --soft".
+        heads = rw_repo.heads
+        assert heads
+        for head in heads:
+            cur_head.reference = head
+            assert cur_head.reference == head
+            assert isinstance(cur_head.reference, Head)
+            assert cur_head.commit == head.commit
+            assert not cur_head.is_detached
+        # END for each head
+
+        # Detach.
+        active_head = heads[0]
+        curhead_commit = active_head.commit
+        cur_head.reference = curhead_commit
+        assert cur_head.commit == curhead_commit
+        assert cur_head.is_detached
+        self.assertRaises(TypeError, getattr, cur_head, "reference")
+
+        # Tags are references, hence we can point to them.
+        some_tag = rw_repo.tags[0]
+        cur_head.reference = some_tag
+        assert not cur_head.is_detached
+        assert cur_head.commit == some_tag.commit
+        assert isinstance(cur_head.reference, TagReference)
+
+        # Put HEAD back to a real head, otherwise everything else fails.
+        cur_head.reference = active_head
+
+        # Type check.
+        self.assertRaises(ValueError, setattr, cur_head, "reference", "that")
+
+        # Head handling.
+        commit = "HEAD"
+        prev_head_commit = cur_head.commit
+        for count, new_name in enumerate(("my_new_head", "feature/feature1")):
+            actual_commit = commit + "^" * count
+            new_head = Head.create(rw_repo, new_name, actual_commit)
+            assert new_head.is_detached
+            assert cur_head.commit == prev_head_commit
+            assert isinstance(new_head, Head)
+            # Already exists, but has the same value, so it's fine.
+            Head.create(rw_repo, new_name, new_head.commit)
+
+            # It's not fine with a different value.
+            self.assertRaises(OSError, Head.create, rw_repo, new_name, new_head.commit.parents[0])
+
+            # Force it.
+            new_head = Head.create(rw_repo, new_name, actual_commit, force=True)
+            old_path = new_head.path
+            old_name = new_head.name
+
+            assert new_head.rename("hello").name == "hello"
+            assert new_head.rename("hello/world").name == "hello/world"
+            assert new_head.rename(old_name).name == old_name and new_head.path == old_path
+
+            # Rename with force.
+            tmp_head = Head.create(rw_repo, "tmphead")
+            self.assertRaises(GitCommandError, tmp_head.rename, new_head)
+            tmp_head.rename(new_head, force=True)
+            assert tmp_head == new_head and tmp_head.object == new_head.object
+
+            assert tmp_head.log()
+            Head.delete(rw_repo, tmp_head)
+            # Deletion removes the log as well.
+            assert tmp_head.log() == []
+            heads = rw_repo.heads
+            assert tmp_head not in heads and new_head not in heads
+            # Force on deletion testing would be missing here, code looks okay though. ;)
+        # END for each new head name
+        self.assertRaises(TypeError, RemoteReference.create, rw_repo, "some_name")
+
+        # Tag ref.
+        tag_name = "5.0.2"
+        TagReference.create(rw_repo, tag_name)
+        self.assertRaises(GitCommandError, TagReference.create, rw_repo, tag_name)
+        light_tag = TagReference.create(rw_repo, tag_name, "HEAD~1", force=True)
+        assert isinstance(light_tag, TagReference)
+        assert light_tag.name == tag_name
+        assert light_tag.commit == cur_head.commit.parents[0]
+        assert light_tag.tag is None
+
+        # Tag with tag object.
+        other_tag_name = "releases/1.0.2RC"
+        msg = "my mighty tag\nsecond line"
+        obj_tag = TagReference.create(rw_repo, other_tag_name, message=msg)
+        assert isinstance(obj_tag, TagReference)
+        assert obj_tag.name == other_tag_name
+        assert obj_tag.commit == cur_head.commit
+        assert obj_tag.tag is not None
+
+        TagReference.delete(rw_repo, light_tag, obj_tag)
+        tags = rw_repo.tags
+        assert light_tag not in tags and obj_tag not in tags
+
+        # Remote deletion.
+        remote_refs_so_far = 0
+        remotes = rw_repo.remotes
+        assert remotes
+        for remote in remotes:
+            refs = remote.refs
+
+            # If a HEAD exists, it must be deleted first. Otherwise it might end up
+            # pointing to an invalid ref it the ref was deleted before.
+            remote_head_name = "HEAD"
+            if remote_head_name in refs:
+                RemoteReference.delete(rw_repo, refs[remote_head_name])
+                del refs[remote_head_name]
+            # END handle HEAD deletion
+
+            RemoteReference.delete(rw_repo, *refs)
+            remote_refs_so_far += len(refs)
+            for ref in refs:
+                assert ref.remote_name == remote.name
+        # END for each ref to delete
+        assert remote_refs_so_far
+
+        for remote in remotes:
+            # Remotes without references should produce an empty list.
+            self.assertEqual(remote.refs, [])
+        # END for each remote
+
+        # Change where the active head points to.
+        if cur_head.is_detached:
+            cur_head.reference = rw_repo.heads[0]
+
+        head = cur_head.reference
+        old_commit = head.commit
+        head.commit = old_commit.parents[0]
+        assert head.commit == old_commit.parents[0]
+        assert head.commit == cur_head.commit
+        head.commit = old_commit
+
+        # Git enforces commit-only branch targets for either setter.
+        head_tree = head.commit.tree
+        self.assertRaises(ValueError, setattr, head, "commit", head_tree)
+        assert head.commit == old_commit  # And the ref did not change.
+        self.assertRaises(TypeError, setattr, head, "object", head_tree)
+        assert head.commit == old_commit
+
+        # Set the commit directly using the head. This would never detach the head.
+        assert not cur_head.is_detached
+        head.object = old_commit
+        cur_head.reference = head.commit
+        assert cur_head.is_detached
+        parent_commit = head.commit.parents[0]
+        assert cur_head.is_detached
+        cur_head.commit = parent_commit
+        assert cur_head.is_detached and cur_head.commit == parent_commit
+
+        cur_head.reference = head
+        assert not cur_head.is_detached
+        cur_head.commit = parent_commit
+        assert not cur_head.is_detached
+        assert head.commit == parent_commit
+
+        # Test checkout.
+        active_branch = rw_repo.active_branch
+        for head in rw_repo.heads:
+            checked_out_head = head.checkout()
+            assert checked_out_head == head
+        # END for each head to checkout
+
+        # Check out with branch creation.
+        new_head = active_branch.checkout(b="new_head")
+        assert active_branch != rw_repo.active_branch
+        assert new_head == rw_repo.active_branch
+
+        # Checkout with force as we have a changed a file.
+        # Clear file.
+        open(new_head.commit.tree.blobs[-1].abspath, "w").close()
+        assert len(new_head.commit.diff(None))
+
+        # Create a new branch that is likely to touch the file we changed.
+        far_away_head = rw_repo.create_head("far_head", "root")
+        self.assertRaises(GitCommandError, far_away_head.checkout)
+        assert active_branch == active_branch.checkout(force=True)
+        assert rw_repo.head.reference != far_away_head
+
+        # Test reference creation.
+        partial_ref = "sub/ref"
+        full_ref = "refs/%s" % partial_ref
+        ref = Reference.create(rw_repo, partial_ref)
+        assert ref.path == full_ref
+        assert ref.object == rw_repo.head.commit
+
+        self.assertRaises(OSError, Reference.create, rw_repo, full_ref, "root")
+        # It works if it is at the same spot though and points to the same reference.
+        assert Reference.create(rw_repo, full_ref, "HEAD").path == full_ref
+        Reference.delete(rw_repo, full_ref)
+
+        # Recreate the reference using a full_ref.
+        ref = Reference.create(rw_repo, full_ref)
+        assert ref.path == full_ref
+        assert ref.object == rw_repo.head.commit
+
+        # Recreate using force.
+        ref = Reference.create(rw_repo, partial_ref, "HEAD~1", force=True)
+        assert ref.path == full_ref
+        assert ref.object == rw_repo.head.commit.parents[0]
+
+        # Rename it.
+        orig_obj = ref.object
+        for name in ("refs/absname", "rela_name", "feature/rela_name"):
+            ref_new_name = ref.rename(name)
+            assert isinstance(ref_new_name, Reference)
+            assert name in ref_new_name.path
+            assert ref_new_name.object == orig_obj
+            assert ref_new_name == ref
+        # END for each name type
+
+        # References that don't exist trigger an error if we want to access them.
+        self.assertRaises(ValueError, getattr, Reference(rw_repo, "refs/doesntexist"), "commit")
+
+        # Exists, fail unless we force.
+        ex_ref_path = far_away_head.path
+        self.assertRaises(OSError, ref.rename, ex_ref_path)
+        # If it points to the same commit it works.
+        far_away_head.commit = ref.commit
+        ref.rename(ex_ref_path)
+        assert ref.path == ex_ref_path and ref.object == orig_obj
+        assert ref.rename(ref.path).path == ex_ref_path  # rename to same name
+
+        # Create symbolic refs.
+        symref_path = "refs/symrefs/sym"
+        symref = SymbolicReference.create(rw_repo, symref_path, cur_head.reference)
+        assert symref.path == symref_path
+        assert symref.reference == cur_head.reference
+
+        self.assertRaises(
+            OSError,
+            SymbolicReference.create,
+            rw_repo,
+            symref_path,
+            cur_head.reference.commit,
+        )
+        # It works if the new ref points to the same reference.
+        assert SymbolicReference.create(rw_repo, symref.path, symref.reference).path == symref.path
+        SymbolicReference.delete(rw_repo, symref)
+        # Would raise if the symref wouldn't have been deleted (probably).
+        symref = SymbolicReference.create(rw_repo, symref_path, cur_head.reference)
+
+        # Test symbolic references which are not at default locations like HEAD or
+        # FETCH_HEAD - they may also be at spots in refs of course.
+        symbol_ref_path = "refs/symbol_ref"
+        symref = SymbolicReference(rw_repo, symbol_ref_path)
+        assert symref.path == symbol_ref_path
+        symbol_ref_abspath = osp.join(rw_repo.git_dir, symref.path)
+
+        # Set it.
+        symref.reference = new_head
+        assert symref.reference == new_head
+        assert osp.isfile(symbol_ref_abspath)
+        assert symref.commit == new_head.commit
+
+        for name in ("ROOT_SYM", "refs/folder/rela_name"):
+            symref_new_name = symref.rename(name)
+            assert isinstance(symref_new_name, SymbolicReference)
+            assert name in symref_new_name.path
+            assert symref_new_name.reference == new_head
+            assert symref_new_name == symref
+            assert not symref.is_detached
+        # END for each ref
+
+        # Create a new non-head ref just to be sure we handle it even if packed.
+        Reference.create(rw_repo, full_ref)
+
+        # Test ref listing - make sure we have packed refs.
+        rw_repo.git.pack_refs(all=True, prune=True)
+        heads = rw_repo.heads
+        assert heads
+        assert new_head in heads
+        assert active_branch in heads
+        assert rw_repo.tags
+
+        # We should be able to iterate all symbolic refs as well - in that case we
+        # should expect only symbolic references to be returned.
+        for symref in SymbolicReference.iter_items(rw_repo):
+            assert not symref.is_detached
+
+        # When iterating references, we can get references and symrefs when deleting all
+        # refs, I'd expect them to be gone! Even from the packed ones.
+        # For this to work, we must not be on any branch.
+        rw_repo.head.reference = rw_repo.head.commit
+        deleted_refs = set()
+        for ref in Reference.iter_items(rw_repo):
+            if ref.is_detached:
+                ref.delete(rw_repo, ref)
+                deleted_refs.add(ref)
+            # END delete ref
+        # END for each ref to iterate and to delete
+        assert deleted_refs
+
+        for ref in Reference.iter_items(rw_repo):
+            if ref.is_detached:
+                assert ref not in deleted_refs
+        # END for each ref
+
+        # Reattach head - head will not be returned if it is not a symbolic ref.
+        rw_repo.head.reference = Head.create(rw_repo, "master")
+
+        # At least the head should still exist.
+        assert osp.isfile(osp.join(rw_repo.git_dir, "HEAD"))
+        refs = list(SymbolicReference.iter_items(rw_repo))
+        assert rw_repo.head in refs
+        assert all(not ref.is_detached for ref in refs)
+
+        # Test creation of new refs from scratch.
+        for path in ("basename", "dir/somename", "dir2/subdir/basename"):
+            # REFERENCES
+            ############
+            fpath = Reference.to_full_path(path)
+            ref_fp = Reference.from_path(rw_repo, fpath)
+            assert not ref_fp.is_valid()
+            ref = Reference(rw_repo, fpath)
+            assert ref == ref_fp
+
+            # Can be created by assigning a commit.
+            ref.commit = rw_repo.head.commit
+            assert ref.is_valid()
+
+            # If the assignment raises, the ref doesn't exist.
+            Reference.delete(ref.repo, ref.path)
+            assert not ref.is_valid()
+            self.assertRaises(ValueError, setattr, ref, "commit", "nonsense")
+            assert not ref.is_valid()
+
+            # I am sure I had my reason to make it a class method at first, but now it
+            # doesn't make so much sense anymore, want an instance method as well. See:
+            # http://byronimo.lighthouseapp.com/projects/51787-gitpython/tickets/27
+            Reference.delete(ref.repo, ref.path)
+            assert not ref.is_valid()
+
+            ref.object = rw_repo.head.commit
+            assert ref.is_valid()
+
+            Reference.delete(ref.repo, ref.path)
+            assert not ref.is_valid()
+            self.assertRaises(ValueError, setattr, ref, "object", "nonsense")
+            assert not ref.is_valid()
+
+        # END for each path
+
+    @with_rw_repo("release")
+    def test_tag_message(self, rw_repo):
+        tag_ref = TagReference.create(rw_repo, "test-message-1", message="test")
+        assert tag_ref.tag.message == "test"
+
+        tag_ref = TagReference.create(rw_repo, "test-message-2", logmsg="test")
+        assert tag_ref.tag.message == "test"
+
+        tag_ref = TagReference.create(
+            rw_repo,
+            "test-message-3",
+            # Logmsg should take precedence over "message".
+            message="test1",
+            logmsg="test2",
+        )
+        assert tag_ref.tag.message == "test2"
+
+    def test_dereference_recursive(self):
+        # For now, just test the HEAD.
+        assert SymbolicReference.dereference_recursive(self.rorepo, "HEAD")
+
+    def test_reflog(self):
+        assert isinstance(self.rorepo.active_branch.log(), RefLog)
+
+    def test_refs_outside_repo(self):
+        # CVE-2023-41040: a valid reference outside the repo must remain inaccessible.
+        with fixture_repo("refs.sh", "outside") as repo:
+            self.assertRaises(BadName, repo.commit, "../../outside-ref")
+
+    def test_reference_create_rejects_path_traversal(self):
+        with fixture_repo("refs.sh", "security", write=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_path = base_dir / "outside_write.txt"
+
+            self.assertRaises(ValueError, Reference.create, repo, "../../../outside_write.txt", "HEAD")
+            assert not outside_path.exists()
+
+    def test_symbolic_reference_create_rejects_path_traversal(self):
+        with fixture_repo("refs.sh", "security", write=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_path = base_dir / "outside_write.txt"
+
+            self.assertRaises(ValueError, SymbolicReference.create, repo, "../../outside_write.txt", "HEAD")
+            assert not outside_path.exists()
+
+    def test_symbolic_reference_set_reference_rejects_path_traversal(self):
+        with fixture_repo("refs.sh", "security", write=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_path = base_dir / "outside_write.txt"
+
+            self.assertRaises(ValueError, SymbolicReference(repo, "../../outside_write.txt").set_reference, "HEAD")
+            assert not outside_path.exists()
+
+    def test_symbolic_reference_rename_rejects_path_traversal(self):
+        with fixture_repo("refs.sh", "security", write=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_path = base_dir / "outside_move.txt"
+            ref = SymbolicReference(repo, "SAFE_RENAME_SOURCE")
+
+            self.assertRaises(ValueError, ref.rename, "../../outside_move.txt")
+            assert not outside_path.exists()
+            assert Path(ref.abspath).is_file()
+
+    def test_symbolic_reference_delete_rejects_path_traversal(self):
+        with fixture_repo("refs.sh", "security", write=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_path = base_dir / "outside_delete.txt"
+
+            self.assertRaises(ValueError, SymbolicReference.delete, repo, "../../outside_delete.txt")
+            assert outside_path.read_text(encoding="utf-8") == "do not delete\n"
+
+    def test_symbolic_reference_log_append_rejects_path_traversal(self):
+        with fixture_repo("refs.sh", "security", write=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_path = base_dir / "outside_reflog.txt"
+
+            ref = SymbolicReference(repo, "../../../outside_reflog.txt")
+            self.assertRaises(ValueError, ref.log_append, Commit.NULL_BIN_SHA, "do not write", repo.head.commit.binsha)
+            assert not outside_path.exists()
+
+    @requires_symlinks
+    def test_symbolic_reference_set_reference_rejects_symlink_escape(self):
+        with fixture_repo("refs.sh", "symlink", write=True, execute=True) as repo:
+            base_dir = Path(repo.working_tree_dir).parent
+            outside_dir = base_dir / "outside_refs"
+            outside_path = outside_dir / "escaped"
+
+            refs_heads_dir = Path(repo.common_dir) / "refs" / "heads"
+            symlink_path = refs_heads_dir / "link_out"
+            if osp.realpath(symlink_path / "escaped") == osp.abspath(symlink_path / "escaped"):
+                self.skipTest("realpath does not resolve directory symlinks on this platform")
+
+            ref = SymbolicReference(repo, "refs/heads/link_out/escaped")
+            self.assertRaises(ValueError, ref.set_reference, "HEAD")
+            assert not outside_path.exists()
+
+    def test_remote_reference_delete_cleanup_rejects_path_traversal(self):
+        with writable_fixture("refs.sh", "security") as temporary:
+            base_dir = temporary.path()
+            git_dir = base_dir / "repo" / ".git"
+            outside_path = base_dir / "outside_remote_delete.txt"
+
+            class GitStub:
+                branch_called = False
+
+                def branch(self, *args):
+                    self.branch_called = True
+
+            class RepoStub:
+                pass
+
+            repo = RepoStub()
+            repo.git = GitStub()
+            repo.common_dir = str(git_dir)
+            repo.git_dir = str(git_dir)
+            ref = RemoteReference(repo, "../../outside_remote_delete.txt", check_path=False)
+
+            self.assertRaises(ValueError, RemoteReference.delete, repo, ref)
+            assert not repo.git.branch_called
+            assert outside_path.read_text(encoding="utf-8") == "do not delete\n"
+
+    def test_validity_ref_names(self):
+        """Ensure ref names are checked for validity.
+
+        This is based on the rules specified in:
+        https://git-scm.com/docs/git-check-ref-format/#_description
+        """
+        check_ref = SymbolicReference._check_ref_name_valid
+
+        # Rule 1
+        self.assertRaises(ValueError, check_ref, ".ref/begins/with/dot")
+        self.assertRaises(ValueError, check_ref, "ref/component/.begins/with/dot")
+        self.assertRaises(ValueError, check_ref, "ref/ends/with/a.lock")
+        self.assertRaises(ValueError, check_ref, "ref/component/ends.lock/with/period_lock")
+
+        # Rule 2
+        check_ref("valid_one_level_refname")
+
+        # Rule 3
+        self.assertRaises(ValueError, check_ref, "ref/contains/../double/period")
+
+        # Rule 4
+        for c in " ~^:":
+            self.assertRaises(ValueError, check_ref, f"ref/contains/invalid{c}/character")
+        for code in range(0, 32):
+            self.assertRaises(ValueError, check_ref, f"ref/contains/invalid{chr(code)}/ASCII/control_character")
+        self.assertRaises(ValueError, check_ref, f"ref/contains/invalid{chr(127)}/ASCII/control_character")
+
+        # Rule 5
+        for c in "*?[":
+            self.assertRaises(ValueError, check_ref, f"ref/contains/invalid{c}/character")
+
+        # Rule 6
+        self.assertRaises(ValueError, check_ref, "/ref/begins/with/slash")
+        self.assertRaises(ValueError, check_ref, "ref/ends/with/slash/")
+        self.assertRaises(ValueError, check_ref, "ref/contains//double/slash/")
+
+        # Rule 7
+        self.assertRaises(ValueError, check_ref, "ref/ends/with/dot.")
+
+        # Rule 8
+        self.assertRaises(ValueError, check_ref, "ref/contains@{/at_brace")
+
+        # Rule 9
+        self.assertRaises(ValueError, check_ref, "@")
+
+        # Rule 10
+        self.assertRaises(ValueError, check_ref, "ref/contain\\s/backslash")
+
+        # Valid reference name should not raise.
+        check_ref("valid/ref/name")
+
+
+class TestSymbolicReferenceSecurity(unittest.TestCase):
+    @contextlib.contextmanager
+    def fixture(self, *args, write=False, execute=False):
+        with fixture_repo("reference-security.sh", *args, write=write, execute=execute) as repo:
+            self.repo = repo
+            root = Path(repo.working_tree_dir).parent
+            self.commit = repo.commit((root / "initial").read_text().strip())
+            self.next_commit = repo.commit((root / "next").read_text().strip())
+            yield
+
+    @staticmethod
+    def chain_paths(count):
+        return ["HEAD"] + [f"refs/heads/link-{i}" for i in range(1, count)]
+
+    @contextlib.contextmanager
+    def bounded_reads(self):
+        read_ref = SymbolicReference._get_ref_info
+        reads = 0
+
+        def read(repo, path):
+            nonlocal reads
+            reads += 1
+            if reads > 100:
+                self.fail("Reference traversal exceeded its read budget")
+            return read_ref(repo, path)
+
+        with patch.object(SymbolicReference, "_get_ref_info", side_effect=read):
+            yield
+
+    def test_cycles_fail_in_all_object_read_entry_points(self):
+        for target in ("refs/heads/a", "refs/heads/b"):
+            with self.fixture("cycle", target):
+                for read in (
+                    lambda: SymbolicReference.dereference_recursive(self.repo, "HEAD"),
+                    lambda: self.repo.head.commit,
+                    lambda: self.repo.head.object,
+                    lambda: Head(self.repo, "refs/heads/a").commit,
+                    lambda: TagReference(self.repo, "refs/tags/loop").object,
+                ):
+                    with self.subTest(target=target, read=read), self.bounded_reads():
+                        with self.assertRaisesRegex(ValueError, "symbolic reference"):
+                            read()
+                for read in (lambda: self.repo.commit("HEAD"), lambda: self.repo.rev_parse("a")):
+                    with self.subTest(target=target, read=read), self.bounded_reads():
+                        with self.assertRaises(BadName):
+                            read()
+                with self.bounded_reads():
+                    self.assertFalse(self.repo.head.is_valid())
+
+    def test_depth_limit_matches_git_including_terminal_reference(self):
+        for count in range(1, 7):
+            with self.fixture("chain", count), self.subTest(count=count), self.bounded_reads():
+                if count <= 5:
+                    self.assertEqual(self.repo.head.commit, self.commit)
+                    self.assertEqual(self.repo.git.rev_parse("--verify", "HEAD"), self.commit.hexsha)
+                else:
+                    with self.assertRaises(ValueError):
+                        self.repo.head.commit
+                    with self.assertRaises(GitCommandError):
+                        self.repo.git.rev_parse("--verify", "HEAD")
+
+    def test_packed_terminal_reference_resolves(self):
+        with self.fixture("packed", 5):
+            self.assertEqual(self.repo.head.commit, self.commit)
+
+    def test_writes_reject_cycles_and_excessive_depth_without_side_effects(self):
+        for terminal in ("cycle", "object"):
+            with self.fixture("invalid-write", 6, terminal, write=True):
+                paths = self.chain_paths(6)
+                before = {path: (Path(self.repo.git_dir) / path).read_bytes() for path in paths}
+                head_log = Path(self.repo.git_dir) / "logs" / "HEAD"
+                old_log = head_log.read_bytes()
+                for logmsg in (None, "must not write"):
+                    with self.subTest(terminal=terminal, logmsg=logmsg), self.bounded_reads():
+                        with self.assertRaisesRegex(ValueError, "symbolic reference"):
+                            self.repo.head.set_object(self.next_commit, logmsg)
+                        self.assertEqual(
+                            before, {path: (Path(self.repo.git_dir) / path).read_bytes() for path in paths}
+                        )
+                        self.assertEqual(head_log.read_bytes(), old_log)
+
+    def test_valid_chain_updates_preserve_symbols_and_head_reflog(self):
+        with self.fixture("chain", 5, write=True):
+            paths = self.chain_paths(5)
+            self.repo.head.set_object(self.next_commit, "updated through chain")
+            self.assertEqual(self.repo.head.commit, self.next_commit)
+            for path, target in zip(paths, paths[1:]):
+                self.assertEqual((Path(self.repo.git_dir) / path).read_text(), "ref: " + target + "\n")
+            for path in ("HEAD", paths[-1]):
+                entry = SymbolicReference(self.repo, path).log()[-1]
+                self.assertFalse(hasattr(entry, "oldhexsha"))
+                self.assertEqual(entry.newhexsha, self.next_commit.hexsha)
+                self.assertEqual(entry.message, "updated through chain")
+
+    def test_writes_create_unborn_terminal_reference(self):
+        with self.fixture("unborn", 5, write=True):
+            self.repo.head.set_object(self.next_commit)
+            self.assertEqual(self.repo.head.commit, self.next_commit)
+            self.assertEqual(self.repo.head.reference.path, self.chain_paths(5)[1])
+
+    def test_set_object_preserves_subclass_override_signature_and_dispatch(self):
+        calls = []
+
+        class CustomReference(Reference):
+            @classmethod
+            def from_path(cls, repo, path):
+                return cls(repo, path, check_path=False)
+
+            def set_object(self, object, logmsg=None):
+                calls.append(self.path)
+                return super().set_object(object, logmsg)
+
+        with self.fixture("chain", 5, write=True):
+            paths = self.chain_paths(5)
+            ref = CustomReference(self.repo, "HEAD", check_path=False)
+            self.assertIs(ref.set_object(self.next_commit, "custom reference"), ref)
+            self.assertEqual(calls, [paths[0]])
+            self.assertEqual(self.repo.head.commit, self.next_commit)
+            self.assertEqual(self.repo.head.log()[-1].message, "custom reference")
+
+    def test_custom_symbolic_reference_names_do_not_recurse_during_construction(self):
+        with self.fixture("custom", write=True):
+            with self.bounded_reads():
+                ref = SymbolicReference.from_path(self.repo, "CUSTOM_A")
+                self.assertEqual(ref.reference.path, "CUSTOM_B")
+                self.assertFalse(ref.is_detached)
+                self.assertFalse(ref.is_valid())
+                with self.assertRaises(ValueError):
+                    ref.set_object(self.next_commit)
+
+    def test_reference_reads_reject_symlinks_outside_repository(self):
+        with self.fixture("external"):
+            with self.assertRaisesRegex(ValueError, "escapes the repository"):
+                self.repo.head.commit

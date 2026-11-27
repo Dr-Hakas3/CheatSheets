@@ -1,0 +1,289 @@
+![Python package](https://github.com/gitpython-developers/GitPython/workflows/Python%20package/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/gitpython/badge/?version=stable)](https://readthedocs.org/projects/gitpython/?badge=stable)
+[![Packaging status](https://repology.org/badge/tiny-repos/python:gitpython.svg)](https://repology.org/metapackage/python:gitpython/versions)
+
+## GixPython: Gitoxide for GitPython
+
+[GixPython](https://github.com/GitoxideLabs/GixPython) provides the **Python bindings
+for [Gitoxide](https://github.com/GitoxideLabs/gitoxide)**, an implementation of Git
+in [Rust](https://www.rust-lang.org). GitPython's experimental Gix backend uses these
+bindings to execute supported operations through Gitoxide while exposing GitPython's
+high-level repository, commit, tree and index interfaces.
+
+Supported object reads, tree traversal, reference/index queries and commit history
+can run without launching Git subprocesses. Each native operation opens a fresh
+Gix repository handle. The [backend benchmarks](05_Programing/Python/Other/GitManager/GitPython/test/performance/README.md) measure
+results and CLI launch counts for both backends.
+
+### Activate the Gix backend
+
+This backend is currently unreleased. From this source checkout, install the
+optional `gix` extra in a virtual environment:
+
+```sh
+python -m pip install ".[gix]"
+```
+
+The extra installs **GixPython 0.3.0** from PyPI; its Python import name is `gix`.
+Set `GIT_PYTHON_BACKEND=gix` **before importing GitPython**, either in your
+environment or in Python:
+
+```python
+import os
+
+os.environ["GIT_PYTHON_BACKEND"] = "gix"
+from git import Repo
+
+with Repo(".") as repo:
+    print(repo.head.commit.hexsha)
+```
+
+With `GIT_PYTHON_BACKEND` unset, GitPython automatically selects Gix when `gix`
+can be imported, otherwise CLI. Set it to `cli` to force Git subprocesses instead.
+Explicit `gix` selection fails if GixPython cannot be imported.
+
+### Prerequisites and coverage
+
+- **CPython 3.11 or newer** for GixPython. GitPython itself still supports Python
+  3.8 or newer; on Python 3.8–3.10 the extra omits GixPython and uses CLI.
+- **Git 2.52 or newer**, available in `PATH` or selected with
+  `GIT_PYTHON_GIT_EXECUTABLE`, remains required for CLI fallbacks.
+- GixPython 0.3.0 publishes **macOS wheels**. On **Linux and Windows**, installation
+  builds its released source distribution and requires **Rust 1.89 or newer** and
+  a **system linker**. Default hashing, compression and HTTPS dependencies use
+  pure Rust and do not require a C/C++ compiler.
+
+Unsupported operations and options retain the Git CLI path, including clone,
+fetch and push. Direct `repo.git.<command>()` calls also retain command-line
+behavior. Coverage and compatibility gaps are documented in the
+[backend ledger and installation guide](gix-backend.md); the
+[downstream audit](audit.md) starts with known API incompatibilities.
+
+## GitPython
+
+GitPython is a python library used to interact with git repositories, high-level like git-porcelain,
+or low-level like git-plumbing.
+
+It provides abstractions of git objects for easy access of repository data often backed by calling the `git`
+command-line program.
+
+### DEVELOPMENT STATUS
+
+This project is in **maintenance mode**, which means that
+
+- …there will be no feature development, unless these are contributed
+- …there will be no bug fixes, unless they are relevant to the safety of users, or contributed
+- …issues will be responded to with waiting times of up to a month
+
+The project is open to contributions of all kinds, as well as new maintainers.
+
+### REQUIREMENTS
+
+GitPython needs the `git` executable to be installed on the system and available in your
+`PATH` for repository operations. If it is not in your `PATH`, you can help GitPython find it
+by setting the `GIT_PYTHON_GIT_EXECUTABLE=<path/to/git>` environment variable.
+
+- Git (2.52 or newer)
+- Python >= 3.8
+
+The list of dependencies are listed in [`./requirements.txt`](https://github.com/gitpython-developers/GitPython/blob/main/requirements.txt) and [`./test-requirements.txt`](https://github.com/gitpython-developers/GitPython/blob/main/test-requirements.txt).
+The installer takes care of installing them for you.
+
+### INSTALL
+
+GitPython and its required package dependencies can be installed in any of the following ways, all of which should typically be done in a [virtual environment](https://docs.python.org/3/tutorial/venv.html).
+
+#### From PyPI
+
+To obtain and install a copy [from PyPI](https://pypi.org/project/GitPython/), run:
+
+```sh
+pip install GitPython
+```
+
+(A distribution package can also be downloaded for manual installation at [the PyPI page](https://pypi.org/project/GitPython/).)
+
+#### From downloaded source code
+
+If you have downloaded the source code, run this from inside the unpacked `GitPython` directory:
+
+```sh
+pip install .
+```
+
+#### By cloning the source code repository
+
+To clone the [the GitHub repository](https://github.com/gitpython-developers/GitPython) from source to work on the code, you can do it like so:
+
+```sh
+git clone https://github.com/gitpython-developers/GitPython
+cd GitPython
+```
+
+If you are cloning [your own fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks), then replace the above `git clone` command with one that gives the URL of your fork. Or use this [`gh`](https://cli.github.com/) command (assuming you have `gh` and your fork is called `GitPython`):
+
+```sh
+gh repo clone GitPython
+```
+
+Having cloned the repo, create and activate your [virtual environment](https://docs.python.org/3/tutorial/venv.html).
+
+Then make an [editable install](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs):
+
+```sh
+pip install -e ".[test]"
+```
+
+In the less common case that you do not want to install test dependencies, `pip install -e .` can be used instead.
+
+#### With editable *dependencies* (not preferred, and rarely needed)
+
+GitPython, [gitdb](gitdb), and [smmap](smmap) live in this repository as independently packaged projects. To work on all three at once, install each one editably in the same virtual environment:
+
+```sh
+pip install -e smmap -e gitdb -e ".[test]"
+```
+
+You can use `pip list` to check which packages are installed editably and which are installed normally.
+
+To reiterate, this approach should only rarely be used. For most development it is preferable to allow the gitdb and smmap dependencices to be retrieved automatically from PyPI in their latest stable packaged versions.
+
+### Limitations
+
+#### Leakage of System Resources
+
+GitPython is not suited for long-running processes (like daemons) as it tends to
+leak system resources. It was written in a time where destructors (as implemented
+in the `__del__` method) still ran deterministically.
+
+Use `Repo` as a context manager (`with Repo(path) as repo:`), or call
+`repo.close()` explicitly when finished, to release its native repository handle
+and persistent Git object readers. Close every repository instance and any
+separately opened readers before removing its directory. On Windows,
+`git.util.rmtree(path)` also handles Git's read-only files, which plain
+`shutil.rmtree()` may be unable to remove even after handles are closed.
+
+Another way assure proper cleanup of resources is to factor out GitPython into a
+separate process which can be dropped periodically.
+
+#### Windows support
+
+See [Issue #525](https://github.com/gitpython-developers/GitPython/issues/525).
+
+### RUNNING TESTS
+
+Test repositories are generated from scratch by fixture scripts. Tests work from
+a shallow clone or a source copy without `.git`; no checkout preparation is needed.
+
+#### Install test dependencies
+
+Ensure testing libraries are installed. This is taken care of already if you installed with:
+
+```sh
+pip install -e ".[test]"
+```
+
+If you had installed with a command like `pip install -e .` instead, you can still run
+the above command to add the testing dependencies.
+
+#### Test commands
+
+To test, run:
+
+```sh
+pytest
+```
+
+To lint, and apply some linting fixes as well as automatic code formatting, run:
+
+```sh
+pre-commit run --all-files
+```
+
+This includes the linting and autoformatting done by Ruff, as well as some other checks.
+
+To typecheck, run:
+
+```sh
+mypy
+```
+
+#### CI (and tox)
+
+Style and formatting checks, and running tests on all the different supported Python versions, will be performed:
+
+- Upon submitting a pull request.
+- On each push, *if* you have a fork with GitHub Actions enabled.
+- Locally, if you run [`tox`](https://tox.wiki/) (this skips any Python versions you don't have installed).
+
+#### Configuration files
+
+Specific tools are all configured in the [`./pyproject.toml`](https://github.com/gitpython-developers/GitPython/blob/main/pyproject.toml) file:
+
+- `pytest` (test runner)
+- `coverage.py` (code coverage)
+- `ruff` (linter and formatter)
+- `mypy` (type checker)
+
+Orchestration tools:
+
+- Configuration for `pre-commit` is in the [`./.pre-commit-config.yaml`](https://github.com/gitpython-developers/GitPython/blob/main/.pre-commit-config.yaml) file.
+- Configuration for `tox` is in [`./tox.ini`](https://github.com/gitpython-developers/GitPython/blob/main/tox.ini).
+- Configuration for GitHub Actions (CI) is in files inside [`./.github/workflows/`](https://github.com/gitpython-developers/GitPython/tree/main/.github/workflows).
+
+### Contributions
+
+Please have a look at the [contributions file][contributing].
+
+### INFRASTRUCTURE
+
+- [User Documentation](http://gitpython.readthedocs.org)
+- [Questions and Answers](http://stackexchange.com/filters/167317/gitpython)
+- Please post on Stack Overflow and use the `gitpython` tag
+- [Issue Tracker](https://github.com/gitpython-developers/GitPython/issues)
+  - Post reproducible bugs and feature requests as a new issue when you do not have
+    a fix or need discussion before implementation. If you have a fix or improvement,
+    [open a pull request directly](CONTRIBUTING.md#prefer-pull-requests) and describe
+    the problem there; you do not need to create an issue first.
+    Please be sure to provide the following information when reporting bugs in an
+    issue or PR:
+    - GitPython version (e.g. `import git; git.__version__`)
+    - Python version (e.g. `python --version`)
+    - The encountered stack-trace, if applicable
+    - Enough information to allow reproducing the issue
+
+### How to make a new release
+
+1. Update/verify the **version** in the [`VERSION`](https://github.com/gitpython-developers/GitPython/blob/main/VERSION) file.
+2. Update/verify that the [`doc/source/changes.rst`](https://github.com/gitpython-developers/GitPython/blob/main/doc/source/changes.rst) changelog file was updated. It should include a link to the forthcoming release page: `https://github.com/gitpython-developers/GitPython/releases/tag/<version>`
+3. Commit everything.
+4. Run `git tag -s <version>` to tag the version in Git.
+5. _Optionally_ create and activate a [virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment). (Then the next step can install `build` and `twine`.)
+6. Run `make release`.
+7. Go to [GitHub Releases](https://github.com/gitpython-developers/GitPython/releases) and publish a new one with the recently pushed tag. Generate the changelog.
+
+### Projects using GitPython
+
+- [PyDriller](https://github.com/ishepard/pydriller)
+- [Kivy Designer](https://github.com/kivy/kivy-designer)
+- [Prowl](https://github.com/nettitude/Prowl)
+- [Python Taint](https://github.com/python-security/pyt)
+- [Buster](https://github.com/axitkhurana/buster)
+- [git-ftp](https://github.com/ezyang/git-ftp)
+- [Git-Pandas](https://github.com/wdm0006/git-pandas)
+- [PyGitUp](https://github.com/msiemens/PyGitUp)
+- [PyJFuzz](https://github.com/mseclab/PyJFuzz)
+- [Loki](https://github.com/Neo23x0/Loki)
+- [Omniwallet](https://github.com/OmniLayer/omniwallet)
+- [GitViper](https://github.com/BeayemX/GitViper)
+- [Git Gud](https://github.com/bthayer2365/git-gud)
+
+### LICENSE
+
+[3-Clause BSD License](https://opensource.org/license/bsd-3-clause/), also known as the New BSD License. See the [LICENSE file][license].
+
+One file exclusively used for fuzz testing is subject to [a separate license, detailed here](https://github.com/gitpython-developers/GitPython/blob/main/fuzzing/README.md#license).
+This file is not included in the wheel or sdist packages published by the maintainers of GitPython.
+
+[contributing]: https://github.com/gitpython-developers/GitPython/blob/main/CONTRIBUTING.md
+[license]: https://github.com/gitpython-developers/GitPython/blob/main/LICENSE

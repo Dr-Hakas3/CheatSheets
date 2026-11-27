@@ -1,0 +1,99 @@
+name: test-alpine
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GIT_PYTHON_BACKEND: cli
+
+    container:
+      image: alpine:latest
+
+    defaults:
+      run:
+        shell: sudo -u runner sh -exo pipefail {0}
+
+    steps:
+    - name: Prepare Alpine Linux
+      run: |
+        apk add sudo git git-daemon bash rust cargo build-base python3 python3-dev py3-pip py3-virtualenv
+        echo 'Defaults env_keep += "CI GITHUB_* RUNNER_* GIT_PYTHON_BACKEND"' >/etc/sudoers.d/ci_env
+        addgroup -g 127 docker
+        adduser -D -u 1001 runner  # TODO: Check if this still works on GHA as intended.
+        adduser runner docker
+      shell: sh -exo pipefail {0}  # Run this as root, not the "runner" user.
+
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Set workspace ownership
+      run: |
+        chown -R runner:docker -- "$GITHUB_WORKSPACE"
+      shell: sh -exo pipefail {0}  # Run this as root, not the "runner" user.
+
+    - name: Set git user identity and command aliases for the tests
+      run: |
+        git config --global user.email "travis@ci.com"
+        git config --global user.name "Travis Runner"
+        # If we rewrite the user's config by accident, we will mess it up
+        # and cause subsequent tests to fail
+        cat test/fixtures/.gitconfig >> ~/.gitconfig
+
+    - name: Set up virtual environment
+      run: |
+        python -m venv .venv
+
+    - name: Update PyPA packages
+      run: |
+        . .venv/bin/activate
+        python -m pip install -U pip 'setuptools; python_version<"3.12"' wheel
+
+    - name: Install project and test dependencies
+      run: |
+        . .venv/bin/activate
+        pip install ./smmap ./gitdb '.[test]'
+        python -c 'from gix import testtools'
+
+    - name: Show POSIX file ownership
+      run: |
+        ls -ld -- \
+          "$(pwd)" \
+          "$(pwd)/.git" \
+          "${HOME:?HOME is not set}/.gitconfig" \
+          2>&1 || true
+
+    - name: Show safe.directory entries
+      # `actions/checkout`'s safe.directory add is only durable for the
+      # checkout itself (it writes under a throwaway HOME override and
+      # then discards it), so by the time this step runs the runner
+      # user's `~/.gitconfig` has no entries -- and the Alpine container
+      # chowns the workspace to runner:docker to match the test user, so
+      # git accepts the ownership without one. Expected: `(none)`.
+      run: git config --global --get-all safe.directory || echo "(none)"
+
+    - name: Show version and platform information
+      run: |
+        . .venv/bin/activate
+        uname -a
+        command -v git python
+        git version
+        python --version
+        python -c 'import os, sys; print(f"{sys.platform=}, {os.name=}")'
+
+    - name: Remove source Git metadata to verify fixture isolation
+      run: .venv/bin/python -c "from pathlib import Path; from git.util import rmtree; rmtree('.git'); assert not Path('.git').exists()"
+
+    - name: Test with pytest
+      run: |
+        . .venv/bin/activate
+        pytest --color=yes -p no:sugar --instafail -vv

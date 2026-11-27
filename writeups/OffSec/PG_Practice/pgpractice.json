@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Kevin",
+    "description": "",
+    "difficulty": "Easy",
+    "platform": "PG Practice",
+    "os": "Windows",
+    "tags": ["Windows", "Web"],
+    "path": "/writeups/PG_Practice/Kevin"
+  },
+  {
+    "title": "Pwned1",
+    "description": "Linux privilege escalation",
+    "difficulty": "Easy",
+    "platform": "PG Practice",
+    "os": "Linux",
+    "tags": ["Linux"],
+    "path": "/writeups/PG_Practice/Pwned1"
+  },
+  {
+    "title": "Sumo",
+    "description": "Linux privilege escalation",
+    "difficulty": "Intermidait",
+    "platform": "PG Practice",
+    "os": "Linux",
+    "tags": ["Linux"],
+    "path": "/writeups/PG_Practice/Sumo"
+  },
+  {
+    "title": "Detection",
+    "description": "changedetection.io",
+    "difficulty": "Easy",
+    "platform": "PG Practice",
+    "os": "Linux",
+    "tags": ["Linux","changedetection"],
+    "path": "/writeups/PG_Practice/Detection"
+  }
+]

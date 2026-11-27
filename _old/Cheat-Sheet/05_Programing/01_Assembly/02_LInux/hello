@@ -1,0 +1,98 @@
+以下は、x86アセンブラでの「Hello, World!」プログラムの例です。このプログラムはLinux環境で動作し、システムコールを使って文字列を画面に表示します。基本的な構成を解説しながら、Markdown形式でまとめています。
+
+---
+
+# Hello, World! アセンブラプログラム (Linux x86)
+
+```assembly
+section .data
+    hello_msg db 'Hello, World!', 0xA  ; 表示する文字列と改行(0xA)
+
+section .text
+    global _start                    ; エントリーポイントの指定
+
+_start:
+    ; writeシステムコールの準備
+    mov eax, 4                      ; システムコール番号 4 (sys_write)
+    mov ebx, 1                      ; ファイルディスクリプタ 1 (標準出力)
+    mov ecx, hello_msg              ; 出力する文字列のアドレス
+    mov edx, 13                     ; 出力する文字列の長さ
+    int 0x80                        ; カーネル呼び出し
+
+    ; exitシステムコールの準備
+    mov eax, 1                      ; システムコール番号 1 (sys_exit)
+    xor ebx, ebx                    ; プログラムの終了コード 0
+    int 0x80                        ; カーネル呼び出し
+```
+
+---
+
+## プログラムの解説
+
+### 1. `.data`セクション
+ここではデータセクションに表示する文字列 `Hello, World!` を定義します。
+
+```assembly
+hello_msg db 'Hello, World!', 0xA  ; 表示する文字列と改行(0xA)
+```
+
+- **db**: バイト単位でデータを定義する命令。
+- **0xA**: 改行コード（ASCIIコードで10）を表します。
+
+### 2. `.text`セクション
+コード本体は `.text` セクションに書かれます。このセクションにはプログラムの命令が格納され、`_start`ラベルがエントリーポイントとなります。
+
+```assembly
+global _start  ; エントリーポイント
+```
+
+### 3. writeシステムコール
+Linuxの**write**システムコールを使って、文字列を標準出力に出力します。システムコールはレジスタに特定の値をセットし、`int 0x80`命令を使って呼び出されます。
+
+```assembly
+mov eax, 4      ; システムコール番号 4 (sys_write)
+mov ebx, 1      ; ファイルディスクリプタ 1 (標準出力)
+mov ecx, hello_msg  ; 出力する文字列のアドレス
+mov edx, 13     ; 出力する文字列の長さ
+int 0x80        ; カーネル呼び出し
+```
+
+- **eax = 4**: `write` システムコールの番号。
+- **ebx = 1**: 標準出力のファイルディスクリプタ（1）。
+- **ecx**: 表示する文字列のアドレス。
+- **edx = 13**: 文字列の長さ（"Hello, World!" + 改行の13バイト）。
+
+### 4. exitシステムコール
+プログラムを終了するために、`exit`システムコールを使います。
+
+```assembly
+mov eax, 1      ; システムコール番号 1 (sys_exit)
+xor ebx, ebx    ; 終了コード 0
+int 0x80        ; カーネル呼び出し
+```
+
+- **eax = 1**: `exit` システムコールの番号。
+- **ebx = 0**: 正常終了コード。
+
+---
+
+## 実行手順 (Linux)
+1. ソースコードをファイル（例: `hello.asm`）に保存。
+2. 次のコマンドでアセンブルしてリンクします。
+
+```bash
+nasm -f elf32 hello.asm -o hello.o
+ld -m elf_i386 -s -o hello hello.o
+```
+
+3. 実行します。
+
+```bash
+./hello
+```
+
+これで「Hello, World!」が表示されます。
+
+---
+
+これがx86アセンブラを使った基本的な「Hello, World!」プログラムの例です。

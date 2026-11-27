@@ -1,0 +1,368 @@
+```toc
+```
+# 設定
+
+### 日本語化
+- [日本語化手順](https://qiita.com/nm_suisai/items/ee7df3ba45228ebdf2aa)
+
+### ターミナル分割
+
+#### Terminator
+- [Terminatorの使用方法](https://qiita.com/Hashibirokou/items/58cfe84975c3b3af0235)
+
+#### tmux
+- [アニメーション設定](https://qiita.com/KoyanagiHitoshi/items/318d4b8ef3b4e5b87390)
+- [tmuxの使い方](https://qiita.com/shin-ch13/items/9d207a70ccc8467f7bab)
+---
+## 設定確認
+### カーネルバージョン変更
+#### 以前のバージョンのカーネルパッケージを検索します
+```bash
+apt search linux-image
+```
+#### 適切な以前のバージョンのカーネルパッケージをインストールします
+```bash
+apt install linux-image-version
+```
+#### 新しいカーネルをアンインストールします
+```bash
+apt purge linux-image-<new_version>
+```
+#### ブートローダーを更新します
+```bash
+update-grub
+```
+#### システムを再起動します
+```bash
+reboot
+```
+---
+
+## HDDの使用状況
+### df
+```bash
+df -h
+```
+## 特定のディレクトリの確認
+### du
+
+```bash
+du -sh /home
+```
+## Network
+### InterfaceのUP、DOWN
+```bash
+sudo ip link set eth0 up
+```
+```bash
+sudo ip link set eth0 up
+```
+### iptables
+- [iptablesの使い方1](https://qiita.com/dtanimoto00/items/1d0a9b02867add646ea5)
+- [iptablesの使い方2](https://knowledge.sakura.ad.jp/4048/?amp=1)
+
+## ユーザ
+
+### Interactive
+
+```bash
+adduser uname
+useradd uname
+```
+
+### UID設定
+
+```bash
+# UIDを指定してユーザを特定のグループに追加します
+useradd -u UID -g group uname
+```
+
+## 認証
+
+### SSH
+
+#### パスワード認証
+
+```bash
+ssh test@192.168.0.1
+# パスワードを入力
+```
+
+#### ログイン時にrbash（制限付きシェル）を回避する方法
+
+```bash
+ssh seppuku@192.168.0.115 -t "bash --noprofile"
+```
+
+#### サーバの暗号アルゴリズムに合わせる
+
+```bash
+ssh -c <cipher_algorithm> username@hostname
+```
+
+## 表示
+
+### 大文字小文字変換
+
+```bash
+echo "Hello WoRLd" | tr '[:upper:][:lower:]' '[:lower:][:upper:]'
+```
+
+### treeコマンド
+
+```bash
+tree -l -L 3 /usr/share/wordlists
+```
+
+## web関連
+
+### wget
+
+#### ファイルダウンロード
+
+```bash
+wget http://lhost/file
+```
+
+### curl
+
+#### ファイルダウンロード
+
+```bash
+curl http://<LHOST>/<FILE> > <OUTPUT_FILE>
+```
+#### ファイルのアップロード
+```bash
+curl -F "file=@mydocument.pdf" https://example.com/upload
+```
+
+## データベース操作
+
+### mysql
+```bash
+mysql -u username -p
+```
+```bash
+mysql -h RemoteIP -u username -p
+show databases;
+use databasename;
+show tables;
+select from * tablenames;
+```
+
+## ファイル操作
+
+### 圧縮・解凍
+
+#### .zip
+
+##### 圧縮
+
+```bash
+zip archive.zip file.txt
+```
+
+##### 解凍
+
+```bash
+unzip test.zip
+```
+
+
+#### .gz
+
+##### 圧縮
+
+```bash
+# .gzの圧縮コマンドがありませんでしたので、必要であれば追記してください。
+```
+
+##### 解凍
+
+```bash
+gzip -d file.gz
+```
+### .tar
+#### 圧縮
+```bash
+tar -zvf archive_name.tar /path/to/directory_or_files
+```
+#### 解凍
+```bash
+tar -xvf archive_name.tar.gz /path/to/directory_or_files
+```
+#### .tar.gz
+
+##### 圧縮
+
+```bash
+tar -zcvf xxxx.tar.gz directory
+```
+
+##### 解凍
+
+```bash
+tar -xzvf filename.tar.gz
+```
+
+#### .tar.bz2
+##### 圧縮
+```bash
+tar -jcvf xxxx.tar.bz2 directory
+```
+##### 解凍
+```bash
+tar -jxvf xxxx.tar.bz2
+```
+#### 7zip
+```bash
+# 7zipのコマンドがありませんでしたので、必要であれば追記してください。
+```
+
+### viエディタ
+
+#### 置換
+1. フォーマット
+```bash
+:%s/aaa/bbb/g
+```
+2. ,(カンマ)を改行に置換
+```bash
+:%s/,/\r/g
+```
+---
+### ls
+
+#### lsのタイムスタンプを見やすくする
+
+```bash
+ls -l --time-style=long-iso
+```
+
+### awk
+- ログ解析などに有用なコマンド
+- awkはスペースでフィールドを区切る
+- awk '条件 {処理}'
+```bash
+awk '/exe/  {print $0}'
+```
+exeのあるファイルを表示
+```bash
+awk '{print $6}' wordpress.log | sort | uniq -c
+```
+### sed
+####標準入力からバックスラッシュを削除
+```bash
+echo "User\\Name" | sed 's/User\\//g'
+```
+このコマンドを実行すると、「UserName」が出力されます。
+
+#### ファイル内の「User」からバックスラッシュを削除
+```bash
+
+sed 's/User\\//g' inputfile.txt > outputfile.txt
+```
+#### awkとの組み合わせ
+```bash
+ awk '{print $3}' users.txt| sed 's/User\\//g'  > username.txt
+```
+#### Interface名を全変更
+```bash
+![image](https://github.com/user-attachments/assets/2f042e29-36ba-49dd-bf95-592a8c8a0e10)
+
+```
+---
+### cp
+
+```bash
+# cpコマンドでディレクトリ内の中身のみ、他のディレクトリにコピーする 
+cp -r dir1/. dir2/
+```
+
+### find
+
+```bash
+find / -name ファイル名
+```
+
+### grep
+
+#### Recurs
+```bash
+grep -r hoge
+```
+
+#### AND
+
+```bash
+grep hoge | grep fuga
+```
+
+#### OR
+```bash
+grep -e hoge -e fuga
+```
+### echo
+
+```bash
+# hosts追記
+echo "10.10.11.249 play.crafty.htb" | sudo tee -a /etc/hosts
+```
+
+### Linuxでdocxやxlsxファイルを表示する方法
+
+### 1. LibreOfficeを使用する
+LibreOfficeは、Microsoft Officeファイル形式をサポートするオープンソースのオフィススイートです。
+
+- **インストール:**
+  ```bash
+  sudo apt-get install libreoffice  # Debian系ディストリビューションの場合
+  sudo yum install libreoffice      # Red Hat系ディストリビューションの場合
+  ```
+ファイルを開く:
+
+```bash
+libreoffice filename.docx
+libreoffice filename.xlsx
+```
+2. WPS Officeを使用する
+WPS Officeは、Microsoft Officeに近いインターフェースを持つオフィススイートです。
+
+WPS Officeは、公式ウェブサイトからダウンロードしてインストールできます。
+3. Apache OpenOfficeを使用する
+Apache OpenOfficeも、Microsoft Officeファイル形式をサポートするオープンソースのオフィススイートです。
+
+インストール:
+
+```bash
+sudo apt-get install openoffice
+```
+ファイルを開く:
+
+```bash
+openoffice filename.docx
+openoffice filename.xlsx
+```
+4. オンラインオフィススイートを使用する
+ブラウザを使用して、オンラインでファイルを表示することもできます。
+
+Google Docs / Google Sheets:
+.docxや.xlsxファイルをGoogle Driveにアップロードし、Google DocsまたはGoogle Sheetsで開くことができます。
+Microsoft Office Online:
+Microsoftのオンラインサービスを使用して、ブラウザで直接ファイルを開くことができます。
+5. docx2txtやxlsx2csvコマンドを使用する
+ターミナルで内容を確認する場合、以下のコマンドを使用してファイルをテキストやCSV形式に変換できます。
+
+インストール:
+
+```bash
+sudo apt-get install docx2txt
+sudo apt-get install xlsx2csv
+```
+使用方法:
+
+```bash
+docx2txt filename.docx -  # ターミナルにテキストを表示
+xlsx2csv filename.xlsx    # CSV形式で内容を出力
+```
+---

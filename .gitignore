@@ -1,0 +1,9 @@
+﻿node_modules/
+public/
+.quartz-cache/
+.quartz/
+prof/
+tsconfig.tsbuildinfo
+.obsidian/
+cookies.txt
+_templates/

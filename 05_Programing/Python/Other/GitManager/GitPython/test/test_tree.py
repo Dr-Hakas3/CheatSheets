@@ -1,0 +1,404 @@
+# Copyright (C) 2008, 2009 Michael Trier (mtrier@gmail.com) and contributors
+#
+# This module is part of GitPython and is released under the
+# 3-Clause BSD License: https://opensource.org/license/bsd-3-clause/
+
+import os
+import os.path as osp
+from io import BytesIO
+
+import ddt
+import pytest
+
+from gitdb import IStream
+
+from git.compat import safe_encode
+from git.objects import Blob, Tree
+from git.objects.tree import TreeModifier
+from test.lib import TestBase, with_rw_repo
+from test.lib.fixtures import fixture_repo, read_only_fixture
+
+from .lib.helper import PathLikeMock
+
+
+def test_tree_cache_edits_do_not_update_object_ids_or_parents():
+    with fixture_repo("tree-cache.sh", write=True) as repo:
+        root = repo.head.commit.tree
+        subtree = root["sub"]
+        original_oid = subtree.hexsha
+        del subtree.cache["file"]
+        subtree.cache.set_done()
+        assert not list(subtree)
+        assert subtree.hexsha == original_oid
+        assert root["sub"].hexsha == original_oid
+        assert [item.name for item in repo.head.commit.tree["sub"]] == ["file"]
+
+        data = BytesIO()
+        subtree._serialize(data)
+        data.seek(0)
+        stored = repo.odb.store(IStream("tree", len(data.getvalue()), data))
+        assert stored.binsha != subtree.binsha
+        assert not list(Tree(repo, stored.binsha, path=""))
+        assert repo.head.commit.tree["sub"].hexsha == original_oid
+
+
+@pytest.mark.parametrize("object_format", ["sha1", "sha256"])
+@pytest.mark.parametrize("invalid_position", ["first", "last"])
+def test_invalid_tree_does_not_retain_partial_cache(object_format, invalid_position):
+    with fixture_repo("tree-invalid.sh", object_format, invalid_position) as repo:
+        root = read_only_fixture("tree-invalid.sh", object_format, invalid_position)
+        oid = (root / "tree-id").read_text().strip()
+        names = [line.split("\t")[1] for line in (root / "entries").read_text().splitlines()]
+        assert names == ([".git", "valid"] if invalid_position == "first" else ["!valid", ".git"])
+        tree = Tree(repo, bytes.fromhex(oid), path="")
+        for _ in range(2):
+            with pytest.raises(ValueError, match="aliases Git metadata"):
+                list(tree)
+
+
+def test_tree_modifier_orders_non_utf8_names_as_git_does():
+    with fixture_repo("tree-byte-order.sh") as repo:
+        expected = (read_only_fixture("tree-byte-order.sh") / "order").read_bytes().split(b"\0")[:-1]
+        tree = repo.head.commit.tree
+        tree.cache.set_done()
+        assert [safe_encode(item.name) for item in tree] == expected
+
+
+@pytest.mark.parametrize(
+    "selection",
+    [slice(None), slice(1, 4), slice(None, None, 2), slice(-3, None), slice(None, None, -1), slice(99, None)],
+)
+def test_tree_slicing_follows_list_order_without_changing_the_tree(selection):
+    with fixture_repo("tree-order.sh") as repo:
+        tree = repo.head.commit.tree
+        original = list(tree)
+        selected = tree[selection]
+        assert isinstance(selected, list)
+
+        def describe(items):
+            return [(type(item), item.path, item.mode, item.hexsha) for item in items]
+
+        assert describe(selected) == describe(original[selection])
+        selected.clear()
+        assert describe(list(tree)) == describe(original)
+
+
+def test_tree_slicing_rejects_a_zero_step():
+    with fixture_repo("tree-order.sh") as repo:
+        with pytest.raises(ValueError, match="slice step cannot be zero"):
+            repo.head.commit.tree[::0]
+
+
+def test_reversed_tree_preserves_order_and_nested_paths():
+    with fixture_repo("tree-order.sh") as repo:
+        tree = repo.head.commit.tree
+        forward = list(tree)
+        backward = list(reversed(tree))
+        assert [(type(item), item.path, item.mode, item.hexsha) for item in backward] == [
+            (type(item), item.path, item.mode, item.hexsha) for item in reversed(forward)
+        ]
+        assert [item.path for item in reversed(tree["file"])] == ["file/a"]
+
+
+@ddt.ddt
+class TestTree(TestBase):
+    @with_rw_repo("HEAD")
+    def test_serializable(self, rw_repo):
+        # Tree at the given commit contains a submodule as well.
+        roottree = rw_repo.tree("submodule-current")
+        for item in roottree.traverse(ignore_self=False):
+            if item.type != Tree.type:
+                continue
+            # END skip non-trees
+            tree = item
+            # Trees have no dict.
+            self.assertRaises(AttributeError, setattr, tree, "someattr", 1)
+
+            orig_data = tree.data_stream.read()
+            orig_cache = tree._cache
+
+            stream = BytesIO()
+            tree._serialize(stream)
+            assert stream.getvalue() == orig_data
+
+            stream.seek(0)
+            stored = rw_repo.odb.store(IStream("tree", len(stream.getvalue()), stream))
+            testtree = Tree(rw_repo, stored.binsha, 0, "")
+            assert testtree._cache == orig_cache
+            del testtree._cache
+            assert testtree._cache == orig_cache
+        # END for each item in tree
+
+    @with_rw_repo("HEAD")
+    def test_valid_unusual_tree_names_round_trip(self, rw_repo):
+        names = ["a b", "a\nb", "a\tb", "café", ".gitignore"]
+        if os.name != "nt":
+            names.extend(["a\\b", "a:b", "C:relative"])
+        cache = []
+        modifier = TreeModifier(cache)
+        for name in names:
+            modifier.add(b"a" * 20, 0o100644, name)
+        modifier.set_done()
+        data = BytesIO()
+        tree = Tree(rw_repo, Tree.NULL_BIN_SHA, path="")
+        tree._cache = cache
+        tree._serialize(data)
+        data.seek(0)
+        stored = rw_repo.odb.store(IStream("tree", len(data.getvalue()), data))
+        assert Tree(rw_repo, stored.binsha, path="")._cache == cache
+
+    def _get_git_ordered_files(self):
+        return (read_only_fixture("tree-order.sh") / "order").read_text().splitlines()
+
+    def test_tree_modifier_ordering(self):
+        """TreeModifier.set_done() sorts files in the same order git does."""
+        git_file_names_in_order = self._get_git_ordered_files()
+
+        hexsha = self.rorepo.commit("submodule-current").hexsha
+        roottree = self.rorepo.tree(hexsha)
+        blob_mode = Tree.blob_id << 12
+        tree_mode = Tree.tree_id << 12
+
+        files_in_desired_order = [
+            (blob_mode, "bin"),
+            (blob_mode, "bin.d"),
+            (blob_mode, "file.to"),
+            (blob_mode, "file.toml"),
+            (blob_mode, "file.toml.bin"),
+            (blob_mode, "file0"),
+            (tree_mode, "file"),
+        ]
+        mod = roottree.cache
+        for file_mode, file_name in files_in_desired_order:
+            mod.add(hexsha, file_mode, file_name)
+        # end for each file
+
+        def file_names_in_order():
+            return [t[1] for t in files_in_desired_order]
+
+        def names_in_mod_cache():
+            a = [t[2] for t in mod._cache]
+            here = file_names_in_order()
+            return [e for e in a if e in here]
+
+        mod.set_done()
+        assert names_in_mod_cache() == git_file_names_in_order, "set_done() performs git-sorting"
+
+    @ddt.data("", ".", "..", ".git", ".GIT", "git~1", ".git. ", ".g\u200cit", "a/b", "a\0b")
+    def test_tree_names_are_checked_at_construction_and_serialization(self, name):
+        cache = []
+        with pytest.raises(ValueError):
+            TreeModifier(cache).add(b"a" * 20, 0o100644, name)
+        assert not cache
+        with pytest.raises(ValueError):
+            tree = Tree(self.rorepo, Tree.NULL_BIN_SHA, path="")
+            tree._cache = [(b"a" * 20, 0o100644, name)]
+            tree._serialize(BytesIO())
+
+    @ddt.data(
+        ".gitmodules",
+        ".GITMODULES",
+        ".gitmodules ",
+        ".gi\u200ctmodules",
+        "gitmod~1",
+        "gitmod~2",
+        "gitmod~3",
+        "GITMOD~4",
+        "gi7eba~1",
+        "GI7EBA~9",
+        "GI7EB~10",
+        "GI7EB~11",
+        "GI7EB~99",
+        "GI7E~100",
+        "GI7E~101",
+        "GI7E~999",
+        "GI7~1000",
+        "GI7~9999",
+        "GI~10000",
+        "GI~99999",
+        "G~100000",
+        "G~999999",
+        "~1000000",
+        "~9999999",
+        "Gi7Eb~42",
+        "gi7e~120",
+        "GITMOD~4 . ",
+        "GI7EB~10. ",
+        "GI7E~100:$DATA",
+        "~1000000 . :$DATA",
+    )
+    @with_rw_repo("HEAD")
+    def test_gitmodules_symlink_entries_are_rejected(self, rw_repo, name):
+        cache = []
+        with pytest.raises(ValueError, match="submodule configuration"):
+            TreeModifier(cache).add(b"a" * 20, 0o120000, name)
+        assert not cache
+
+        TreeModifier(cache).add(b"a" * 20, 0o100644, name)
+        tree = Tree(rw_repo, Tree.NULL_BIN_SHA, path="")
+        tree._cache = cache
+        data = BytesIO()
+        tree._serialize(data)
+        data.seek(0)
+        stored = rw_repo.odb.store(IStream("tree", len(data.getvalue()), data))
+        assert Tree(rw_repo, stored.binsha, path="")._cache == cache
+
+    @ddt.data(
+        "gitmod~0",
+        "gitmod~5",
+        "gitmod~10",
+        "GI7EBA~",
+        "GI7EBA~0",
+        "GI7EBA~~1",
+        "GI7EBA~X",
+        "GI7EBA~10",
+        "Gx7EBA~1",
+        "GI7EBX~1",
+        "GI7EB~1",
+        "GI7EB~01",
+        "GI7EB~1X",
+        "GI7EB~100",
+        "GI7E~10",
+        "GI7E~010",
+        "GI7E~1000",
+        "GI7~100",
+        "GI7~0100",
+        "GI7~10000",
+        "GI~1000",
+        "GI~01000",
+        "GI~100000",
+        "G~10000",
+        "G~010000",
+        "G~1000000",
+        "~100000",
+        "~0100000",
+        "~10000000",
+        "GI7EBA~\u0661",
+        "GI7EB~1\uff10",
+        "GI7EB~10x",
+        "GI7EB~10.x",
+        " GI7EB~10",
+        "GI7EB~10\n",
+        "GI7EB~10\t",
+        "GI7EB~10x:$DATA",
+        ".gitmodules x",
+        ".gitmodules .x",
+        ".gitmodules,:$DATA",
+    )
+    @with_rw_repo("HEAD")
+    def test_gitmodules_short_name_near_misses_round_trip(self, rw_repo, name):
+        """Only exact aliases are forbidden, and only for symbolic links."""
+        for mode in (0o100644, 0o120000):
+            cache = []
+            TreeModifier(cache).add(b"a" * 20, mode, name)
+            assert cache == [(b"a" * 20, mode, name)]
+            tree = Tree(rw_repo, Tree.NULL_BIN_SHA, path="")
+            tree._cache = cache
+            data = BytesIO()
+            tree._serialize(data)
+            raw = ("%o " % mode).encode() + name.encode() + b"\0" + b"a" * 20
+            assert data.getvalue() == raw
+            data.seek(0)
+            stored = rw_repo.odb.store(IStream("tree", len(data.getvalue()), data))
+            assert Tree(rw_repo, stored.binsha, path="")._cache == cache
+
+    def test_traverse(self):
+        root = self.rorepo.tree("release")
+        num_recursive = 0
+        all_items = []
+        for obj in root.traverse():
+            if "/" in obj.path:
+                num_recursive += 1
+
+            assert isinstance(obj, (Blob, Tree))
+            all_items.append(obj)
+        # END for each object
+        assert all_items == root.list_traverse()
+
+        # Limit recursion level to 0 - should be same as default iteration.
+        assert all_items
+        assert "CHANGES" in root
+        assert len(list(root)) == len(list(root.traverse(depth=1)))
+
+        # Only choose trees.
+
+        def trees_only(i, _d):
+            return i.type == "tree"
+
+        trees = list(root.traverse(predicate=trees_only))
+        assert len(trees) == len([i for i in root.traverse() if trees_only(i, 0)])
+
+        # Test prune.
+
+        def lib_folder(t, _d):
+            return t.path == "lib"
+
+        pruned_trees = list(root.traverse(predicate=trees_only, prune=lib_folder))
+        assert len(pruned_trees) < len(trees)
+
+        # Trees and blobs.
+        assert len(set(trees) | set(root.trees)) == len(trees)
+        assert len({b for b in root if isinstance(b, Blob)} | set(root.blobs)) == len(root.blobs)
+        subitem = trees[0][0]
+        assert "/" in subitem.path
+        assert subitem.name == osp.basename(subitem.path)
+
+        # Check that at some point the traversed paths have a slash in them.
+        found_slash = False
+        for item in root.traverse():
+            assert osp.isabs(item.abspath)
+            if "/" in item.path:
+                found_slash = True
+            # END check for slash
+
+            # Slashes in paths are supported as well.
+            # NOTE: On Python 3, / doesn't work with strings anymore...
+            assert root[item.path] == item == root / item.path
+        # END for each item
+        assert found_slash
+
+    def test_repo_lookup_string_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        blob = tree / ".gitignore"
+        assert isinstance(blob, Blob)
+        assert blob.data_stream.read() == b"*.pyc\n"
+
+    def test_repo_lookup_pathlike_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        blob = tree / PathLikeMock(".gitignore")
+        assert isinstance(blob, Blob)
+        assert blob.data_stream.read() == b"*.pyc\n"
+
+    def test_repo_lookup_invalid_string_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        with pytest.raises(KeyError):
+            tree / "doesnotexist"
+
+    def test_repo_lookup_invalid_pathlike_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        with pytest.raises(KeyError):
+            tree / PathLikeMock("doesnotexist")
+
+    def test_repo_lookup_nested_string_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        blob = tree / "git/__init__.py"
+        assert isinstance(blob, Blob)
+        assert blob.data_stream.read() == b"# Sample module\nvalue = 1\n"
+
+    def test_repo_lookup_nested_pathlike_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        blob = tree / PathLikeMock("git/__init__.py")
+        assert isinstance(blob, Blob)
+        assert blob.data_stream.read() == b"# Sample module\nvalue = 1\n"
+
+    def test_repo_lookup_folder_string_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        tree = tree / "git"
+        assert isinstance(tree, Tree)
+        assert [entry.name for entry in tree] == ["__init__.py", "objects"]
+
+    def test_repo_lookup_folder_pathlike_path(self):
+        tree = self.rorepo.tree("tree-layout")
+        tree = tree / PathLikeMock("git")
+        assert isinstance(tree, Tree)
+        assert [entry.name for entry in tree] == ["__init__.py", "objects"]

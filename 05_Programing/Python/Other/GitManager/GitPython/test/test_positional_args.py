@@ -1,0 +1,143 @@
+"""High-level operands must not become Git options."""
+
+from pathlib import Path
+from unittest import mock
+
+import pytest
+
+from git import Git, GitCommandError, Head, Remote, RemoteReference, TagReference, _backend
+from git.exc import UnsafeOptionError
+from test.lib.fixtures import fixture_repo
+
+
+@pytest.fixture
+def repo(request):
+    name = request.node.originalname
+    with fixture_repo(
+        "positional.sh", name, write=name != "test_ignored_treats_option_shaped_path_as_filename"
+    ) as repo:
+        yield repo
+
+
+@pytest.fixture
+def tmp_path(repo):
+    return Path(repo.working_tree_dir)
+
+
+@pytest.mark.parametrize("allow_unsafe_options", [False, True])
+@pytest.mark.parametrize(
+    "refspec",
+    ["--upload-pack=helper", ["--upl=helper"], ["main", "--dry-run"], "-uhelper", "--arg value", "--"],
+)
+def test_pull_rejects_option_shaped_refspec(repo, tmp_path, refspec, allow_unsafe_options):
+    remote = Remote(repo, "origin")
+    with mock.patch.object(Git, "_call_process", side_effect=AssertionError("Git must not run")) as run:
+        with pytest.raises(UnsafeOptionError):
+            remote.pull(refspec, allow_unsafe_options=allow_unsafe_options)
+        run.assert_not_called()
+
+
+def test_pull_rejects_option_shaped_remote(repo, tmp_path):
+    remote = Remote(repo, "--upload-pack=helper")
+    with mock.patch.object(Git, "_call_process", side_effect=AssertionError("Git must not run")) as run:
+        with pytest.raises(UnsafeOptionError):
+            remote.pull("main")
+        run.assert_not_called()
+
+
+def test_pull_preserves_operand_and_explicit_option_values(repo, tmp_path):
+    repo.git.version_info
+    remote = Remote(repo, "origin")
+    with mock.patch.object(Git, "_call_process") as run, mock.patch.object(
+        Remote, "_get_fetch_info_from_stderr", return_value=[]
+    ):
+        remote.pull("refs/heads/topic", upload_pack="helper with spaces", allow_unsafe_options=True)
+    assert run.call_args[0] == ("pull", "--", remote, ["refs/heads/topic"])
+    assert run.call_args[1]["upload_pack"] == "helper with spaces"
+
+
+def test_delete_head_cannot_override_force(repo, tmp_path):
+    branch = repo.heads.unmerged
+    with pytest.raises(UnsafeOptionError):
+        repo.delete_head("--force", branch, force=False)
+    assert branch.is_valid()
+    repo.delete_head(branch, force=True)
+    assert not branch.is_valid()
+
+
+def test_rename_head_cannot_select_current_branch(repo, tmp_path):
+    original = repo.active_branch.name
+    with pytest.raises(GitCommandError):
+        Head(repo, "refs/heads/--force").rename("renamed")
+    assert repo.active_branch.name == original
+
+
+@pytest.mark.parametrize("allow_unsafe_options", [False, True])
+@pytest.mark.parametrize(
+    "name", ["-f", "-Bcheckout-target", "--orphan=checkout-target", "--force", "--detach", "--ours", "-", "--"]
+)
+def test_checkout_rejects_option_shaped_branch_names(repo, tmp_path, name, allow_unsafe_options):
+    branch = Head(repo, "refs/heads/" + name)
+    with mock.patch.object(Git, "_call_process_safe", side_effect=AssertionError("Git must not run")) as run:
+        with pytest.raises(UnsafeOptionError):
+            branch.checkout(allow_unsafe_options=allow_unsafe_options)
+        run.assert_not_called()
+
+
+def test_tag_operands_follow_option_terminator(repo, tmp_path):
+    commit = repo.head.commit
+    with mock.patch.object(Git, "execute", autospec=True, side_effect=Git.execute) as run:
+        TagReference.create(repo, "topic", "HEAD")
+        argv = run.call_args.args[1]
+        assert argv[argv.index("tag") :] == ["tag", "--no-sign", "--", "topic", commit.hexsha]
+        run.reset_mock()
+        with pytest.raises(UnsafeOptionError):
+            TagReference.delete(repo, "--list")
+        run.assert_not_called()
+    assert repo.tags.topic.commit == commit
+
+
+def test_remote_ref_delete_preserves_operand(repo, tmp_path):
+    ref = RemoteReference(repo, "refs/remotes/--force")
+    # Exercise the CLI fallback's option boundary even with GixPython installed.
+    with mock.patch.object(_backend, "dispatch", return_value=NotImplemented), mock.patch.object(
+        Git, "execute", autospec=True, side_effect=Git.execute
+    ) as run:
+        RemoteReference.delete(repo, ref)
+    argv = run.call_args.args[1]
+    assert argv[argv.index("update-ref") :] == ["update-ref", "--no-deref", "-d", "--", ref.path]
+    assert not ref.is_valid()
+
+
+def test_move_treats_option_shaped_source_as_filename(repo, tmp_path):
+    assert repo.index.move(["--force", "destination"]) == [("--force", "destination")]
+    assert (tmp_path / "destination").read_text() == "literal source"
+    assert not (tmp_path / "--force").exists()
+
+
+def test_move_cannot_override_overwrite_protection(repo, tmp_path):
+    with pytest.raises(GitCommandError):
+        repo.index.move(["--force", "source", "destination"])
+    assert (tmp_path / "source").read_text() == "source"
+    assert (tmp_path / "destination").read_text() == "destination"
+    repo.index.move(["source", "destination"], force=True)
+    assert (tmp_path / "destination").read_text() == "source"
+
+
+def test_ignored_treats_option_shaped_path_as_filename(repo, tmp_path):
+    assert repo.ignored("--verbose", "--arg value") == ["--verbose", "--arg value"]
+
+
+def test_move_cannot_override_dry_run(repo, tmp_path):
+    with pytest.raises(GitCommandError):
+        repo.index.move(["--no-dry-run", "source", "destination"], dry_run=True)
+    assert (tmp_path / "source").read_text() == "source"
+    assert not (tmp_path / "destination").exists()
+
+
+@pytest.mark.parametrize("name", ["--prune", "--all", "--upload-pack=helper"])
+def test_remote_update_rejects_option_shaped_name(repo, tmp_path, name):
+    with mock.patch.object(Git, "_call_process", side_effect=AssertionError("Git must not run")) as run:
+        with pytest.raises(UnsafeOptionError):
+            Remote(repo, name).update()
+        run.assert_not_called()

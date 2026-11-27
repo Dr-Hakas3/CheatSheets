@@ -1,0 +1,97 @@
+# How to contribute
+
+The following is a short step-by-step rundown of what one typically would do to contribute.
+
+- [Fork this project](https://github.com/gitpython-developers/GitPython/fork) on GitHub.
+- Install the `test` extra and select a backend before running `pytest`. Test
+  repositories are generated automatically; no source Git history is required.
+- Please try to **write a test that fails unless the contribution is present.**
+- Try to avoid massive commits and prefer to take small steps, with one commit for each.
+- Feel free to add yourself to AUTHORS file.
+- Create a pull request.
+
+## Prefer pull requests
+
+Pull requests are preferred when you have a fix or improvement to contribute: a PR
+can be treated as an issue with a fix attached. Describe the problem and proposed
+solution in the PR itself; a separate issue is not required.
+
+Please avoid opening an issue solely to follow it immediately with a PR that fixes
+it. Open the PR directly instead. Issues are still welcome for problems without a
+fix or for changes that need discussion before implementation.
+
+## Quality expectations
+
+Contributions must be made with care and meet the quality bar of the surrounding code.
+That means a change should not leave GitPython worse than it was before: it should be
+readable, maintainable, tested where practical, documented and consistent with the
+existing style and behavior.
+
+A contribution that works only narrowly but lowers the quality of the
+codebase may be declined. The maintainers may not always be able to provide
+detailed feedback.
+
+## Prevent agent impersonation
+
+AI agents communicating through a person's account must identify themselves, for
+example in issue or PR descriptions and comments. AI assistance that does not replace
+the person as the speaker, such as proofreading or wording polish, does not require
+identification.
+
+Even when identifying themselves, agents must not assert on a person's behalf that
+that person performed an action, such as reviewing or approving a PR. The person
+must make any such statement themselves. If it is included alongside agent-authored
+content, it must be supplied by the person and preserved verbatim in a clearly
+labeled, separate user-authored section. Agents must not draft, paraphrase, or embed
+such statements in their own narration.
+
+Attributing AI assistance in commit metadata, for example with a `Co-authored-by`
+trailer, is welcome but not required. Code is reviewed the same way regardless of its
+origin.
+
+## Documenting subclass interfaces
+
+Use Sphinx's `:meta public:` field in docstrings of underscore-prefixed methods
+that form a supported interface for subclasses. This includes their documentation
+in the API reference without exposing unrelated private implementation details.
+
+## Temporary test directories
+
+Tests require Python 3.11+, Git 2.52+, Bash, and the `test` extra, which installs
+GixPython even when testing the CLI backend. Select `GIT_PYTHON_BACKEND=cli` or
+`GIT_PYTHON_BACKEND=gix` before running pytest.
+
+Put initial repository and filesystem states in `tests/fixtures/*.sh` and use
+`test.lib.fixtures` to run them through `gix.testtools`. Read-only tests share
+cached output; mutating tests use writable copies. Use `execute=True` only when
+the fixture cannot be copied, and explain the reason at its call site. Keep
+operations under test in Python. Generate histories from scratch and refer to
+named fixture revisions; do not clone the source checkout, fetch project history,
+or depend on its refs, object IDs, index, or working-tree state. Immutable parser
+byte samples remain in `test/fixtures`; generated caches and archives are ignored.
+
+Use `test.cleanup.cleanup_directory` for cleanup outside the shared fixture
+owners. Close repository handles before removing their files. Cleanup is
+best-effort: it logs filesystem errors, removes whatever it can, and leaves
+locked files behind without failing or skipping a test. The shared writable
+repository decorators still keep failed tests' directories for debugging.
+
+Deletions and renames that exercise library behavior or prepare a fixture for
+reuse must remain strict. If a cached fixture cannot be cleaned up, rebuild it
+at a fresh location before handing it to another test.
+
+## Network-dependent tests
+
+Mark tests that use the network with `pytest.mark.net`, including tests whose
+fixtures start a local Git daemon or download packages. This includes binding,
+listening on, and connecting to loopback sockets, not just internet access.
+Network-restricted package builders, such as SUSE and openSUSE build servers, can
+exclude these tests with `pytest -m 'not net'` after installing test dependencies.
+If only some parameters use the network, mark those with
+`pytest.param(..., marks=pytest.mark.net)` so the other cases still run. Local
+filesystem clones and mocked network calls do not need this marker.
+
+## Fuzzing Test Specific Documentation
+
+For details related to contributing to the fuzzing test suite and OSS-Fuzz integration, please 
+refer to the dedicated [fuzzing README](05_Programing/Python/Other/GitManager/GitPython/fuzzing/README.md).

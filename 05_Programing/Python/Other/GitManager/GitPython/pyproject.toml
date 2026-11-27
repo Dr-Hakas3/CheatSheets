@@ -1,0 +1,148 @@
+[build-system]
+requires = ["setuptools >= 62.6"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "GitPython"
+description = "GitPython is a Python library used to interact with Git repositories"
+authors = [
+    { name = "Sebastian Thiel", email = "byronimo@gmail.com" },
+    { name = "Michael Trier", email = "mtrier@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["git"]
+# license = "BSD-3-Clause"  # not done until setuptools >= 77 (Python >= 3.9)
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS :: MacOS X",
+    "Typing :: Typed",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
+dynamic = ["license", "version", "dependencies", "optional-dependencies"]
+
+[project.urls]
+"Source code" = "https://github.com/gitpython-developers/GitPython"
+"Documentation" = "https://gitpython.readthedocs.io/en/stable/"
+"Changelog" = "https://github.com/gitpython-developers/GitPython/blob/main/doc/source/changes.rst"
+
+[dependency-groups]
+doc = [
+    'sphinx >=7.4.7,<8 ; python_version >= "3.9"',
+    "sphinx-autodoc-typehints",
+    "sphinx-rtd-theme",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+dependencies = { file = "requirements.txt" }
+optional-dependencies."test" = { file = "test-requirements.txt" }
+optional-dependencies."gix" = { file = "gix-requirements.txt" }
+
+[tool.setuptools.packages.find]
+include = ["git", "git.*"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=git --cov-report=term -rfEX"
+filterwarnings = "ignore::DeprecationWarning"
+python_files = "test_*.py"
+tmp_path_retention_policy = "failed"
+testpaths = "test"                            # Space separated list of paths from root e.g test tests doc/testing.
+# --cov   coverage
+# --cov-report term  # send report to terminal term-missing -> terminal with line numbers  html  xml
+# --cov-report term-missing # to terminal with line numbers
+# --cov-report html:path  # html file at path
+# --maxfail  # number of errors before giving up
+# -rfEX  # test summary: list failures, errors, and unexpected passes; omit expected failures
+# -ra   # test summary: list all non-passing (fail, error, skip, xfail, xpass)
+# --ignore-glob=**/gitdb/*  # ignore glob paths
+# filterwarnings ignore::WarningType  # ignores those warnings
+markers = [
+    "net: tests requiring network access, including local/loopback sockets; skip with -m 'not net' on network-restricted builders",
+]
+
+[tool.mypy]
+files = ["git/", "test/test_typing.py", "test/test_remote_progress.py"]
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+implicit_reexport = true
+# strict = true
+# TODO: Remove when 'gitdb' is fully annotated.
+exclude = ["^(gitdb|smmap)/"]
+[[tool.mypy.overrides]]
+module = ["gitdb", "gitdb.*"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+pythonVersion = "3.8"
+include = [
+    "git",
+    "test/test_typing.py",
+    "test/test_git.py",
+    "test/test_remote_progress.py",
+]
+extraPaths = ["gitdb", "smmap"]
+exclude = ["gitdb", "smmap"]
+
+[tool.coverage.run]
+source = ["git"]
+
+[tool.coverage.report]
+include = ["*/git/*"]
+omit = ["*/git/ext/*"]
+
+[tool.ruff]
+line-length = 120
+# Exclude a variety of commonly ignored directories.
+exclude = ["git/ext/", "gitdb/", "smmap/", "build", "dist"]
+# Enable Pyflakes `E` and `F` codes by default.
+lint.select = [
+    "E",
+    "W", # See: https://pypi.org/project/pycodestyle
+    "F", # See: https://pypi.org/project/pyflakes
+    # "I",   # See: https://pypi.org/project/isort/
+    # "S",   # See: https://pypi.org/project/flake8-bandit
+    # "UP",  # See: https://docs.astral.sh/ruff/rules/#pyupgrade-up
+]
+lint.extend-select = [
+    # "A",    # See: https://pypi.org/project/flake8-builtins
+    "B",     # See: https://pypi.org/project/flake8-bugbear
+    "C4",    # See: https://pypi.org/project/flake8-comprehensions
+    "TC004", # See: https://docs.astral.sh/ruff/rules/runtime-import-in-type-checking-block/
+]
+lint.ignore = [
+    # If it becomes necessary to ignore any rules, list them here.
+]
+lint.unfixable = [
+    "F401", # Module imported but unused
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test/**" = [
+    "B018", # useless-expression
+]
+"fuzzing/fuzz-targets/**" = [
+    "E402", # environment setup must happen before the `git` module is imported, thus cannot happen at top of file
+]
