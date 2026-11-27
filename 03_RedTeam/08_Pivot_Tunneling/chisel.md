@@ -174,5 +174,4 @@ chmod +x chisel
 
 ![[Pasted image 20260508222935.png]]
 
----
 

