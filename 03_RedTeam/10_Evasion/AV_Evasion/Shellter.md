@@ -1,7 +1,5 @@
 ---
 title: Shellter
-parent: Weaponization
-grand_parent: Red Team
 ---
 
 # インストール
