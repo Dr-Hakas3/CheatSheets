@@ -1,5 +1,5 @@
 ---
-title: 05 Linux PrivEsc
+title: 06 Linux PrivEsc
 ---
 # Linux Privilege Escalation
 

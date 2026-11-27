@@ -1,5 +1,5 @@
 ---
-title: 06 Windows PrivEsc
+title: 07 Windows PrivEsc
 ---
 # Windows Privilege Escalation
 

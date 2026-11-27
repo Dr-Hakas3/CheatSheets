@@ -604,7 +604,7 @@ wpprobe scan -f targets.txt -t 20 -o results.json
 ```
 
 👉 If login success:
-→ [WordPress_PHP](WordPress_PHP.md) 
+→ [WordPress_PHP](03_RedTeam/04_Weaponization/Generate_ReverseShell/WordPress_PHP.md) 
 ### Joomla 
 
 [4_joomscan](4_joomscan.md)

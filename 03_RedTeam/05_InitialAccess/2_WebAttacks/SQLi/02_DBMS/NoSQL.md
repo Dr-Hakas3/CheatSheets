@@ -412,11 +412,11 @@ NoSQL Injectionはデータベースごとにクエリ仕様が異なるため�
 
 ## 11. 関連ページ
 
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
     
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
     
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
     
 - [[PostgreSQL|PostgreSQL]]
     

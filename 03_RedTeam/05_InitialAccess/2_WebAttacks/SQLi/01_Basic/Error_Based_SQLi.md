@@ -74,7 +74,7 @@ MySQL、PostgreSQL、Microsoft SQL Server、Oracleではエラー文言・型変
 - [[Union_Based_SQLi|Union-Based SQLi]]
 - [[Boolean_Based_SQLi|Boolean-Based SQLi]]
 - [[Time_Based_SQLi|Time-Based SQLi]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
 
 ## 11. 参考資料
 - https://portswigger.net/web-security/sql-injection

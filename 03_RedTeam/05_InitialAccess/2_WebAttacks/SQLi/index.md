@@ -226,9 +226,9 @@ WAFは補助的な防御であり、パラメータ化クエリなどの根本�
 
 ### 7.2 DBMS
 
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
     
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
     
 - [[02_DBMS/PostgreSQL|PostgreSQL]]
     

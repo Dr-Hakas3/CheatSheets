@@ -80,9 +80,9 @@ UNIONの基本要件は共通するが、文字列・数値の型変換、NULL�
 ## 10. 関連ページ
 - [[Error_Based_SQLi|Error-Based SQLi]]
 - [[Boolean_Based_SQLi|Boolean-Based SQLi]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
 
 ## 11. 参考資料
 - https://portswigger.net/web-security/sql-injection/union-attacks

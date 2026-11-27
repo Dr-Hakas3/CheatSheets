@@ -47,7 +47,7 @@ The flag is definitely there; you just can't see it.
 
 ## 🔑 Password Cracking
 
-* [Password Cracking](03_RedTeam/04_InitialAccess/3_Password_Attack/password_crack.md)
+* [Password Cracking](03_RedTeam/05_InitialAccess/3_Password_Attack/password_crack.md)
 
 ## 🏗 Platforms
 

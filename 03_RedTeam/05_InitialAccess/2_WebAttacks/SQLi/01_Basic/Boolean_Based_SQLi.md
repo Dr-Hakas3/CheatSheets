@@ -65,7 +65,7 @@ AND 1=2
 - [[Time_Based_SQLi|Time-Based SQLi]]
 - [[Error_Based_SQLi|Error-Based SQLi]]
 - [[Out_of_Band_SQLi|Out-of-Band SQLi]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
 
 ## 11. 参考資料
 - https://portswigger.net/web-security/sql-injection/blind

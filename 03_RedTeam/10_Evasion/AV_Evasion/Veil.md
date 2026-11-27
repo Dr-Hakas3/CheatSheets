@@ -1,10 +1,9 @@
 ---
 title: Veil
-parent: Weaponization
-grand_parent: Red Team
 ---
 
 # Install
+
 ```bash
 sudo apt install veil-evasion
 /usr/share/veil/config/setup.sh --force --silent
@@ -12,6 +11,7 @@ sudo apt install veil-evasion
 ```
 
 # .batファイル形式のスクリプトの生成
+
 ```bash
 sudo veil
 
@@ -37,6 +37,7 @@ Ctrl+c
 ```
 
 # リスナーの起動
+
 ```bash
 sudo msfconsole
 use exploit/multi/handler
@@ -47,6 +48,7 @@ exploit
 ```
 
 # ファイルのアップロード
+
 ```bash
 cd /var/lib/veil/output/source/
 

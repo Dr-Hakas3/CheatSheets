@@ -68,10 +68,10 @@ DNS問い合わせが観測されても、必ずしもDBMSが直接発生源と�
 ## 10. 関連ページ
 - [[Boolean_Based_SQLi|Boolean-Based SQLi]]
 - [[Time_Based_SQLi|Time-Based SQLi]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MySQL|MySQL]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/02_DBMS/MSSQL|Microsoft SQL Server]]
 - [[../02_DBMS/Oracle|Oracle]]
-- [[03_RedTeam/04_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
+- [[03_RedTeam/05_InitialAccess/2_WebAttacks/SQLi/index|SQL Injection]]
 
 ## 11. 参考資料
 - https://portswigger.net/web-security/sql-injection
