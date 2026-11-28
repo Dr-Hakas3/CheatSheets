@@ -1,9 +1,4 @@
----
-title: Penelope
-parent: Tools
-grand_parent: Red Team
-nav_order: 10
----
+
 
 # penelope
 https://github.com/brightio/penelope
@@ -11,6 +6,13 @@ https://github.com/brightio/penelope
 - Ctrl+cでも落ちない
 - タブの自動保管
 - ログの保存
+
+## Install
+
+```zsh
+sudo apt update
+sudo apt install penelope
+```
 ## Clone
 ```zsh
 git clone https://github.com/brightio/penelope.git
