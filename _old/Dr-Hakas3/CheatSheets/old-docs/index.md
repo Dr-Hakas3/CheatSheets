@@ -28,7 +28,7 @@ The flag is definitely there; you just can't see it.
 # 🧩 General
 
 * [Command](01_General/windows/command.md)
-* [File](01_General/windows/1_File.md)
+* [File](01_General/Windows/1_File.md)
 * [Words](01_General/words/words.md)
 
 ---

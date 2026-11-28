@@ -4,9 +4,8 @@ parent: Linux
 grand_parent: General
 nav_order: 5
 ---
-<details markdown="1">
+curl
 
-<summary>curl</summary>
 ```zsh
 sudo curl -s --user-agent Googlebot http://192.168.143.14/robots.txt -v
 ```
@@ -31,6 +30,9 @@ curl -i --path-as-is http://192.168.150.13:443/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e
 - --path-as-is は curl のオプションで、URL のパス部分をそのまま送信するためのものです。
 通常、curl はURLエンコードされた文字（例：%2e → .）を自動的にデコードしてから送信しますが、このオプションを使うとそれを無効化できます。
 
+```zsh
+curl -I --connect-timeout 10 http://ftp.riken.jp/Linux/kali/
+```
 # Example 
 
 ## Road to Upload
