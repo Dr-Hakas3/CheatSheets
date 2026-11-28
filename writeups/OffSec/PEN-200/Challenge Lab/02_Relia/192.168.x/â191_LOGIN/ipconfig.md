@@ -1,0 +1,1 @@
+![[ipconfig image.png]]

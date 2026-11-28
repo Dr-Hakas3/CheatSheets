@@ -58,7 +58,7 @@ nav_order: 67
 👉 Credentials usually come from:
 
 * [SMB](139,445_smb.md)
-* [HTTP](80_http.md)
+* [HTTP](03_RedTeam/03_Service_Enumeration/80_http.md)
 * [MSSQL](1433_mssql.md)
 * Password attacks → [Password Attacks](../03_initial_access/password_attacks.md)
 ### File Transfer (Upload / Download)

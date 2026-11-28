@@ -1,0 +1,1 @@
+└─$ gobuster dir -u http://192.168.229.188 -w /usr/share/wordlists/seclists/Discovery/Web-Content/big.txt -k -x php,html,txt,zip,git,asp,aspx -t 20 -b 400,401,403,504,404

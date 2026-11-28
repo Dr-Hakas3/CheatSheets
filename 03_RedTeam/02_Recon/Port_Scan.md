@@ -79,12 +79,12 @@ nmap -Pn -p <PORTS> -sC -sV -A <IP>
 ## Quick Triage
 
 20 / 21 | [FTP](21_ftp.md) - File transfer |
-22       | [SSH](22_ssh.md) - Secure login |
+22       | [SSH](03_RedTeam/03_Service_Enumeration/22_ssh.md) - Secure login |
 23       | [TELNET](23_telnet.md) - Plaintext login |
 25       | [SMTP](25_smtp.md) - Mail service |
 53       | [DNS](53_dns.md) - Name resolution |
 67 / 68 | [DHCP(../02_services/dhcp.md)] | 
-80/443   | [HTTP/HTTPS](80_http.md) - Web |
+80/443   | [HTTP/HTTPS](03_RedTeam/03_Service_Enumeration/80_http.md) - Web |
 88      | [Kerberos](88_kerberos.md) - AD auth |
 111/2049 | [NFS](111_nfs.md) - File sharing |
 135      | [RPC](135_rpc.md) - Windows RPC |

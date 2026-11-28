@@ -1,0 +1,11 @@
+147にevil
+
+godpotateでシェル作成
+
+goodmanユーザーを作成しsshトンネリング準備
+
+ligoloで147経由の148への通信作成
+
+MSSQLにexecでトンネル作成
+
+sshでトンネル

@@ -164,7 +164,7 @@ put <FILE>
 * web root files
 
 👉 If creds found → try:
-* [SSH](22_ssh.md)
+* [SSH](03_RedTeam/03_Service_Enumeration/22_ssh.md)
 * [WinRM](5985,5986_winrm.md)
 * [MSSQL](1433_mssql.md)
 
