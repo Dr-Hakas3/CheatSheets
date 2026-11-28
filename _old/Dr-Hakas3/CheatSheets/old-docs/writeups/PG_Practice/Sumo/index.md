@@ -78,12 +78,6 @@ Nmap done: 1 IP address (1 host up) scanned in 15.57 seconds
 http://192.168.189.87 [200 OK] Apache[2.2.22], Country[RESERVED][ZZ], HTTPServer[Ubuntu Linux][Apache/2.2.22 (Ubuntu)], IP[192.168.189.87] 
 ```
 
-```zsh
-
-```
-
-
-
 ---
 
 # Initial Access

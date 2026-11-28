@@ -1,8 +1,5 @@
 ---
 title: FIle
-parent: Linux
-grand_parent: General
-nav_order: 1
 ---
 # File操作
 <details markdown="1">
@@ -13,8 +10,7 @@ hosts
 echo "10.10.11.249 play.crafty.htb" | sudo tee -a /etc/hosts
 ```
 </details>
-
-<details markdown=1><summary>awk</summary>
+awk
 - ログ解析などに有用なコマンド
 - awkはスペースでフィールドを区切る
 - awk '条件 {処理}'
@@ -31,8 +27,6 @@ awk '{print $6}' wordpress.log | sort | uniq -c
 
 
 </details>
-
-<details markdown=1><summary>find</summary>
 ### find
 
 ```bash
@@ -51,7 +45,10 @@ find ./ -type f -name '*.md' -print
 find ./ -type f -name '*.md' -delete
 ```
 
-</details>
+```zsh
+find ./ -type f -name 'metadata.json' -delete 2>/dev/null
+```
+
 
 
 <details markdown=1><summary>grep</summary>
