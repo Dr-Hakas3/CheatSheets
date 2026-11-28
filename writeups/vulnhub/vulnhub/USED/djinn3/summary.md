@@ -1,0 +1,11 @@
+Web（5000）と31337を見ながらSSTIを利用して侵入
+
+3分に1回実行されるcronに自SSH鍵を取りにこさせる
+
+ユーザsaintに SSHの鍵認証でログインし直す
+
+saintがユーザの追加権限を持っているのでjasonをrootグループに追加
+
+jasonにスイッチする
+
+jasonがapt-getをsudoで実行できるためGTFOの情報を利用してroot化

@@ -1,0 +1,1 @@
+smtp-user-enum -M VRFY -U keyword.txt -t 192.168.15.137
