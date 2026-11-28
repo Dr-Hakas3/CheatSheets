@@ -1,8 +1,5 @@
 ---
 title: Sumo
-parent: Proving Grounds Practice
-grand_parent: Writeups
-nav_order:
 ---
 # Machine
 ## OS
